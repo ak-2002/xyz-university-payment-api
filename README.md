@@ -1,1 +1,0 @@
-# xyz-university-payment-api
