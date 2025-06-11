@@ -24,21 +24,33 @@ namespace xyz_university_payment_api.Controllers
         {
             var result = await _paymentService.ProcessPaymentAsync(payment);
 
-            if (!result)
-                return BadRequest(new { success = false, message = "Invalid student number or student is not active." });
+            if (!result.Success)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = result.Message,
+                    studentExists = result.StudentExists,
+                    studentIsActive = result.StudentIsActive
+                });
+            }
 
-            return Ok(new { success = true, message = "Payment processed successfully." });
+            return Ok(new
+            {
+                success = true,
+                message = result.Message,
+                studentExists = result.StudentExists,
+                studentIsActive = result.StudentIsActive
+            });
         }
 
-
         // GET api/payment
-// Retrieves all payment records
-[HttpGet]
-public IActionResult GetAllPayments()
-{
-    var payments = _paymentService.GetAllPayments();
-    return Ok(payments);
-}
-
+        // Retrieves all payment records
+        [HttpGet]
+        public IActionResult GetAllPayments()
+        {
+            var payments = _paymentService.GetAllPayments();
+            return Ok(payments);
+        }
     }
 }

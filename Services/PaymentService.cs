@@ -1,6 +1,8 @@
-// Purpose: Handles payment processing logic
+// Purpose: Handles payment processing logic and combines student verification with payment storage
 using xyz_university_payment_api.Data;
 using xyz_university_payment_api.Models;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,21 +17,49 @@ namespace xyz_university_payment_api.Services
             _context = context;
         }
 
-        // Processes payment by verifying the student and saving the payment record
-        public async Task<bool> ProcessPaymentAsync(PaymentNotification payment)
+        // Custom response model for clearer API feedback
+        public class PaymentResponse
         {
-            var student = await _context.Students.FirstOrDefaultAsync(s => s.StudentNumber == payment.StudentNumber && s.IsActive);
-            if (student == null)
-                return false; // Student not found or not active
-
-            _context.PaymentNotifications.Add(payment); // Save payment to database
-            await _context.SaveChangesAsync();
-            return true;
+            public bool Success { get; set; }
+            public string Message { get; set; }
+            public bool StudentExists { get; set; }
+            public bool StudentIsActive { get; set; }
         }
-        public List<PaymentNotification> GetAllPayments()
-{
-    return _context.Payments.ToList();
-}
 
+        // Processes payment and verifies student in one step
+        public async Task<PaymentResponse> ProcessPaymentAsync(PaymentNotification payment)
+        {
+            var student = await _context.Students.FirstOrDefaultAsync(s => s.StudentNumber == payment.StudentNumber);
+
+            if (student == null)
+            {
+                return new PaymentResponse
+                {
+                    Success = false,
+                    Message = "Payment received but student not found.",
+                    StudentExists = false,
+                    StudentIsActive = false
+                };
+            }
+
+            // Save the payment regardless of student activity to keep all records
+            _context.PaymentNotifications.Add(payment);
+            await _context.SaveChangesAsync();
+
+            return new PaymentResponse
+            {
+                Success = true,
+                Message = student.IsActive ? "Payment processed successfully. Student is currently enrolled." 
+                                           : "Payment processed successfully. Student is not currently enrolled.",
+                StudentExists = true,
+                StudentIsActive = student.IsActive
+            };
+        }
+
+        // Retrieves all payment records
+        public List<PaymentNotification> GetAllPayments()
+        {
+            return _context.Payments.ToList();
+        }
     }
 }
