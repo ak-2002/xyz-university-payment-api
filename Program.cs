@@ -39,7 +39,10 @@ using (var scope = app.Services.CreateScope())
     {
         context.Students.AddRange(
             new Student { StudentNumber = "S12345", FullName = "John Doe", Program = "CS", IsActive = true },
-            new Student { StudentNumber = "S67890", FullName = "Jane Smith", Program = "IT", IsActive = true }
+            new Student { StudentNumber = "S67890", FullName = "Jane Smith", Program = "IT", IsActive = true },
+            new Student { StudentNumber = "S66001", FullName = "Alex Mutahi", Program = "ACC", IsActive = true },
+            new Student { StudentNumber = "S66002", FullName = "Janet Mwangi", Program = "SOCIOLOGY", IsActive = true },
+            new Student { StudentNumber = "S66003", FullName = "Jane Smith", Program = "IT", IsActive = false }
         );
         context.SaveChanges();
     }
