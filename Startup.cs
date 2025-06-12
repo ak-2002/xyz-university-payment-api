@@ -25,7 +25,7 @@ namespace xyz_university_payment_api
         {
             services.AddControllers();
             services.AddDbContext<AppDbContext>(options =>
-                options.UseInMemoryDatabase("UniversityDb"));
+                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
             services.AddScoped<StudentService>();
             services.AddScoped<PaymentService>();

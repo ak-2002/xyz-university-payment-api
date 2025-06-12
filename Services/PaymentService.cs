@@ -56,10 +56,10 @@ namespace xyz_university_payment_api.Services
             };
         }
 
-        // Retrieves all payment records
-        public List<PaymentNotification> GetAllPayments()
+       //  Retrieves all payment records
+       public List<PaymentNotification> GetAllPayments()
         {
-            return _context.Payments.ToList();
+           return _context.Payments.ToList();
         }
     }
 }
