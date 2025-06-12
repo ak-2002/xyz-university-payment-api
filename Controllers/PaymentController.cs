@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using xyz_university_payment_api.Services;
 using xyz_university_payment_api.Models;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+
 
 namespace xyz_university_payment_api.Controllers
 {
@@ -11,10 +13,13 @@ namespace xyz_university_payment_api.Controllers
     public class PaymentController : ControllerBase
     {
         private readonly PaymentService _paymentService;
+        private readonly ILogger<PaymentController> _logger;
 
-        public PaymentController(PaymentService paymentService)
+
+        public PaymentController(PaymentService paymentService, ILogger<PaymentController> logger)
         {
             _paymentService = paymentService;
+            _logger = logger;
         }
 
         // POST api/payment/notify
@@ -22,10 +27,12 @@ namespace xyz_university_payment_api.Controllers
         [HttpPost("notify")]
         public async Task<IActionResult> NotifyPayment([FromBody] PaymentNotification payment)
         {
+            _logger.LogInformation("NotifyPayment endpoint called with refference: {PaymentReference}", payment.PaymentReference);
             var result = await _paymentService.ProcessPaymentAsync(payment);
 
             if (!result.Success)
             {
+                _logger.LogWarning("Payment processed failed: {message}", result.Message);
                 return BadRequest(new
                 {
                     success = false,
@@ -35,6 +42,8 @@ namespace xyz_university_payment_api.Controllers
                 });
             }
 
+
+            _logger.LogInformation("Payment processed successfully: {PaymentReference}", payment.PaymentReference);
             return Ok(new
             {
                 success = true,
@@ -49,6 +58,7 @@ namespace xyz_university_payment_api.Controllers
         [HttpGet]
         public IActionResult GetAllPayments()
         {
+             _logger.LogInformation("GetAllPayments endpoint called.");
             var payments = _paymentService.GetAllPayments();
             return Ok(payments);
         }

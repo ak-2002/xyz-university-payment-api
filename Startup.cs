@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
 using xyz_university_payment_api.Data;
 using xyz_university_payment_api.Services;
+using xyz_university_payment_api.Middleware;
 
 namespace xyz_university_payment_api
 {
@@ -42,6 +43,9 @@ namespace xyz_university_payment_api
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+
+            //register error handling middleware
+            app.UseMiddleware<xyz_university_payment_api.Middleware.ErrorHandlingMiddleware>();
 
             app.UseRouting();
 
