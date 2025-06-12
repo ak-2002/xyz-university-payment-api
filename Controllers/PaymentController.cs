@@ -45,7 +45,7 @@ namespace xyz_university_payment_api.Controllers
         }
 
         // GET api/payment
-        // Retrieves all payment records
+        // Retrieves all records of payments
         [HttpGet]
         public IActionResult GetAllPayments()
         {
