@@ -3,21 +3,21 @@ using Microsoft.OpenApi.Models;
 using xyz_university_payment_api.Data;
 using xyz_university_payment_api.Services;
 using xyz_university_payment_api.Models;
-
+using xyz_university_payment_api.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Register Database Context
 builder.Services.AddDbContext<AppDbContext>(options =>
-    
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-
-
+// Register Repositories
+builder.Services.AddScoped<IStudentRepository, StudentRepository>();
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 
 // Register Services
-builder.Services.AddScoped<StudentService>();
-builder.Services.AddScoped<PaymentService>();
+builder.Services.AddScoped<IStudentService, StudentService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
 
 // Add Controllers
 builder.Services.AddControllers();
@@ -31,6 +31,7 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
+// Ensure database is created
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -50,32 +51,28 @@ using (var scope = app.Services.CreateScope())
     }
 
     if (!context.PaymentNotifications.Any())
-{
-    context.PaymentNotifications.AddRange(
-        new PaymentNotification
-        {
-            StudentNumber = "S12345",
-            PaymentReference = "REF001",
-            AmountPaid = 5000m,
-            PaymentDate = DateTime.UtcNow.AddDays(-3),
-            DateReceived = DateTime.UtcNow.AddDays(-2)
-        },
-        new PaymentNotification
-        {
-            StudentNumber = "S67890",
-            PaymentReference = "REF002",
-            AmountPaid = 3500m,
-            PaymentDate = DateTime.UtcNow.AddDays(-1),
-            DateReceived = DateTime.UtcNow
-        }
-    );
-    context.SaveChanges();
+    {
+        context.PaymentNotifications.AddRange(
+            new PaymentNotification
+            {
+                StudentNumber = "S12345",
+                PaymentReference = "REF001",
+                AmountPaid = 5000m,
+                PaymentDate = DateTime.UtcNow.AddDays(-3),
+                DateReceived = DateTime.UtcNow.AddDays(-2)
+            },
+            new PaymentNotification
+            {
+                StudentNumber = "S67890",
+                PaymentReference = "REF002",
+                AmountPaid = 3500m,
+                PaymentDate = DateTime.UtcNow.AddDays(-1),
+                DateReceived = DateTime.UtcNow
+            }
+        );
+        context.SaveChanges();
+    }
 }
-
-}
-
-
-
 
 // Configure Middleware
 if (app.Environment.IsDevelopment())
@@ -94,3 +91,4 @@ app.MapControllers();
 app.MapGet("/", () => "Welcome to XYZ University Payment API");
 
 app.Run();
+

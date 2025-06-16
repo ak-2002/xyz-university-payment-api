@@ -1,3 +1,11 @@
+C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\obj\Debug\net8.0\xyz-university-payment-api.csproj.AssemblyReference.cache
+C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\obj\Debug\net8.0\xyz-university-payment-api.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\obj\Debug\net8.0\xyz-university-payment-api.AssemblyInfoInputs.cache
+C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\obj\Debug\net8.0\xyz-university-payment-api.AssemblyInfo.cs
+C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\obj\Debug\net8.0\xyz-university-payment-api.csproj.CoreCompileInputs.cache
+C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\obj\Debug\net8.0\xyz-university-payment-api.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\obj\Debug\net8.0\xyz-university-payment-api.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\obj\Debug\net8.0\xyz-university-payment-api.sourcelink.json
 C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\bin\Debug\net8.0\appsettings.Development.json
 C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\bin\Debug\net8.0\appsettings.json
 C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\bin\Debug\net8.0\xyz-university-payment-api.staticwebassets.endpoints.json
@@ -147,14 +155,6 @@ C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\bin\Debug\net8.0\runtimes\
 C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Security.Cryptography.ProtectedData.dll
 C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\bin\Debug\net8.0\runtimes\browser\lib\net8.0\System.Text.Encodings.Web.dll
 C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Windows.Extensions.dll
-C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\obj\Debug\net8.0\xyz-university-payment-api.csproj.AssemblyReference.cache
-C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\obj\Debug\net8.0\xyz-university-payment-api.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\obj\Debug\net8.0\xyz-university-payment-api.AssemblyInfoInputs.cache
-C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\obj\Debug\net8.0\xyz-university-payment-api.AssemblyInfo.cs
-C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\obj\Debug\net8.0\xyz-university-payment-api.csproj.CoreCompileInputs.cache
-C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\obj\Debug\net8.0\xyz-university-payment-api.MvcApplicationPartsAssemblyInfo.cs
-C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\obj\Debug\net8.0\xyz-university-payment-api.MvcApplicationPartsAssemblyInfo.cache
-C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\obj\Debug\net8.0\xyz-university-payment-api.sourcelink.json
 C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\obj\Debug\net8.0\scopedcss\bundle\xyz-university-payment-api.styles.css
 C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\obj\Debug\net8.0\staticwebassets.build.json
 C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\obj\Debug\net8.0\staticwebassets.build.json.cache
