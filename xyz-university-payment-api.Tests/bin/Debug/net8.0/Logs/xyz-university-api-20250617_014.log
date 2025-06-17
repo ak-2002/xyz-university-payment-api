@@ -26,3 +26,4 @@
 2025-06-17 15:33:26.510 +03:00 [INF] Processing payment: REFDUPLICATE for student: S66002
 2025-06-17 15:33:26.510 +03:00 [WRN] Duplicate payment reference: REFDUPLICATE
 2025-06-17 15:33:26.510 +03:00 [WRN] Payment processing failed: Payment reference REFDUPLICATE already exists
+2025-06-17 16:08:01.380 +03:00 [INF] Starting XYZ University Payment API {"MachineName":"DESKTOP-F3AMJ10","ThreadId":20,"ProcessId":10916,"Application":"XYZ University Payment API","Environment":"Development"}

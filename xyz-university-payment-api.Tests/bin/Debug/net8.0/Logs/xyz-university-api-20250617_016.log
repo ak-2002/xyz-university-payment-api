@@ -1,0 +1,28 @@
+2025-06-17 16:08:01.762 +03:00 [INF] Ensuring database is created
+2025-06-17 16:08:01.779 +03:00 [INF] Database created successfully
+2025-06-17 16:08:01.862 +03:00 [INF] Seeding initial student data
+2025-06-17 16:08:01.912 +03:00 [INF] Student data seeded successfully
+2025-06-17 16:08:01.914 +03:00 [INF] Seeding initial payment data
+2025-06-17 16:08:01.930 +03:00 [INF] Payment data seeded successfully
+2025-06-17 16:08:01.997 +03:00 [INF] XYZ University Payment API started successfully
+2025-06-17 16:08:02.110 +03:00 [WRN] Failed to determine the https port for redirect.
+2025-06-17 16:08:02.159 +03:00 [INF] NotifyPayment endpoint called with reference: REF456
+2025-06-17 16:08:02.161 +03:00 [INF] Processing payment: REF456 for student: S66002
+2025-06-17 16:08:02.209 +03:00 [INF] Payment processed successfully: REF456
+2025-06-17 16:08:02.210 +03:00 [INF] Payment processed successfully: REF456
+2025-06-17 16:08:02.234 +03:00 [INF] NotifyPayment endpoint called with reference: REF111
+2025-06-17 16:08:02.234 +03:00 [INF] Processing payment: REF111 for student: S66002
+2025-06-17 16:08:02.237 +03:00 [INF] Payment processed successfully: REF111
+2025-06-17 16:08:02.237 +03:00 [INF] Payment processed successfully: REF111
+2025-06-17 16:08:02.244 +03:00 [INF] NotifyPayment endpoint called with reference: REF111
+2025-06-17 16:08:02.245 +03:00 [INF] Processing payment: REF111 for student: S66002
+2025-06-17 16:08:02.246 +03:00 [WRN] Duplicate payment reference: REF111
+2025-06-17 16:08:02.246 +03:00 [WRN] Payment processing failed: Payment reference REF111 already exists
+2025-06-17 16:08:02.281 +03:00 [INF] NotifyPayment endpoint called with reference: REF101
+2025-06-17 16:08:02.281 +03:00 [INF] Processing payment: REF101 for student: INACTIVE
+2025-06-17 16:08:02.281 +03:00 [WRN] Student not found for payment: INACTIVE
+2025-06-17 16:08:02.281 +03:00 [WRN] Payment processing failed: Payment received but student not found.
+2025-06-17 16:08:02.285 +03:00 [INF] NotifyPayment endpoint called with reference: REF789
+2025-06-17 16:08:02.286 +03:00 [INF] Processing payment: REF789 for student: NONEXISTENT
+2025-06-17 16:08:02.286 +03:00 [WRN] Student not found for payment: NONEXISTENT
+2025-06-17 16:08:02.286 +03:00 [WRN] Payment processing failed: Payment received but student not found.
