@@ -1,63 +1,71 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging; // Make sure this is added
+using Moq;
+using xyz_university_payment_api.Controllers;
 using xyz_university_payment_api.Interfaces;
 using xyz_university_payment_api.Models;
+using Xunit;
 
-namespace xyz_university_payment_api.Controllers
+namespace xyz_university_payment_api.Tests.Controllers
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class PaymentController : ControllerBase
+    public class PaymentControllerTests
     {
-        private readonly IPaymentService _paymentService;
+        private readonly Mock<IPaymentService> _paymentServiceMock;
+        private readonly Mock<ILogger<PaymentController>> _loggerMock; // ✅ Add this
+        private readonly PaymentController _paymentController;
 
-        public PaymentController(IPaymentService paymentService)
+        public PaymentControllerTests()
         {
-            _paymentService = paymentService;
+            _paymentServiceMock = new Mock<IPaymentService>();
+            _loggerMock = new Mock<ILogger<PaymentController>>(); // ✅ Add this
+            _paymentController = new PaymentController(_paymentServiceMock.Object, _loggerMock.Object); // ✅ Fix this
         }
 
-        [HttpPost]
-        public async Task<IActionResult> ProcessPayment([FromBody] PaymentNotification payment)
+        [Fact]
+        public async Task ProcessPayment_ShouldReturnOk_WhenPaymentIsSuccessful()
         {
-            var result = await _paymentService.ProcessPaymentAsync(payment);
-            if (!result.Success)
-            {
-                return BadRequest(result);
-            }
+            // Arrange
+            var payment = new PaymentNotification { PaymentReference = "REF123", StudentNumber = "S001", AmountPaid = 5000 };
 
-            return Ok(result);
+            _paymentServiceMock.Setup(service => service.ProcessPaymentAsync(payment))
+                .ReturnsAsync(new PaymentProcessingResult
+                {
+                    Success = true,
+                    StudentExists = true,
+                    StudentIsActive = true,
+                    ProcessedPayment = payment
+                });
+
+            // Act
+            var result = await _paymentController.NotifyPayment(payment);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            Assert.Equal(200, okResult.StatusCode);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAllPayments()
+        [Fact]
+        public async Task ProcessPayment_ShouldReturnBadRequest_WhenPaymentFails()
         {
-            var payments = await _paymentService.GetAllPaymentsAsync();
-            return Ok(payments);
-        }
+            // Arrange
+            var payment = new PaymentNotification { PaymentReference = "REF123", StudentNumber = "S001", AmountPaid = 5000 };
 
-        [HttpGet("student/{studentNumber}")]
-        public async Task<IActionResult> GetPaymentsByStudent(string studentNumber)
-        {
-            var payments = await _paymentService.GetPaymentsByStudentAsync(studentNumber);
-            return Ok(payments);
-        }
+            _paymentServiceMock.Setup(service => service.ProcessPaymentAsync(payment))
+                .ReturnsAsync(new PaymentProcessingResult
+                {
+                    Success = false,
+                    StudentExists = true,
+                    StudentIsActive = true,
+                    ProcessedPayment = null,
+                    Message = "Duplicate payment reference"
+                });
 
-        [HttpGet("{paymentReference}")]
-        public async Task<IActionResult> GetPaymentByReference(string paymentReference)
-        {
-            var payment = await _paymentService.GetPaymentByReferenceAsync(paymentReference);
-            if (payment == null)
-            {
-                return NotFound($"Payment with reference {paymentReference} not found.");
-            }
+            // Act
+            var result = await _paymentController.NotifyPayment(payment);
 
-            return Ok(payment);
-        }
-
-        [HttpGet("summary/{studentNumber}")]
-        public async Task<IActionResult> GetPaymentSummary(string studentNumber)
-        {
-            var summary = await _paymentService.GetPaymentSummaryAsync(studentNumber);
-            return Ok(summary);
+            // Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal(400, badRequestResult.StatusCode);
         }
     }
 }
