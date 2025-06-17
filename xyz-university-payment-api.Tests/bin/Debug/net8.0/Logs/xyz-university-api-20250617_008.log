@@ -1,0 +1,13 @@
+2025-06-17 13:45:56.707 +03:00 [INF] Ensuring database is created
+2025-06-17 13:45:56.742 +03:00 [INF] Database created successfully
+2025-06-17 13:45:56.814 +03:00 [INF] Seeding initial student data
+2025-06-17 13:45:56.865 +03:00 [INF] Student data seeded successfully
+2025-06-17 13:45:56.867 +03:00 [INF] Seeding initial payment data
+2025-06-17 13:45:56.884 +03:00 [INF] Payment data seeded successfully
+2025-06-17 13:45:56.926 +03:00 [INF] XYZ University Payment API started successfully
+2025-06-17 13:45:57.016 +03:00 [WRN] Failed to determine the https port for redirect.
+2025-06-17 13:45:57.078 +03:00 [INF] NotifyPayment endpoint called with reference: REF456
+2025-06-17 13:45:57.079 +03:00 [INF] Processing payment: REF456 for student: S002
+2025-06-17 13:45:57.116 +03:00 [WRN] Student not found for payment: S002
+2025-06-17 13:45:57.116 +03:00 [WRN] Payment processing failed: Payment received but student not found.
+2025-06-17 13:54:39.020 +03:00 [INF] Starting XYZ University Payment API {"MachineName":"DESKTOP-F3AMJ10","ThreadId":20,"ProcessId":13752,"Application":"XYZ University Payment API","Environment":"Development"}
