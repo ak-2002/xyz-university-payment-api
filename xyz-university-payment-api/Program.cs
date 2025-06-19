@@ -71,11 +71,26 @@ try
     {
         options.Authority = "http://localhost:5153"; // IdentityServer URL
         options.RequireHttpsMetadata = false;
+        options.Audience = "xyz_api";
         options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
         {
-            ValidateAudience = false // Because we are using API Scopes
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true
         };
     });
+
+    // Add Authorization
+    builder.Services.AddAuthorization(options =>
+    {
+        options.AddPolicy("ApiScope", policy =>
+        {
+            policy.RequireAuthenticatedUser();
+            policy.RequireClaim("scope", "xyz_api");
+        });
+    });
+
     var app = builder.Build();
 
     // Ensure database is created
