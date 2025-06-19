@@ -1,0 +1,4 @@
+2025-06-18 16:36:39.846 +03:00 [INF] Ensuring database is created
+2025-06-18 16:36:39.888 +03:00 [INF] Database created successfully
+2025-06-18 16:36:41.523 +03:00 [INF] XYZ University Payment API started successfully
+2025-06-18 16:37:03.356 +03:00 [INF] Starting XYZ University Payment API {"MachineName":"DESKTOP-F3AMJ10","ThreadId":1,"ProcessId":23624,"Application":"XYZ University Payment API","Environment":"Development"}
