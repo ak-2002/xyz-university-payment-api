@@ -16,7 +16,7 @@ public static class Config
             {
                 ClientId = "xyz_client",
                 AllowedGrantTypes = GrantTypes.ClientCredentials,
-                ClientSecrets = { new Secret("xyz_secret".Sha256()) },
+                ClientSecrets = { new Secret("super_secret_password".Sha256()) },
                 AllowedScopes = { "xyz_api" }
             }
         };
