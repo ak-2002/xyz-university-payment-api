@@ -1,0 +1,5 @@
+2025-06-18 14:17:21.955 +03:00 [INF] Ensuring database is created
+2025-06-18 14:17:21.997 +03:00 [INF] Database created successfully
+2025-06-18 14:17:23.553 +03:00 [INF] XYZ University Payment API started successfully
+2025-06-18 14:23:05.862 +03:00 [WRN] Failed to determine the https port for redirect.
+2025-06-18 14:34:53.497 +03:00 [INF] Starting XYZ University Payment API {"MachineName":"DESKTOP-F3AMJ10","ThreadId":1,"ProcessId":6488,"Application":"XYZ University Payment API","Environment":"Development"}
