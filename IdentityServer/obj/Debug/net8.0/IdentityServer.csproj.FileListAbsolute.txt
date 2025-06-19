@@ -34,3 +34,4 @@ C:\Users\wanja\Desktop\XYZ\IdentityServer\obj\Debug\net8.0\refint\IdentityServer
 C:\Users\wanja\Desktop\XYZ\IdentityServer\obj\Debug\net8.0\IdentityServer.pdb
 C:\Users\wanja\Desktop\XYZ\IdentityServer\obj\Debug\net8.0\IdentityServer.genruntimeconfig.cache
 C:\Users\wanja\Desktop\XYZ\IdentityServer\obj\Debug\net8.0\ref\IdentityServer.dll
+C:\Users\wanja\Desktop\XYZ\IdentityServer\bin\Debug\net8.0\keys\is-signing-key-264737AA2BAB361F738F6A67FD69790A.json
