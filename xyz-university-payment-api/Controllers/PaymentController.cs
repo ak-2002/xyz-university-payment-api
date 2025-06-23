@@ -6,6 +6,7 @@ using xyz_university_payment_api.Models;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace xyz_university_payment_api.Controllers
 {
