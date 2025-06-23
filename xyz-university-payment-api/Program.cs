@@ -103,27 +103,28 @@ try
 
         c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
         {
-            Description = "JWT Authorization header using the Bearer scheme Example:  \"Authorization: Bearer {token}\"",
+            Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
             Name = "Authorization",
             In = ParameterLocation.Header,
-            Type = SecuritySchemeType.ApiKey,
-            Scheme = "Bearer"
+            Type = SecuritySchemeType.Http,
+            Scheme = "Bearer",
+            BearerFormat = "JWT"
         });
 
         c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
         {
-            new OpenApiSecurityScheme
             {
-                Reference = new OpenApiReference
+                new OpenApiSecurityScheme
                 {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            new string[] {}
-        }
-    });
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                },
+                Array.Empty<string>()
+            }
+        });
     });
 
    
@@ -142,7 +143,6 @@ try
             ValidateIssuerSigningKey = true,
             ValidIssuer = "http://localhost:5153",
             ValidAudience = "xyz_api"
-
         };
     });
 
@@ -225,7 +225,13 @@ if (!AppDomain.CurrentDomain.FriendlyName.Contains("ef"))
     if (app.Environment.IsDevelopment())
     {
         app.UseSwagger();
-        app.UseSwaggerUI();
+        app.UseSwaggerUI(c =>
+        {
+            c.SwaggerEndpoint("/swagger/v1/swagger.json", "XYZ University Payment API v1");
+            c.RoutePrefix = string.Empty; // Serve Swagger UI at the app's root
+            c.DocumentTitle = "XYZ University Payment API Documentation";
+            c.DefaultModelsExpandDepth(-1); // Hide schemas section
+        });
     }
 
     app.UseHttpsRedirection();
