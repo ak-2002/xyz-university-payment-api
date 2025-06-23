@@ -14,12 +14,15 @@ namespace xyz_university_payment_api.Services
         private readonly IPaymentRepository _paymentRepository;
         private readonly IStudentRepository _studentRepository;
         private readonly ILogger<PaymentService> _logger;
+        private readonly IMessagePublisher _messagePublisher;
 
-        public PaymentService(IPaymentRepository paymentRepository, IStudentRepository studentRepository, ILogger<PaymentService> logger)
+        public PaymentService(IPaymentRepository paymentRepository, IStudentRepository studentRepository, 
+            ILogger<PaymentService> logger, IMessagePublisher messagePublisher)
         {
             _paymentRepository = paymentRepository;
             _studentRepository = studentRepository;
             _logger = logger;
+            _messagePublisher = messagePublisher;
         }
 
         public async Task<PaymentProcessingResult> ProcessPaymentAsync(PaymentNotification payment)
@@ -32,6 +35,19 @@ namespace xyz_university_payment_api.Services
             if (!validation.IsValid)
             {
                 _logger.LogWarning("Payment validation failed: {Errors}", string.Join(", ", validation.Errors));
+                
+                // Publish validation failure message
+                await _messagePublisher.PublishPaymentValidationAsync(new PaymentValidationMessage
+                {
+                    PaymentReference = payment.PaymentReference,
+                    StudentNumber = payment.StudentNumber,
+                    Amount = payment.AmountPaid,
+                    PaymentDate = payment.PaymentDate,
+                    Status = "ValidationFailed",
+                    Message = $"Payment validation failed: {string.Join(", ", validation.Errors)}",
+                    ValidationErrors = validation.Errors
+                });
+
                 return new PaymentProcessingResult
                 {
                     Success = false,
@@ -45,6 +61,19 @@ namespace xyz_university_payment_api.Services
             if (await _paymentRepository.PaymentReferenceExistsAsync(payment.PaymentReference))
             {
                 _logger.LogWarning("Duplicate payment reference: {PaymentReference}", payment.PaymentReference);
+                
+                // Publish failed payment message
+                await _messagePublisher.PublishPaymentFailedAsync(new PaymentFailedMessage
+                {
+                    PaymentReference = payment.PaymentReference,
+                    StudentNumber = payment.StudentNumber,
+                    Amount = payment.AmountPaid,
+                    PaymentDate = payment.PaymentDate,
+                    Status = "DuplicateReference",
+                    Message = $"Payment reference {payment.PaymentReference} already exists",
+                    ErrorReason = "Duplicate payment reference"
+                });
+
                 return new PaymentProcessingResult
                 {
                     Success = false,
@@ -59,6 +88,19 @@ namespace xyz_university_payment_api.Services
             if (student == null)
             {
                 _logger.LogWarning("Student not found for payment: {StudentNumber}", payment.StudentNumber);
+                
+                // Publish failed payment message
+                await _messagePublisher.PublishPaymentFailedAsync(new PaymentFailedMessage
+                {
+                    PaymentReference = payment.PaymentReference,
+                    StudentNumber = payment.StudentNumber,
+                    Amount = payment.AmountPaid,
+                    PaymentDate = payment.PaymentDate,
+                    Status = "StudentNotFound",
+                    Message = "Payment received but student not found.",
+                    ErrorReason = "Student not found in system"
+                });
+
                 return new PaymentProcessingResult
                 {
                     Success = false,
@@ -72,6 +114,20 @@ namespace xyz_university_payment_api.Services
             var processedPayment = await _paymentRepository.AddAsync(payment);
 
             _logger.LogInformation("Payment processed successfully: {PaymentReference}", payment.PaymentReference);
+
+            // Publish successful payment message
+            await _messagePublisher.PublishPaymentProcessedAsync(new PaymentProcessedMessage
+            {
+                PaymentReference = payment.PaymentReference,
+                StudentNumber = payment.StudentNumber,
+                Amount = payment.AmountPaid,
+                PaymentDate = payment.PaymentDate,
+                Status = "Processed",
+                Message = student.IsActive ? "Payment processed successfully. Student is currently enrolled." 
+                                           : "Payment processed successfully. Student is not currently enrolled.",
+                StudentExists = true,
+                StudentIsActive = student.IsActive
+            });
 
             return new PaymentProcessingResult
             {
