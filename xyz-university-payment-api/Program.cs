@@ -6,6 +6,8 @@ using xyz_university_payment_api.Models;
 using xyz_university_payment_api.Interfaces;
 using Serilog;
 using Serilog.Events;
+using MassTransit;
+
 
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
@@ -54,6 +56,25 @@ try
     builder.Services.AddScoped<IStudentService, StudentService>();
     builder.Services.AddScoped<IPaymentService, PaymentService>();
     builder.Services.AddScoped<ILoggingService, LoggingService>();
+    builder.Services.AddScoped<IMessagePublisher, RabbitMQMessagePublisher>();
+
+
+    //Add MassTransit for RabbitMQ messaging
+    builder.Services.AddMassTransit(x =>
+    {
+        x.UsingRabbitMq((
+            context, cfg ) =>
+            {
+                cfg.Host("localhost", "/", h =>
+                {
+                    h.Username("guest");
+                    h.Password("guest");
+                });
+
+                cfg.ConfigureEndpoints(context);
+            });
+    });
+
 
     // Add Controllers
     builder.Services.AddControllers();
@@ -104,7 +125,7 @@ try
    builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
     {
-        options.Authority = "http://localhost:5153"; // IdentityServer URL
+        options.Authority = builder.Configuration["IdentityServer:Authority"] ?? "http://localhost:5153"; // IdentityServer URL
         options.RequireHttpsMetadata = false;
         options.Audience = "xyz_api";
         options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters

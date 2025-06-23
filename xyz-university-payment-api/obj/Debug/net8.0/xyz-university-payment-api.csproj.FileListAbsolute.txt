@@ -147,3 +147,7 @@ C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\obj\Debug\net8.0\refint\xy
 C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\obj\Debug\net8.0\xyz-university-payment-api.pdb
 C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\obj\Debug\net8.0\xyz-university-payment-api.genruntimeconfig.cache
 C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\obj\Debug\net8.0\ref\xyz-university-payment-api.dll
+C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\bin\Debug\net8.0\MassTransit.dll
+C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\bin\Debug\net8.0\MassTransit.Abstractions.dll
+C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\bin\Debug\net8.0\MassTransit.RabbitMqTransport.dll
+C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\bin\Debug\net8.0\RabbitMQ.Client.dll
