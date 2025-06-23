@@ -1,1 +1,5 @@
 2025-06-23 09:02:03.317 +03:00 [INF] Ensuring database is created {"MachineName":"DESKTOP-F3AMJ10","ThreadId":1,"ProcessId":7684,"Application":"XYZ University Payment API"}
+2025-06-23 09:02:03.390 +03:00 [INF] Database created successfully {"MachineName":"DESKTOP-F3AMJ10","ThreadId":1,"ProcessId":7684,"Application":"XYZ University Payment API"}
+2025-06-23 09:02:05.502 +03:00 [INF] XYZ University Payment API started successfully {"MachineName":"DESKTOP-F3AMJ10","ThreadId":1,"ProcessId":7684,"Application":"XYZ University Payment API"}
+2025-06-23 09:02:05.967 +03:00 [INF] Bus started: "rabbitmq://localhost/" {"SourceContext":"MassTransit","MachineName":"DESKTOP-F3AMJ10","ThreadId":6,"ProcessId":7684,"Application":"XYZ University Payment API"}
+2025-06-23 09:41:37.098 +03:00 [INF] Bus stopped: "rabbitmq://localhost/" {"SourceContext":"MassTransit","MachineName":"DESKTOP-F3AMJ10","ThreadId":47,"ProcessId":7684,"Application":"XYZ University Payment API"}

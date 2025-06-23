@@ -183,6 +183,75 @@ namespace xyz_university_payment_api.Controllers
             var result = await _paymentService.ReconcilePaymentsAsync(bankData);
             return Ok(result);
         }
-    }
-}
+              
 
+        // POST api/payments/test-messaging
+        // Test endpoint to verify RabbitMQ messaging functionality
+        [HttpPost("test-messaging")]
+        public async Task<IActionResult> TestMessaging()
+        {
+            _logger.LogInformation("TestMessaging endpoint called");
+            
+            try
+            {
+                // Get the message publisher from the service provider
+                var messagePublisher = HttpContext.RequestServices.GetRequiredService<IMessagePublisher>();
+                
+                // Test payment processed message
+                await messagePublisher.PublishPaymentProcessedAsync(new PaymentProcessedMessage
+                {
+                    PaymentReference = "TEST-REF-001",
+                    StudentNumber = "S12345",
+                    Amount = 5000m,
+                    PaymentDate = DateTime.UtcNow,
+                    Status = "TestProcessed",
+                    Message = "Test payment processed successfully",
+                    StudentExists = true,
+                    StudentIsActive = true
+                });
+
+                // Test payment failed message
+                await messagePublisher.PublishPaymentFailedAsync(new PaymentFailedMessage
+                {
+                    PaymentReference = "TEST-REF-002",
+                    StudentNumber = "S67890",
+                    Amount = 3000m,
+                    PaymentDate = DateTime.UtcNow,
+                    Status = "TestFailed",
+                    Message = "Test payment failed",
+                    ErrorReason = "Test error reason"
+                });
+
+                // Test payment validation message
+                await messagePublisher.PublishPaymentValidationAsync(new PaymentValidationMessage
+                {
+                    PaymentReference = "TEST-REF-003",
+                    StudentNumber = "S66001",
+                    Amount = 4000m,
+                    PaymentDate = DateTime.UtcNow,
+                    Status = "TestValidation",
+                    Message = "Test payment validation",
+                    ValidationErrors = new List<string> { "Test validation error 1", "Test validation error 2" }
+                });
+
+                return Ok(new { 
+                    success = true, 
+                    message = "Test messages published successfully. Check the logs for consumer activity." 
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in TestMessaging endpoint");
+                return StatusCode(500, new { 
+                    success = false, 
+                    message = "Error publishing test messages", 
+                    error = ex.Message 
+                });
+            }
+        }
+
+    }
+}    
+
+        
+  

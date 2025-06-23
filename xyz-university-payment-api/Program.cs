@@ -62,6 +62,12 @@ try
     //Add MassTransit for RabbitMQ messaging
     builder.Services.AddMassTransit(x =>
     {
+
+        //Register Consumers
+        x.AddConsumer<PaymentProcessedMessageConsumer>();
+        x.AddConsumer<PaymentFailedMessageConsumer>();
+        x.AddConsumer<PaymentValidationMessageConsumer>();
+        
         x.UsingRabbitMq((
             context, cfg ) =>
             {
@@ -133,7 +139,10 @@ try
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateLifetime = true,
-            ValidateIssuerSigningKey = true
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = "http://localhost:5153",
+            ValidAudience = "xyz_api"
+
         };
     });
 

@@ -1,0 +1,6 @@
+2025-06-23 09:02:03.317 +03:00 [INF] Ensuring database is created
+2025-06-23 09:02:03.390 +03:00 [INF] Database created successfully
+2025-06-23 09:02:05.502 +03:00 [INF] XYZ University Payment API started successfully
+2025-06-23 09:02:05.967 +03:00 [INF] Bus started: "rabbitmq://localhost/"
+2025-06-23 09:41:37.098 +03:00 [INF] Bus stopped: "rabbitmq://localhost/"
+2025-06-23 09:44:04.573 +03:00 [INF] Starting XYZ University Payment API {"MachineName":"DESKTOP-F3AMJ10","ThreadId":1,"ProcessId":4028,"Application":"XYZ University Payment API"}
