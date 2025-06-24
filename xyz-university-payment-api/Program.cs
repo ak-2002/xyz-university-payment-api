@@ -7,6 +7,9 @@ using xyz_university_payment_api.Interfaces;
 using Serilog;
 using Serilog.Events;
 using MassTransit;
+using AutoMapper;
+using FluentValidation.AspNetCore;
+using FluentValidation;
 
 
 // Configure Serilog
@@ -58,6 +61,12 @@ try
     builder.Services.AddScoped<ILoggingService, LoggingService>();
     builder.Services.AddScoped<IMessagePublisher, RabbitMQMessagePublisher>();
 
+    // Add AutoMapper
+    builder.Services.AddAutoMapper(typeof(Program).Assembly);
+
+    // Add FluentValidation
+    builder.Services.AddFluentValidationAutoValidation();
+    builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
     //Add MassTransit for RabbitMQ messaging
     builder.Services.AddMassTransit(x =>
