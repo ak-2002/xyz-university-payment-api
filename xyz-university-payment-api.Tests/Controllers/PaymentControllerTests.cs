@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging; // Make sure this is added
+using Microsoft.Extensions.Logging;
 using Moq;
 using xyz_university_payment_api.Controllers;
 using xyz_university_payment_api.Interfaces;
 using xyz_university_payment_api.Models;
+using xyz_university_payment_api.DTOs;
+using AutoMapper;
 using Xunit;
 
 namespace xyz_university_payment_api.Tests.Controllers
@@ -11,21 +13,40 @@ namespace xyz_university_payment_api.Tests.Controllers
     public class PaymentControllerTests
     {
         private readonly Mock<IPaymentService> _paymentServiceMock;
-        private readonly Mock<ILogger<PaymentController>> _loggerMock; // ✅ Add this
+        private readonly Mock<ILogger<PaymentController>> _loggerMock;
+        private readonly Mock<IMapper> _mapperMock;
         private readonly PaymentController _paymentController;
 
         public PaymentControllerTests()
         {
             _paymentServiceMock = new Mock<IPaymentService>();
-            _loggerMock = new Mock<ILogger<PaymentController>>(); // ✅ Add this
-            _paymentController = new PaymentController(_paymentServiceMock.Object, _loggerMock.Object); // ✅ Fix this
+            _loggerMock = new Mock<ILogger<PaymentController>>();
+            _mapperMock = new Mock<IMapper>();
+            _paymentController = new PaymentController(_paymentServiceMock.Object, _loggerMock.Object, _mapperMock.Object);
         }
 
         [Fact]
         public async Task ProcessPayment_ShouldReturnOk_WhenPaymentIsSuccessful()
         {
             // Arrange
-            var payment = new PaymentNotification { PaymentReference = "REF123", StudentNumber = "S001", AmountPaid = 5000 };
+            var createPaymentDto = new CreatePaymentDto 
+            { 
+                PaymentReference = "REF123", 
+                StudentNumber = "S001", 
+                AmountPaid = 5000,
+                PaymentDate = DateTime.UtcNow
+            };
+
+            var payment = new PaymentNotification 
+            { 
+                PaymentReference = "REF123", 
+                StudentNumber = "S001", 
+                AmountPaid = 5000,
+                PaymentDate = DateTime.UtcNow
+            };
+
+            _mapperMock.Setup(m => m.Map<PaymentNotification>(createPaymentDto))
+                .Returns(payment);
 
             _paymentServiceMock.Setup(service => service.ProcessPaymentAsync(payment))
                 .ReturnsAsync(new PaymentProcessingResult
@@ -33,11 +54,12 @@ namespace xyz_university_payment_api.Tests.Controllers
                     Success = true,
                     StudentExists = true,
                     StudentIsActive = true,
-                    ProcessedPayment = payment
+                    ProcessedPayment = payment,
+                    Message = "Payment processed successfully"
                 });
 
             // Act
-            var result = await _paymentController.NotifyPayment(payment);
+            var result = await _paymentController.NotifyPayment(createPaymentDto);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
@@ -48,7 +70,24 @@ namespace xyz_university_payment_api.Tests.Controllers
         public async Task ProcessPayment_ShouldReturnBadRequest_WhenPaymentFails()
         {
             // Arrange
-            var payment = new PaymentNotification { PaymentReference = "REF123", StudentNumber = "S001", AmountPaid = 5000 };
+            var createPaymentDto = new CreatePaymentDto 
+            { 
+                PaymentReference = "REF123", 
+                StudentNumber = "S001", 
+                AmountPaid = 5000,
+                PaymentDate = DateTime.UtcNow
+            };
+
+            var payment = new PaymentNotification 
+            { 
+                PaymentReference = "REF123", 
+                StudentNumber = "S001", 
+                AmountPaid = 5000,
+                PaymentDate = DateTime.UtcNow
+            };
+
+            _mapperMock.Setup(m => m.Map<PaymentNotification>(createPaymentDto))
+                .Returns(payment);
 
             _paymentServiceMock.Setup(service => service.ProcessPaymentAsync(payment))
                 .ReturnsAsync(new PaymentProcessingResult
@@ -61,7 +100,7 @@ namespace xyz_university_payment_api.Tests.Controllers
                 });
 
             // Act
-            var result = await _paymentController.NotifyPayment(payment);
+            var result = await _paymentController.NotifyPayment(createPaymentDto);
 
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
