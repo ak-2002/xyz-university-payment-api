@@ -33,6 +33,8 @@ namespace xyz_university_payment_api.DTOs
         public List<string> Errors { get; set; } = new List<string>();
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
         public string? RequestId { get; set; }
+        public Dictionary<string, object>? Metadata { get; set; }
+
     }
 
     // Error response DTO
