@@ -3,6 +3,7 @@
 using xyz_university_payment_api.Interfaces;
 using xyz_university_payment_api.Models;
 using xyz_university_payment_api.Exceptions;
+using PaymentNotification = xyz_university_payment_api.Models.PaymentNotification;
 
 namespace xyz_university_payment_api.Services
 {
@@ -12,16 +13,13 @@ namespace xyz_university_payment_api.Services
     /// </summary>
     public class PaymentService : IPaymentService
     {
-        private readonly IPaymentRepository _paymentRepository;
-        private readonly IStudentRepository _studentRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<PaymentService> _logger;
         private readonly IMessagePublisher _messagePublisher;
 
-        public PaymentService(IPaymentRepository paymentRepository, IStudentRepository studentRepository, 
-            ILogger<PaymentService> logger, IMessagePublisher messagePublisher)
+        public PaymentService(IUnitOfWork unitOfWork, ILogger<PaymentService> logger, IMessagePublisher messagePublisher)
         {
-            _paymentRepository = paymentRepository;
-            _studentRepository = studentRepository;
+            _unitOfWork = unitOfWork;
             _logger = logger;
             _messagePublisher = messagePublisher;
         }
@@ -55,7 +53,7 @@ namespace xyz_university_payment_api.Services
                 }
 
                 // Check for duplicate payment reference
-                if (await _paymentRepository.PaymentReferenceExistsAsync(payment.PaymentReference))
+                if (await _unitOfWork.Payments.AnyAsync(p => p.PaymentReference == payment.PaymentReference))
                 {
                     _logger.LogWarning("Duplicate payment reference: {PaymentReference}", payment.PaymentReference);
                     
@@ -75,7 +73,7 @@ namespace xyz_university_payment_api.Services
                 }
 
                 // Check if student exists
-                var student = await _studentRepository.GetByStudentNumberAsync(payment.StudentNumber);
+                var student = await _unitOfWork.Students.FirstOrDefaultAsync(s => s.StudentNumber == payment.StudentNumber);
                 if (student == null)
                 {
                     _logger.LogWarning("Student not found for payment: {StudentNumber}", payment.StudentNumber);
@@ -96,7 +94,7 @@ namespace xyz_university_payment_api.Services
                 }
 
                 // Save the payment regardless of student activity to keep all records
-                var processedPayment = await _paymentRepository.AddAsync(payment);
+                var processedPayment = await _unitOfWork.Payments.AddAsync(payment);
 
                 _logger.LogInformation("Payment processed successfully: {PaymentReference}", payment.PaymentReference);
 
@@ -141,7 +139,7 @@ namespace xyz_university_payment_api.Services
             try
             {
                 _logger.LogInformation("Retrieving all payments");
-                return await _paymentRepository.GetAllAsync();
+                return await _unitOfWork.Payments.GetAllAsync();
             }
             catch (Exception ex)
             {
@@ -155,7 +153,7 @@ namespace xyz_university_payment_api.Services
             try
             {
                 _logger.LogInformation("Retrieving payment with ID: {PaymentId}", id);
-                var payment = await _paymentRepository.GetByIdAsync(id);
+                var payment = await _unitOfWork.Payments.GetByIdAsync(id);
                 
                 if (payment == null)
                 {
@@ -180,7 +178,7 @@ namespace xyz_university_payment_api.Services
             try
             {
                 _logger.LogInformation("Retrieving payments for student: {StudentNumber}", studentNumber);
-                return await _paymentRepository.GetPaymentsByStudentAsync(studentNumber);
+                return await _unitOfWork.Payments.FindAsync(p => p.StudentNumber == studentNumber);
             }
             catch (Exception ex)
             {
@@ -194,12 +192,12 @@ namespace xyz_university_payment_api.Services
             try
             {
                 _logger.LogInformation("Retrieving payments from {StartDate} to {EndDate}", startDate, endDate);
-                return await _paymentRepository.GetPaymentsByDateRangeAsync(startDate, endDate);
+                return await _unitOfWork.Payments.FindAsync(p => p.PaymentDate >= startDate && p.PaymentDate <= endDate);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error retrieving payments from {StartDate} to {EndDate}", startDate, endDate);
-                throw new DatabaseException($"Failed to retrieve payments from {startDate} to {endDate}", ex);
+                _logger.LogError(ex, "Error retrieving payments by date range");
+                throw new DatabaseException("Failed to retrieve payments by date range", ex);
             }
         }
 
@@ -208,7 +206,7 @@ namespace xyz_university_payment_api.Services
             try
             {
                 _logger.LogInformation("Retrieving payment by reference: {PaymentReference}", paymentReference);
-                var payment = await _paymentRepository.GetByPaymentReferenceAsync(paymentReference);
+                var payment = await _unitOfWork.Payments.FirstOrDefaultAsync(p => p.PaymentReference == paymentReference);
                 
                 if (payment == null)
                 {
@@ -237,9 +235,9 @@ namespace xyz_university_payment_api.Services
             {
                 errors.Add("Payment reference is required");
             }
-            else if (!payment.PaymentReference.StartsWith("REF") || payment.PaymentReference.Length < 6)
+            else if (payment.PaymentReference.Length > 50)
             {
-                errors.Add("Payment reference must start with 'REF' and be at least 6 characters long");
+                errors.Add("Payment reference cannot exceed 50 characters");
             }
 
             // Validate student number
@@ -253,10 +251,6 @@ namespace xyz_university_payment_api.Services
             {
                 errors.Add("Payment amount must be greater than zero");
             }
-            else if (payment.AmountPaid > 100000) // Business rule: Maximum payment amount
-            {
-                errors.Add("Payment amount cannot exceed 100,000");
-            }
 
             // Validate payment date
             if (payment.PaymentDate > DateTime.UtcNow)
@@ -269,113 +263,149 @@ namespace xyz_university_payment_api.Services
 
         public async Task<bool> IsPaymentReferenceValidAsync(string paymentReference)
         {
-            _logger.LogInformation("Validating payment reference: {PaymentReference}", paymentReference);
-            
-            // Check if payment reference already exists
-            return !await _paymentRepository.PaymentReferenceExistsAsync(paymentReference);
+            try
+            {
+                return !await _unitOfWork.Payments.AnyAsync(p => p.PaymentReference == paymentReference);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking payment reference validity: {PaymentReference}", paymentReference);
+                throw new DatabaseException("Failed to check payment reference validity", ex);
+            }
         }
 
         public async Task<decimal> GetTotalAmountPaidByStudentAsync(string studentNumber)
         {
-            _logger.LogInformation("Calculating total amount paid by student: {StudentNumber}", studentNumber);
-            return await _paymentRepository.GetTotalAmountPaidByStudentAsync(studentNumber);
+            try
+            {
+                var payments = await _unitOfWork.Payments.FindAsync(p => p.StudentNumber == studentNumber);
+                return payments.Sum(p => p.AmountPaid);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error calculating total amount for student: {StudentNumber}", studentNumber);
+                throw new DatabaseException($"Failed to calculate total amount for student {studentNumber}", ex);
+            }
         }
 
         public async Task<PaymentSummary> GetPaymentSummaryAsync(string studentNumber)
         {
-            _logger.LogInformation("Generating payment summary for student: {StudentNumber}", studentNumber);
-
-            var payments = await _paymentRepository.GetPaymentsByStudentAsync(studentNumber);
-            var paymentsList = payments.ToList();
-
-            var summary = new PaymentSummary
+            try
             {
-                StudentNumber = studentNumber,
-                TotalAmountPaid = paymentsList.Sum(p => p.AmountPaid),
-                TotalPayments = paymentsList.Count,
-                LastPaymentDate = paymentsList.Any() ? paymentsList.Max(p => p.PaymentDate) : null,
-                AveragePaymentAmount = paymentsList.Any() ? paymentsList.Average(p => p.AmountPaid) : null
-            };
+                var payments = await _unitOfWork.Payments.FindAsync(p => p.StudentNumber == studentNumber);
+                var student = await _unitOfWork.Students.FirstOrDefaultAsync(s => s.StudentNumber == studentNumber);
 
-            return summary;
+                return new PaymentSummary
+                {
+                    StudentNumber = studentNumber,
+                    StudentName = student?.FullName ?? "Unknown",
+                    TotalAmount = payments.Sum(p => p.AmountPaid),
+                    TotalPayments = payments.Count(),
+                    LastPaymentDate = payments.Any() ? payments.Max(p => p.PaymentDate) : null,
+                    AveragePaymentAmount = payments.Any() ? payments.Average(p => p.AmountPaid) : null,
+                    StudentIsActive = student?.IsActive ?? false
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error generating payment summary for student: {StudentNumber}", studentNumber);
+                throw new DatabaseException($"Failed to generate payment summary for student {studentNumber}", ex);
+            }
         }
 
         public async Task<BatchProcessingResult> ProcessBatchPaymentsAsync(IEnumerable<PaymentNotification> payments)
         {
-            _logger.LogInformation("Processing batch of {Count} payments", payments.Count());
-
-            var result = new BatchProcessingResult();
-            var paymentList = payments.ToList();
-
-            foreach (var payment in paymentList)
+            var result = new BatchProcessingResult
             {
-                try
-                {
-                    var processingResult = await ProcessPaymentAsync(payment);
-                    result.Results.Add(processingResult);
+                TotalProcessed = 0,
+                Successful = 0,
+                Failed = 0,
+                Errors = new List<string>(),
+                Results = new List<PaymentProcessingResult>(),
+                SuccessfulPayments = new List<PaymentNotification>(),
+                FailedPayments = new List<PaymentFailure>()
+            };
 
-                    if (processingResult.Success)
+            try
+            {
+                await _unitOfWork.BeginTransactionAsync();
+
+                foreach (var payment in payments)
+                {
+                    try
                     {
+                        var processedPayment = await ProcessPaymentAsync(payment);
+                        result.SuccessfulPayments.Add(processedPayment.ProcessedPayment!);
+                        result.Results.Add(processedPayment);
                         result.Successful++;
+                        result.TotalProcessed++;
                     }
-                    else
+                    catch (Exception ex)
                     {
+                        result.FailedPayments.Add(new PaymentFailure
+                        {
+                            Payment = payment,
+                            ErrorMessage = ex.Message
+                        });
+                        result.Errors.Add($"Payment {payment.PaymentReference}: {ex.Message}");
                         result.Failed++;
-                        result.Errors.Add($"Payment {payment.PaymentReference}: {processingResult.Message}");
+                        result.TotalProcessed++;
                     }
                 }
-                catch (Exception ex)
-                {
-                    result.Failed++;
-                    result.Errors.Add($"Payment {payment.PaymentReference}: {ex.Message}");
-                    _logger.LogError(ex, "Error processing payment: {PaymentReference}", payment.PaymentReference);
-                }
+
+                await _unitOfWork.CommitAsync();
+                return result;
             }
-
-            result.TotalProcessed = paymentList.Count;
-            _logger.LogInformation("Batch processing completed: {Successful} successful, {Failed} failed", 
-                result.Successful, result.Failed);
-
-            return result;
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackAsync();
+                _logger.LogError(ex, "Error processing batch payments");
+                throw new BatchProcessingException("Failed to process batch payments", ex);
+            }
         }
 
         public async Task<ReconciliationResult> ReconcilePaymentsAsync(IEnumerable<BankPaymentData> bankData)
         {
-            _logger.LogInformation("Reconciling payments with bank data");
-
-            var result = new ReconciliationResult();
-            var bankDataList = bankData.ToList();
-
-            foreach (var bankPayment in bankDataList)
+            var result = new ReconciliationResult
             {
-                var dbPayment = await _paymentRepository.GetByPaymentReferenceAsync(bankPayment.PaymentReference);
-                
-                if (dbPayment == null)
+                TotalBankPayments = bankData.Count(),
+                MatchedPayments = 0,
+                UnmatchedPayments = new List<BankPaymentData>(),
+                MissingPayments = new List<PaymentNotification>(),
+                TotalReconciled = 0,
+                DiscrepanciesFound = 0,
+                Discrepancies = new List<string>(),
+                ReconciliationSuccessful = true
+            };
+
+            try
+            {
+                foreach (var bankPayment in bankData)
                 {
-                    result.DiscrepanciesFound++;
-                    result.Discrepancies.Add($"Payment reference {bankPayment.PaymentReference} not found in database");
+                    var systemPayment = await _unitOfWork.Payments.FirstOrDefaultAsync(
+                        p => p.PaymentReference == bankPayment.PaymentReference);
+
+                    if (systemPayment != null)
+                    {
+                        result.MatchedPayments++;
+                        result.TotalReconciled++;
+                    }
+                    else
+                    {
+                        result.UnmatchedPayments.Add(bankPayment);
+                        result.DiscrepanciesFound++;
+                        result.Discrepancies.Add($"Payment reference {bankPayment.PaymentReference} not found in system");
+                    }
                 }
-                else if (dbPayment.AmountPaid != bankPayment.Amount)
-                {
-                    result.DiscrepanciesFound++;
-                    result.Discrepancies.Add($"Amount mismatch for {bankPayment.PaymentReference}: DB={dbPayment.AmountPaid}, Bank={bankPayment.Amount}");
-                }
-                else if (dbPayment.StudentNumber != bankPayment.StudentNumber)
-                {
-                    result.DiscrepanciesFound++;
-                    result.Discrepancies.Add($"Student number mismatch for {bankPayment.PaymentReference}: DB={dbPayment.StudentNumber}, Bank={bankPayment.StudentNumber}");
-                }
-                else
-                {
-                    result.TotalReconciled++;
-                }
+
+                result.ReconciliationSuccessful = result.DiscrepanciesFound == 0;
+                return result;
             }
-
-            result.ReconciliationSuccessful = result.DiscrepanciesFound == 0;
-            _logger.LogInformation("Reconciliation completed: {Reconciled} reconciled, {Discrepancies} discrepancies", 
-                result.TotalReconciled, result.DiscrepanciesFound);
-
-            return result;
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error reconciling payments");
+                throw new ReconciliationException("Failed to reconcile payments", ex);
+            }
         }
     }
 }

@@ -58,21 +58,35 @@ namespace xyz_university_payment_api.Interfaces
         public int Failed { get; set; }
         public List<string> Errors { get; set; } = new();
         public List<PaymentProcessingResult> Results { get; set; } = new();
+        public List<PaymentNotification> SuccessfulPayments { get; set; } = new();
+        public List<PaymentFailure> FailedPayments { get; set; } = new();
+    }
+
+    public class PaymentFailure
+    {
+        public PaymentNotification? Payment { get; set; }
+        public string ErrorMessage { get; set; } = string.Empty;
     }
 
   
     public class PaymentSummary
     {
         public string StudentNumber { get; set; } = string.Empty;
-        public decimal TotalAmountPaid { get; set; }
+        public string StudentName { get; set; } = string.Empty;
+        public decimal TotalAmount { get; set; }
         public int TotalPayments { get; set; }
         public DateTime? LastPaymentDate { get; set; }
         public decimal? AveragePaymentAmount { get; set; }
+        public bool StudentIsActive { get; set; }
     }
 
 
     public class ReconciliationResult
     {
+        public int TotalBankPayments { get; set; }
+        public int MatchedPayments { get; set; }
+        public List<BankPaymentData> UnmatchedPayments { get; set; } = new();
+        public List<PaymentNotification> MissingPayments { get; set; } = new();
         public int TotalReconciled { get; set; }
         public int DiscrepanciesFound { get; set; }
         public List<string> Discrepancies { get; set; } = new();

@@ -2,6 +2,7 @@
 // Provides concrete implementation of IStudentService interface
 using xyz_university_payment_api.Interfaces;
 using xyz_university_payment_api.Models;
+using xyz_university_payment_api.Exceptions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -13,127 +14,253 @@ namespace xyz_university_payment_api.Services
     /// </summary>
     public class StudentService : IStudentService
     {
-        private readonly IStudentRepository _studentRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<StudentService> _logger;
 
-        public StudentService(IStudentRepository studentRepository, ILogger<StudentService> logger)
+        public StudentService(IUnitOfWork unitOfWork, ILogger<StudentService> logger)
         {
-            _studentRepository = studentRepository;
+            _unitOfWork = unitOfWork;
             _logger = logger;
         }
 
         public async Task<IEnumerable<Student>> GetAllStudentsAsync()
         {
-            _logger.LogInformation("Retrieving all students");
-            return await _studentRepository.GetAllAsync();
+            try
+            {
+                _logger.LogInformation("Retrieving all students");
+                return await _unitOfWork.Students.GetAllAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving all students");
+                throw new DatabaseException("Failed to retrieve students", ex);
+            }
         }
 
         public async Task<Student?> GetStudentByIdAsync(int id)
         {
-            _logger.LogInformation("Retrieving student with ID: {StudentId}", id);
-            return await _studentRepository.GetByIdAsync(id);
+            try
+            {
+                _logger.LogInformation("Retrieving student with ID: {StudentId}", id);
+                var student = await _unitOfWork.Students.GetByIdAsync(id);
+                
+                if (student == null)
+                {
+                    throw new StudentNotFoundException(id);
+                }
+                
+                return student;
+            }
+            catch (ApiException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving student with ID: {StudentId}", id);
+                throw new DatabaseException($"Failed to retrieve student with ID {id}", ex);
+            }
         }
 
         public async Task<Student?> GetStudentByNumberAsync(string studentNumber)
         {
-            _logger.LogInformation("Retrieving student with number: {StudentNumber}", studentNumber);
-            return await _studentRepository.GetByStudentNumberAsync(studentNumber);
+            try
+            {
+                _logger.LogInformation("Retrieving student with number: {StudentNumber}", studentNumber);
+                var student = await _unitOfWork.Students.FirstOrDefaultAsync(s => s.StudentNumber == studentNumber);
+                
+                if (student == null)
+                {
+                    throw new StudentNotFoundException(studentNumber);
+                }
+                
+                return student;
+            }
+            catch (ApiException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving student with number: {StudentNumber}", studentNumber);
+                throw new DatabaseException($"Failed to retrieve student with number {studentNumber}", ex);
+            }
         }
 
         public async Task<Student> CreateStudentAsync(Student student)
         {
-            _logger.LogInformation("Creating new student: {StudentNumber}", student.StudentNumber);
-
-            // Business validation
-            var validation = await ValidateStudentAsync(student);
-            if (!validation.IsValid)
+            try
             {
-                _logger.LogWarning("Student validation failed: {Errors}", string.Join(", ", validation.Errors));
-                throw new ArgumentException($"Student validation failed: {string.Join(", ", validation.Errors)}");
-            }
+                _logger.LogInformation("Creating new student: {StudentNumber}", student.StudentNumber);
 
-            // Check for duplicate student number
-            if (await _studentRepository.StudentNumberExistsAsync(student.StudentNumber))
+                // Business validation
+                var validation = await ValidateStudentAsync(student);
+                if (!validation.IsValid)
+                {
+                    _logger.LogWarning("Student validation failed: {Errors}", string.Join(", ", validation.Errors));
+                    throw new ValidationException(validation.Errors);
+                }
+
+                // Check for duplicate student number
+                if (await _unitOfWork.Students.AnyAsync(s => s.StudentNumber == student.StudentNumber))
+                {
+                    _logger.LogWarning("Student number already exists: {StudentNumber}", student.StudentNumber);
+                    throw new DuplicateStudentException(student.StudentNumber);
+                }
+
+                var createdStudent = await _unitOfWork.Students.AddAsync(student);
+                _logger.LogInformation("Student created successfully: {StudentNumber}", student.StudentNumber);
+                return createdStudent;
+            }
+            catch (ApiException)
             {
-                _logger.LogWarning("Student number already exists: {StudentNumber}", student.StudentNumber);
-                throw new ArgumentException($"Student number {student.StudentNumber} already exists");
+                throw;
             }
-
-            var createdStudent = await _studentRepository.AddAsync(student);
-            _logger.LogInformation("Student created successfully: {StudentNumber}", student.StudentNumber);
-            return createdStudent;
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating student: {StudentNumber}", student.StudentNumber);
+                throw new DatabaseException($"Failed to create student {student.StudentNumber}", ex);
+            }
         }
 
         public async Task<Student> UpdateStudentAsync(Student student)
         {
-            _logger.LogInformation("Updating student: {StudentNumber}", student.StudentNumber);
-
-            // Business validation
-            var validation = await ValidateStudentAsync(student);
-            if (!validation.IsValid)
+            try
             {
-                _logger.LogWarning("Student validation failed: {Errors}", string.Join(", ", validation.Errors));
-                throw new ArgumentException($"Student validation failed: {string.Join(", ", validation.Errors)}");
-            }
+                _logger.LogInformation("Updating student: {StudentNumber}", student.StudentNumber);
 
-            // Check if student exists
-            var existingStudent = await _studentRepository.GetByIdAsync(student.Id);
-            if (existingStudent == null)
+                // Business validation
+                var validation = await ValidateStudentAsync(student);
+                if (!validation.IsValid)
+                {
+                    _logger.LogWarning("Student validation failed: {Errors}", string.Join(", ", validation.Errors));
+                    throw new ValidationException(validation.Errors);
+                }
+
+                // Check if student exists
+                var existingStudent = await _unitOfWork.Students.GetByIdAsync(student.Id);
+                if (existingStudent == null)
+                {
+                    _logger.LogWarning("Student not found for update: {StudentId}", student.Id);
+                    throw new StudentNotFoundException(student.Id);
+                }
+
+                var updatedStudent = await _unitOfWork.Students.UpdateAsync(student);
+                _logger.LogInformation("Student updated successfully: {StudentNumber}", student.StudentNumber);
+                return updatedStudent;
+            }
+            catch (ApiException)
             {
-                _logger.LogWarning("Student not found for update: {StudentId}", student.Id);
-                throw new ArgumentException($"Student with ID {student.Id} not found");
+                throw;
             }
-
-            var updatedStudent = await _studentRepository.UpdateAsync(student);
-            _logger.LogInformation("Student updated successfully: {StudentNumber}", student.StudentNumber);
-            return updatedStudent;
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating student: {StudentNumber}", student.StudentNumber);
+                throw new DatabaseException($"Failed to update student {student.StudentNumber}", ex);
+            }
         }
 
         public async Task<bool> DeleteStudentAsync(int id)
         {
-            _logger.LogInformation("Deleting student with ID: {StudentId}", id);
-
-            var student = await _studentRepository.GetByIdAsync(id);
-            if (student == null)
+            try
             {
-                _logger.LogWarning("Student not found for deletion: {StudentId}", id);
-                return false;
-            }
+                _logger.LogInformation("Deleting student with ID: {StudentId}", id);
 
-            // Business rule: Check if student can be deleted
-            if (student.IsActive)
+                var student = await _unitOfWork.Students.GetByIdAsync(id);
+                if (student == null)
+                {
+                    _logger.LogWarning("Student not found for deletion: {StudentId}", id);
+                    return false;
+                }
+
+                // Business rule: Check if student can be deleted
+                if (student.IsActive)
+                {
+                    _logger.LogWarning("Cannot delete active student: {StudentNumber}", student.StudentNumber);
+                    throw new InvalidOperationException($"Cannot delete active student {student.StudentNumber}");
+                }
+
+                await _unitOfWork.Students.DeleteAsync(student);
+                _logger.LogInformation("Student deleted successfully: {StudentId}", id);
+                return true;
+            }
+            catch (Exception ex)
             {
-                _logger.LogWarning("Cannot delete active student: {StudentNumber}", student.StudentNumber);
-                throw new InvalidOperationException($"Cannot delete active student {student.StudentNumber}");
+                _logger.LogError(ex, "Error deleting student with ID: {StudentId}", id);
+                throw new DatabaseException($"Failed to delete student with ID {id}", ex);
             }
-
-            var result = await _studentRepository.DeleteAsync(student);
-            _logger.LogInformation("Student deleted successfully: {StudentId}", id);
-            return result;
         }
 
         public async Task<IEnumerable<Student>> GetActiveStudentsAsync()
         {
-            _logger.LogInformation("Retrieving active students");
-            return await _studentRepository.GetActiveStudentsAsync();
+            try
+            {
+                _logger.LogInformation("Retrieving active students");
+                return await _unitOfWork.Students.FindAsync(s => s.IsActive);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving active students");
+                throw new DatabaseException("Failed to retrieve active students", ex);
+            }
         }
 
         public async Task<IEnumerable<Student>> GetStudentsByProgramAsync(string program)
         {
-            _logger.LogInformation("Retrieving students by program: {Program}", program);
-            return await _studentRepository.GetStudentsByProgramAsync(program);
+            try
+            {
+                _logger.LogInformation("Retrieving students by program: {Program}", program);
+                return await _unitOfWork.Students.FindAsync(s => s.Program.ToUpper() == program.ToUpper());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving students by program: {Program}", program);
+                throw new DatabaseException($"Failed to retrieve students by program {program}", ex);
+            }
         }
 
         public async Task<IEnumerable<Student>> SearchStudentsAsync(string searchTerm)
         {
-            _logger.LogInformation("Searching students with term: {SearchTerm}", searchTerm);
-            return await _studentRepository.SearchStudentsByNameAsync(searchTerm);
+            try
+            {
+                _logger.LogInformation("Searching students with term: {SearchTerm}", searchTerm);
+                return await _unitOfWork.Students.FindAsync(s => 
+                    s.FullName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    s.StudentNumber.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error searching students with term: {SearchTerm}", searchTerm);
+                throw new DatabaseException($"Failed to search students with term {searchTerm}", ex);
+            }
         }
 
         public async Task<Student> UpdateStudentStatusAsync(int studentId, bool isActive)
         {
-            _logger.LogInformation("Updating student status: {StudentId} to {IsActive}", studentId, isActive);
-            return await _studentRepository.UpdateActiveStatusAsync(studentId, isActive);
+            try
+            {
+                _logger.LogInformation("Updating student status: {StudentId} to {IsActive}", studentId, isActive);
+                
+                var student = await _unitOfWork.Students.GetByIdAsync(studentId);
+                if (student == null)
+                {
+                    throw new StudentNotFoundException(studentId);
+                }
+
+                student.IsActive = isActive;
+                var updatedStudent = await _unitOfWork.Students.UpdateAsync(student);
+                _logger.LogInformation("Student status updated successfully: {StudentId}", studentId);
+                return updatedStudent;
+            }
+            catch (ApiException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating student status: {StudentId}", studentId);
+                throw new DatabaseException($"Failed to update student status for ID {studentId}", ex);
+            }
         }
 
         public Task<(bool IsValid, List<string> Errors)> ValidateStudentAsync(Student student)
@@ -178,17 +305,25 @@ namespace xyz_university_payment_api.Services
 
         public async Task<bool> IsStudentEligibleForEnrollmentAsync(string studentNumber)
         {
-            _logger.LogInformation("Checking enrollment eligibility for student: {StudentNumber}", studentNumber);
-
-            var student = await _studentRepository.GetByStudentNumberAsync(studentNumber);
-            if (student == null)
+            try
             {
-                _logger.LogWarning("Student not found for enrollment check: {StudentNumber}", studentNumber);
-                return false;
-            }
+                _logger.LogInformation("Checking enrollment eligibility for student: {StudentNumber}", studentNumber);
 
-            // Business rule: Student must be active to be eligible for enrollment
-            return student.IsActive;
+                var student = await _unitOfWork.Students.FirstOrDefaultAsync(s => s.StudentNumber == studentNumber);
+                if (student == null)
+                {
+                    _logger.LogWarning("Student not found for enrollment check: {StudentNumber}", studentNumber);
+                    return false;
+                }
+
+                // Business rule: Student must be active to be eligible for enrollment
+                return student.IsActive;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking enrollment eligibility for student: {StudentNumber}", studentNumber);
+                throw new DatabaseException($"Failed to check enrollment eligibility for student {studentNumber}", ex);
+            }
         }
     }
 }

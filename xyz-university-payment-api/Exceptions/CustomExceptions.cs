@@ -184,4 +184,32 @@ namespace xyz_university_payment_api.Exceptions
         {
         }
     }
+
+    // Batch processing exceptions
+    public class BatchProcessingException : ApiException
+    {
+        public BatchProcessingException(string message) 
+            : base($"Batch processing failed: {message}", "BATCH_PROCESSING_ERROR", 500)
+        {
+        }
+
+        public BatchProcessingException(string message, Exception innerException) 
+            : base($"Batch processing failed: {message}", "BATCH_PROCESSING_ERROR", 500, innerException)
+        {
+        }
+    }
+
+    // Reconciliation exceptions
+    public class ReconciliationException : ApiException
+    {
+        public ReconciliationException(string message) 
+            : base($"Reconciliation failed: {message}", "RECONCILIATION_ERROR", 500)
+        {
+        }
+
+        public ReconciliationException(string message, Exception innerException) 
+            : base($"Reconciliation failed: {message}", "RECONCILIATION_ERROR", 500, innerException)
+        {
+        }
+    }
 } 
