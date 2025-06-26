@@ -52,9 +52,8 @@ try
     builder.Services.AddDbContext<AppDbContext>(options =>
         options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-    // Register Repositories
-    builder.Services.AddScoped<IStudentRepository, StudentRepository>();
-    builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+    // Register Unit of Work and Generic Repository
+    builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
     // Register Services
     builder.Services.AddScoped<IStudentService, StudentService>();
