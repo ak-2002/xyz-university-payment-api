@@ -39,26 +39,6 @@ namespace xyz_university_payment_api.Controllers
             var payment = _mapper.Map<PaymentNotification>(createPaymentDto);
             var result = await _paymentService.ProcessPaymentAsync(payment);
 
-            if (!result.Success)
-            {
-                _logger.LogWarning("Payment processing failed: {Message}", result.Message);
-                return BadRequest(new ApiResponseDto<PaymentResponseDto>
-                {
-                    Success = false,
-                    Message = result.Message,
-                    Data = new PaymentResponseDto
-                    {
-                        Success = false,
-                        Message = result.Message,
-                        StudentExists = result.StudentExists,
-                        StudentIsActive = result.StudentIsActive,
-                        ValidationErrors = new List<string>()
-                    }
-                });
-            }
-
-            _logger.LogInformation("Payment processed successfully: {PaymentReference}", createPaymentDto.PaymentReference);
-            
             // Map result to DTO
             var paymentResponseDto = _mapper.Map<PaymentResponseDto>(result.ProcessedPayment);
             paymentResponseDto.Success = true;
@@ -124,17 +104,6 @@ namespace xyz_university_payment_api.Controllers
         {
             _logger.LogInformation("GetPaymentById endpoint called with ID: {PaymentId}", id);
             var payment = await _paymentService.GetPaymentByIdAsync(id);
-            
-            if (payment == null)
-            {
-                _logger.LogWarning("Payment not found with ID: {PaymentId}", id);
-                return NotFound(new ApiResponseDto<PaymentDto>
-                {
-                    Success = false,
-                    Message = "Payment not found",
-                    Data = null
-                });
-            }
             
             var paymentDto = _mapper.Map<PaymentDto>(payment);
             return Ok(new ApiResponseDto<PaymentDto>
@@ -238,17 +207,6 @@ namespace xyz_university_payment_api.Controllers
         {
             _logger.LogInformation("GetPaymentByReference endpoint called with reference: {PaymentReference}", paymentReference);
             var payment = await _paymentService.GetPaymentByReferenceAsync(paymentReference);
-            
-            if (payment == null)
-            {
-                _logger.LogWarning("Payment not found with reference: {PaymentReference}", paymentReference);
-                return NotFound(new ApiResponseDto<PaymentDto>
-                {
-                    Success = false,
-                    Message = "Payment not found",
-                    Data = null
-                });
-            }
             
             var paymentDto = _mapper.Map<PaymentDto>(payment);
             return Ok(new ApiResponseDto<PaymentDto>

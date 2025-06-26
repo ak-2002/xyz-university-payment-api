@@ -42,9 +42,11 @@ namespace xyz_university_payment_api.DTOs
         public string Title { get; set; } = string.Empty;
         public string Detail { get; set; } = string.Empty;
         public string? Instance { get; set; }
+        public int StatusCode {get; set; }
         public List<string> Errors { get; set; } = new List<string>();
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
         public string? RequestId { get; set; }
+        public object? AdditionalData {get; set; }
     }
 
     // Date range filter DTO

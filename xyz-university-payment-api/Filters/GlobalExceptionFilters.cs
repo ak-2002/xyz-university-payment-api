@@ -1,57 +1,41 @@
-using System.Net;
-using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using xyz_university_payment_api.Exceptions;
 using xyz_university_payment_api.DTOs;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
-namespace xyz_university_payment_api.Middleware
+namespace xyz_university_payment_api.Filters
 {
-    public class ErrorHandlingMiddleware
+    public class GlobalExceptionFilter : IExceptionFilter
     {
-        private readonly RequestDelegate _next;
-        private readonly ILogger<ErrorHandlingMiddleware> _logger;
+        private readonly ILogger<GlobalExceptionFilter> _logger;
         private readonly IWebHostEnvironment _environment;
 
-        public ErrorHandlingMiddleware(RequestDelegate next, ILogger<ErrorHandlingMiddleware> logger, IWebHostEnvironment environment)
+        public GlobalExceptionFilter(ILogger<GlobalExceptionFilter> logger, IWebHostEnvironment environment)
         {
-            _next = next;
             _logger = logger;
             _environment = environment;
         }
 
-        public async Task InvokeAsync(HttpContext context)
+        public void OnException(ExceptionContext context)
         {
-            try
-            {
-                await _next(context);
-            }
-            catch (Exception ex)
-            {
-                await HandleExceptionAsync(context, ex);
-            }
-        }
+            var exception = context.Exception;
+            var requestId = context.HttpContext.TraceIdentifier;
 
-        private async Task HandleExceptionAsync(HttpContext context, Exception exception)
-        {
-            var requestId = context.TraceIdentifier;
-            var errorResponse = CreateErrorResponse(exception, requestId);
-            
-            // Set response properties
-            context.Response.StatusCode = errorResponse.StatusCode;
-            context.Response.ContentType = "application/json";
-
-            // Log the exception with appropriate level
+            // Log the exception
             LogException(exception, requestId, context);
 
-            // Serialize and send response
-            var jsonResponse = JsonSerializer.Serialize(errorResponse, new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                WriteIndented = _environment.IsDevelopment()
-            });
+            // Create error response
+            var errorResponse = CreateErrorResponse(exception, requestId);
 
-            await context.Response.WriteAsync(jsonResponse);
+            // Set the result
+            context.Result = new ObjectResult(errorResponse)
+            {
+                StatusCode = errorResponse.StatusCode
+            };
+
+            // Mark exception as handled
+            context.ExceptionHandled = true;
         }
 
         private ErrorResponseDto CreateErrorResponse(Exception exception, string requestId)
@@ -120,7 +104,7 @@ namespace xyz_university_payment_api.Middleware
             };
         }
 
-        private void LogException(Exception exception, string requestId, HttpContext context)
+        private void LogException(Exception exception, string requestId, ExceptionContext context)
         {
             var logLevel = exception switch
             {
@@ -141,9 +125,9 @@ namespace xyz_university_payment_api.Middleware
             var logMessage = new
             {
                 RequestId = requestId,
-                Path = context.Request.Path,
-                Method = context.Request.Method,
-                UserAgent = context.Request.Headers["User-Agent"].ToString(),
+                Path = context.HttpContext.Request.Path,
+                Method = context.HttpContext.Request.Method,
+                UserAgent = context.HttpContext.Request.Headers["User-Agent"].ToString(),
                 ExceptionType = exception.GetType().Name,
                 ExceptionMessage = exception.Message,
                 StatusCode = exception is ApiException apiEx ? apiEx.StatusCode : 500
@@ -169,6 +153,4 @@ namespace xyz_university_payment_api.Middleware
             };
         }
     }
-
-  
-}
+} 

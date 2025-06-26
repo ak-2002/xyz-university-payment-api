@@ -4,6 +4,7 @@ using xyz_university_payment_api.Data;
 using xyz_university_payment_api.Services;
 using xyz_university_payment_api.Models;
 using xyz_university_payment_api.Interfaces;
+using xyz_university_payment_api.Filters;
 using Serilog;
 using Serilog.Events;
 using MassTransit;
@@ -92,7 +93,11 @@ try
 
 
     // Add Controllers
-    builder.Services.AddControllers();
+    builder.Services.AddControllers(options =>
+    {
+        // Add global exception filter
+        options.Filters.Add<GlobalExceptionFilter>();
+    });
 
     builder.Services.AddCors(options => 
     {

@@ -1,0 +1,18 @@
+2025-06-24 16:21:16.393 +03:00 [INF] Ensuring database is created
+2025-06-24 16:21:16.414 +03:00 [INF] Database created successfully
+2025-06-24 16:21:17.752 +03:00 [INF] XYZ University Payment API started successfully
+2025-06-24 16:21:17.937 +03:00 [INF] Configured endpoint PaymentProcessedMessage, Consumer: xyz_university_payment_api.Services.PaymentProcessedMessageConsumer
+2025-06-24 16:21:17.960 +03:00 [INF] Configured endpoint PaymentFailedMessage, Consumer: xyz_university_payment_api.Services.PaymentFailedMessageConsumer
+2025-06-24 16:21:18.010 +03:00 [INF] Configured endpoint PaymentValidationMessage, Consumer: xyz_university_payment_api.Services.PaymentValidationMessageConsumer
+2025-06-24 16:21:18.758 +03:00 [INF] Bus started: "rabbitmq://localhost/"
+2025-06-24 16:23:18.993 +03:00 [WRN] Failed to determine the https port for redirect.
+2025-06-24 16:23:19.275 +03:00 [INF] GetAllPayments endpoint called with page 1
+2025-06-24 16:23:19.282 +03:00 [INF] Retrieving all payments
+2025-06-24 16:29:26.523 +03:00 [INF] NotifyPayment endpoint called with reference: REF-TEST-001
+2025-06-24 16:29:26.534 +03:00 [INF] Processing payment: REF-TEST-001 for student: S12345
+2025-06-24 16:29:26.788 +03:00 [INF] Payment processed successfully: REF-TEST-001
+2025-06-24 16:29:26.794 +03:00 [INF] Publishing payment processed message: REF-TEST-001
+2025-06-24 16:29:26.919 +03:00 [INF] Successfully published payment processed message: REF-TEST-001
+2025-06-24 16:29:26.925 +03:00 [INF] Payment processed successfully: REF-TEST-001
+2025-06-24 16:29:26.946 +03:00 [INF] Received payment processed message: REF-TEST-001 for student S12345
+2025-06-24 16:29:26.953 +03:00 [INF] Payment processed successfully: Amount 5000.00, Student Active: true
