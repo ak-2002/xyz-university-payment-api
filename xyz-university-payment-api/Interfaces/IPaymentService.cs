@@ -26,6 +26,9 @@ namespace xyz_university_payment_api.Interfaces
 
         Task<bool> IsPaymentReferenceValidAsync(string paymentReference);
 
+        // Alias for consistency with controller
+        Task<bool> PaymentReferenceExistsAsync(string paymentReference) => IsPaymentReferenceValidAsync(paymentReference);
+
        
         Task<decimal> GetTotalAmountPaidByStudentAsync(string studentNumber);
 
@@ -37,6 +40,9 @@ namespace xyz_university_payment_api.Interfaces
         Task<BatchProcessingResult> ProcessBatchPaymentsAsync(IEnumerable<PaymentNotification> payments);
 
         Task<ReconciliationResult> ReconcilePaymentsAsync(IEnumerable<BankPaymentData> bankData);
+
+        // Test messaging method
+        Task TestMessagingAsync();
     }
 
   

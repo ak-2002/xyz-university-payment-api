@@ -9,10 +9,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using AutoMapper;
+using xyz_university_payment_api.Attributes;
 
 namespace xyz_university_payment_api.Controllers
 {
-    [Authorize(Policy = "ApiScope")]
     [ApiController]
     [Route("api/[controller]")]
     public class PaymentController : ControllerBase
@@ -31,6 +31,7 @@ namespace xyz_university_payment_api.Controllers
         // POST api/payments/notify
         // Receives and processes payment notifications from Family Bank
         [HttpPost("notify")]
+        [AuthorizePermission("Payments", "Create")]
         public async Task<IActionResult> NotifyPayment([FromBody] CreatePaymentDto createPaymentDto)
         {
             _logger.LogInformation("NotifyPayment endpoint called with reference: {PaymentReference}", createPaymentDto.PaymentReference);
@@ -57,6 +58,7 @@ namespace xyz_university_payment_api.Controllers
         // GET api/payments
         // Retrieves all payments
         [HttpGet]
+        [AuthorizePermission("Payments", "Read")]
         public async Task<IActionResult> GetAllPayments([FromQuery] PaginationDto pagination)
         {
             _logger.LogInformation("GetAllPayments endpoint called with page {PageNumber}", pagination.PageNumber);
@@ -100,6 +102,7 @@ namespace xyz_university_payment_api.Controllers
         // GET api/payments/{id}
         // Retrieves a payment by ID
         [HttpGet("{id}")]
+        [AuthorizePermission("Payments", "Read")]
         public async Task<IActionResult> GetPaymentById(int id)
         {
             _logger.LogInformation("GetPaymentById endpoint called with ID: {PaymentId}", id);
@@ -117,6 +120,7 @@ namespace xyz_university_payment_api.Controllers
         // GET api/payments/student/{studentNumber}
         // Retrieves payments for a specific student
         [HttpGet("student/{studentNumber}")]
+        [AuthorizePermission("Payments", "Read")]
         public async Task<IActionResult> GetPaymentsByStudent(string studentNumber, [FromQuery] PaginationDto pagination)
         {
             _logger.LogInformation("GetPaymentsByStudent endpoint called for student: {StudentNumber}", studentNumber);
@@ -160,6 +164,7 @@ namespace xyz_university_payment_api.Controllers
         // GET api/payments/range
         // Retrieves payments within a date range
         [HttpGet("range")]
+        [AuthorizePermission("Payments", "Read")]
         public async Task<IActionResult> GetPaymentsByDateRange([FromQuery] DateRangeDto dateRange, [FromQuery] PaginationDto pagination)
         {
             _logger.LogInformation("GetPaymentsByDateRange endpoint called from {StartDate} to {EndDate}", dateRange.StartDate, dateRange.EndDate);
@@ -201,8 +206,9 @@ namespace xyz_university_payment_api.Controllers
         }
 
         // GET api/payments/reference/{paymentReference}
-        // Retrieves a payment by reference number
+        // Retrieves a payment by reference
         [HttpGet("reference/{paymentReference}")]
+        [AuthorizePermission("Payments", "Read")]
         public async Task<IActionResult> GetPaymentByReference(string paymentReference)
         {
             _logger.LogInformation("GetPaymentByReference endpoint called with reference: {PaymentReference}", paymentReference);
@@ -218,73 +224,69 @@ namespace xyz_university_payment_api.Controllers
         }
 
         // POST api/payments/validate
-        // Validates payment data
+        // Validates a payment without processing it
         [HttpPost("validate")]
+        [AuthorizePermission("Payments", "Read")]
         public async Task<IActionResult> ValidatePayment([FromBody] CreatePaymentDto createPaymentDto)
         {
-            _logger.LogInformation("ValidatePayment endpoint called for payment: {PaymentReference}", createPaymentDto.PaymentReference);
+            _logger.LogInformation("ValidatePayment endpoint called with reference: {PaymentReference}", createPaymentDto.PaymentReference);
             
-            // Map DTO to model
             var payment = _mapper.Map<PaymentNotification>(createPaymentDto);
-            var validation = await _paymentService.ValidatePaymentAsync(payment);
+            var validationResult = await _paymentService.ValidatePaymentAsync(payment);
             
-            var validationDto = new PaymentValidationDto
-            {
-                IsValid = validation.IsValid,
-                Errors = validation.Errors,
-                PaymentReference = createPaymentDto.PaymentReference
-            };
-            
+            var validationDto = _mapper.Map<PaymentValidationDto>(validationResult);
             return Ok(new ApiResponseDto<PaymentValidationDto>
             {
                 Success = true,
-                Message = validation.IsValid ? "Payment validation successful" : "Payment validation failed",
+                Message = "Payment validation completed",
                 Data = validationDto
             });
         }
 
         // GET api/payments/validate-reference/{paymentReference}
-        // Validates if a payment reference is valid
+        // Validates if a payment reference exists
         [HttpGet("validate-reference/{paymentReference}")]
+        [AuthorizePermission("Payments", "Read")]
         public async Task<IActionResult> ValidatePaymentReference(string paymentReference)
         {
-            _logger.LogInformation("ValidatePaymentReference endpoint called for reference: {PaymentReference}", paymentReference);
+            _logger.LogInformation("ValidatePaymentReference endpoint called with reference: {PaymentReference}", paymentReference);
+            var exists = await _paymentService.PaymentReferenceExistsAsync(paymentReference);
             
-            var isValid = await _paymentService.IsPaymentReferenceValidAsync(paymentReference);
             return Ok(new ApiResponseDto<object>
             {
                 Success = true,
                 Message = "Payment reference validation completed",
-                Data = new { paymentReference, isValid }
+                Data = new { ReferenceExists = exists, PaymentReference = paymentReference }
             });
         }
 
         // GET api/payments/student/{studentNumber}/total
         // Gets total amount paid by a student
         [HttpGet("student/{studentNumber}/total")]
+        [AuthorizePermission("Payments", "Read")]
         public async Task<IActionResult> GetTotalAmountPaidByStudent(string studentNumber)
         {
             _logger.LogInformation("GetTotalAmountPaidByStudent endpoint called for student: {StudentNumber}", studentNumber);
-            
             var totalAmount = await _paymentService.GetTotalAmountPaidByStudentAsync(studentNumber);
+            
             return Ok(new ApiResponseDto<object>
             {
                 Success = true,
                 Message = "Total amount retrieved successfully",
-                Data = new { studentNumber, totalAmount }
+                Data = new { StudentNumber = studentNumber, TotalAmount = totalAmount }
             });
         }
 
         // GET api/payments/student/{studentNumber}/summary
         // Gets payment summary for a student
         [HttpGet("student/{studentNumber}/summary")]
+        [AuthorizePermission("Payments", "Read")]
         public async Task<IActionResult> GetPaymentSummary(string studentNumber)
         {
             _logger.LogInformation("GetPaymentSummary endpoint called for student: {StudentNumber}", studentNumber);
-            
             var summary = await _paymentService.GetPaymentSummaryAsync(studentNumber);
-            var summaryDto = _mapper.Map<PaymentSummaryDto>(summary);
             
+            var summaryDto = _mapper.Map<PaymentSummaryDto>(summary);
             return Ok(new ApiResponseDto<PaymentSummaryDto>
             {
                 Success = true,
@@ -296,116 +298,78 @@ namespace xyz_university_payment_api.Controllers
         // POST api/payments/batch
         // Processes multiple payments in batch
         [HttpPost("batch")]
+        [AuthorizePermission("Payments", "Create")]
         public async Task<IActionResult> ProcessBatchPayments([FromBody] BatchPaymentDto batchPaymentDto)
         {
             _logger.LogInformation("ProcessBatchPayments endpoint called with {Count} payments", batchPaymentDto.Payments.Count);
             
-            var result = await _paymentService.ProcessBatchPaymentsAsync(batchPaymentDto.Payments.Select(p => _mapper.Map<PaymentNotification>(p)).ToList());
-            var resultDto = _mapper.Map<BatchPaymentResultDto>(batchPaymentDto);
+            // Convert DTOs to models
+            var payments = _mapper.Map<List<PaymentNotification>>(batchPaymentDto.Payments);
+            var result = await _paymentService.ProcessBatchPaymentsAsync(payments);
             
+            var batchResultDto = _mapper.Map<BatchPaymentResultDto>(result);
             return Ok(new ApiResponseDto<BatchPaymentResultDto>
             {
                 Success = true,
                 Message = "Batch payment processing completed",
-                Data = resultDto
+                Data = batchResultDto
             });
         }
 
         // POST api/payments/reconcile
         // Reconciles payments with bank data
         [HttpPost("reconcile")]
+        [AuthorizePermission("Payments", "Update")]
         public async Task<IActionResult> ReconcilePayments([FromBody] List<BankPaymentDataDto> bankData)
         {
             _logger.LogInformation("ReconcilePayments endpoint called with {Count} bank records", bankData.Count);
             
-            var bankPaymentData = bankData.Select(b => new BankPaymentData
-            {
-                PaymentReference = b.PaymentReference,
-                StudentNumber = b.StudentNumber,
-                Amount = b.Amount,
-                PaymentDate = b.TransactionDate
-            }).ToList();
-            
-            var result = await _paymentService.ReconcilePaymentsAsync(bankPaymentData);
+            // Convert DTOs to models
+            var bankPaymentData = _mapper.Map<List<BankPaymentData>>(bankData);
+            var reconciliationResult = await _paymentService.ReconcilePaymentsAsync(bankPaymentData);
             
             return Ok(new ApiResponseDto<object>
             {
                 Success = true,
                 Message = "Payment reconciliation completed",
-                Data = result
+                Data = new { 
+                    TotalRecords = bankData.Count,
+                    ReconciledCount = reconciliationResult.TotalReconciled,
+                    UnreconciledCount = reconciliationResult.UnmatchedPayments.Count,
+                    Errors = reconciliationResult.Discrepancies
+                }
             });
         }
-              
 
         // POST api/payments/test-messaging
-        // Test endpoint to verify RabbitMQ messaging functionality
+        // Tests the messaging system
         [HttpPost("test-messaging")]
+        [AuthorizePermission("Payments", "Create")]
         public async Task<IActionResult> TestMessaging()
         {
             _logger.LogInformation("TestMessaging endpoint called");
             
             try
             {
-                // Get the message publisher from the service provider
-                var messagePublisher = HttpContext.RequestServices.GetRequiredService<IMessagePublisher>();
-                
-                // Test payment processed message
-                await messagePublisher.PublishPaymentProcessedAsync(new PaymentProcessedMessage
-                {
-                    PaymentReference = "TEST-REF-001",
-                    StudentNumber = "S12345",
-                    Amount = 5000m,
-                    PaymentDate = DateTime.UtcNow,
-                    Status = "TestProcessed",
-                    Message = "Test payment processed successfully",
-                    StudentExists = true,
-                    StudentIsActive = true
-                });
-
-                // Test payment failed message
-                await messagePublisher.PublishPaymentFailedAsync(new PaymentFailedMessage
-                {
-                    PaymentReference = "TEST-REF-002",
-                    StudentNumber = "S67890",
-                    Amount = 3000m,
-                    PaymentDate = DateTime.UtcNow,
-                    Status = "TestFailed",
-                    Message = "Test payment failed",
-                    ErrorReason = "Test error reason"
-                });
-
-                // Test payment validation message
-                await messagePublisher.PublishPaymentValidationAsync(new PaymentValidationMessage
-                {
-                    PaymentReference = "TEST-REF-003",
-                    StudentNumber = "S66001",
-                    Amount = 4000m,
-                    PaymentDate = DateTime.UtcNow,
-                    Status = "TestValidation",
-                    Message = "Test payment validation",
-                    ValidationErrors = new List<string> { "Test validation error 1", "Test validation error 2" }
-                });
-
+                await _paymentService.TestMessagingAsync();
                 return Ok(new ApiResponseDto<object>
                 {
                     Success = true,
-                    Message = "Test messages published successfully. Check the logs for consumer activity.",
+                    Message = "Messaging test completed successfully",
                     Data = null
                 });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error in TestMessaging endpoint");
+                _logger.LogError(ex, "Error during messaging test");
                 return StatusCode(500, new ApiResponseDto<object>
                 {
                     Success = false,
-                    Message = "Error publishing test messages",
-                    Data = null,
-                    Errors = new List<string> { ex.Message }
+                    Message = "Messaging test failed",
+                    Data = null
                 });
             }
         }
-
     }
 }    
 

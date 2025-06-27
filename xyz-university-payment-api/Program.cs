@@ -11,6 +11,8 @@ using MassTransit;
 using AutoMapper;
 using FluentValidation.AspNetCore;
 using FluentValidation;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 
 // Configure Serilog
@@ -25,6 +27,20 @@ Log.Logger = new LoggerConfiguration()
 try
 {
     Log.Information("Starting XYZ University Payment API");
+
+    // Early exit for EF commands
+    var commandArgs = Environment.GetCommandLineArgs();
+    var isEfCommand = commandArgs.Any(arg => 
+        arg.Contains("ef") || 
+        arg.Contains("migrations") || 
+        arg.Contains("database") ||
+        arg.Contains("dotnet"));
+
+    if (isEfCommand)
+    {
+        Log.Information("EF command detected, skipping application startup");
+        return;
+    }
 
     var builder = WebApplication.CreateBuilder(args);
 
@@ -60,6 +76,10 @@ try
     builder.Services.AddScoped<IPaymentService, PaymentService>();
     builder.Services.AddScoped<ILoggingService, LoggingService>();
     builder.Services.AddScoped<IMessagePublisher, RabbitMQMessagePublisher>();
+
+    // Register Authorization Services
+    builder.Services.AddScoped<IAuthorizationService, AuthorizationService>();
+    builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 
     // Add AutoMapper
     builder.Services.AddAutoMapper(typeof(Program).Assembly);
@@ -141,21 +161,24 @@ try
     });
 
    
-    // Add authentication
+    // Add authentication with custom JWT implementation
    builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
     {
-        options.Authority = builder.Configuration["IdentityServer:Authority"] ?? "http://localhost:5153"; // IdentityServer URL
-        options.RequireHttpsMetadata = false;
-        options.Audience = "xyz_api";
-        options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+            var jwtKey = builder.Configuration["Jwt:Key"] ?? "your-super-secret-key-with-at-least-32-characters";
+            var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "xyz-university";
+            var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "xyz-api";
+
+            options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = "http://localhost:5153",
-            ValidAudience = "xyz_api"
+                ValidIssuer = jwtIssuer,
+                ValidAudience = jwtAudience,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+                ClockSkew = TimeSpan.Zero
         };
     });
 
@@ -171,67 +194,76 @@ try
 
     var app = builder.Build();
 
-    // Ensure database is created
-   // Only seed if NOT running from EF CLI
-if (!AppDomain.CurrentDomain.FriendlyName.Contains("ef"))
-{
-    using (var scope = app.Services.CreateScope())
+    // Ensure database is created and seeded
+    // Only run seeding if NOT running from EF CLI or dotnet commands
+    var isDesignTime = Environment.GetEnvironmentVariable("EF_DESIGN_TIME") == "true" ||
+                      Environment.GetEnvironmentVariable("DOTNET_EF_TOOLS_RUNNING") == "true";
+
+    if (!isDesignTime)
     {
-        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-
-        try
+        using (var scope = app.Services.CreateScope())
         {
-            Log.Information("Ensuring database is created");
-            // context.Database.Migrate();
-            Log.Information("Database created successfully");
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+            var authorizationService = scope.ServiceProvider.GetRequiredService<IAuthorizationService>();
 
-            if (!context.Students.Any())
+            try
             {
-                Log.Information("Seeding initial student data");
-                context.Students.AddRange(
-                    new Student { StudentNumber = "S12345", FullName = "John Doe", Program = "CS", IsActive = true },
-                    new Student { StudentNumber = "S67890", FullName = "Jane Smith", Program = "IT", IsActive = true },
-                    new Student { StudentNumber = "S66001", FullName = "Alex Mutahi", Program = "ACC", IsActive = true },
-                    new Student { StudentNumber = "S66002", FullName = "Janet Mwangi", Program = "SOCIOLOGY", IsActive = true },
-                    new Student { StudentNumber = "S66003", FullName = "Jane Smith", Program = "IT", IsActive = false }
-                );
-                context.SaveChanges();
-                Log.Information("Student data seeded successfully");
-            }
+                Log.Information("Ensuring database is created");
+                context.Database.Migrate();
+                Log.Information("Database created successfully");
 
-            if (!context.PaymentNotifications.Any())
-            {
-                Log.Information("Seeding initial payment data");
-                context.PaymentNotifications.AddRange(
-                    new PaymentNotification
-                    {
-                        StudentNumber = "S12345",
-                        PaymentReference = "REF001",
-                        AmountPaid = 5000m,
-                        PaymentDate = DateTime.UtcNow.AddDays(-3),
-                        DateReceived = DateTime.UtcNow.AddDays(-2)
-                    },
-                    new PaymentNotification
-                    {
-                        StudentNumber = "S67890",
-                        PaymentReference = "REF002",
-                        AmountPaid = 3500m,
-                        PaymentDate = DateTime.UtcNow.AddDays(-1),
-                        DateReceived = DateTime.UtcNow
-                    }
-                );
-                context.SaveChanges();
-                Log.Information("Payment data seeded successfully");
+                // Seed default roles and permissions
+                Log.Information("Seeding default roles and permissions");
+                await authorizationService.SeedDefaultRolesAndPermissionsAsync();
+                Log.Information("Default roles and permissions seeded successfully");
+
+                if (!context.Students.Any())
+                {
+                    Log.Information("Seeding initial student data");
+                    context.Students.AddRange(
+                        new Student { StudentNumber = "S12345", FullName = "John Doe", Program = "CS", IsActive = true },
+                        new Student { StudentNumber = "S67890", FullName = "Jane Smith", Program = "IT", IsActive = true },
+                        new Student { StudentNumber = "S66001", FullName = "Alex Mutahi", Program = "ACC", IsActive = true },
+                        new Student { StudentNumber = "S66002", FullName = "Janet Mwangi", Program = "SOCIOLOGY", IsActive = true },
+                        new Student { StudentNumber = "S66003", FullName = "Jane Smith", Program = "IT", IsActive = false }
+                    );
+                    context.SaveChanges();
+                    Log.Information("Student data seeded successfully");
+                }
+
+                if (!context.PaymentNotifications.Any())
+                {
+                    Log.Information("Seeding initial payment data");
+                    context.PaymentNotifications.AddRange(
+                        new PaymentNotification
+                        {
+                            StudentNumber = "S12345",
+                            PaymentReference = "REF001",
+                            AmountPaid = 5000m,
+                            PaymentDate = DateTime.UtcNow.AddDays(-3),
+                            DateReceived = DateTime.UtcNow.AddDays(-2)
+                        },
+                        new PaymentNotification
+                        {
+                            StudentNumber = "S67890",
+                            PaymentReference = "REF002",
+                            AmountPaid = 3500m,
+                            PaymentDate = DateTime.UtcNow.AddDays(-1),
+                            DateReceived = DateTime.UtcNow
+                        }
+                    );
+                    context.SaveChanges();
+                    Log.Information("Payment data seeded successfully");
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "An error occurred while setting up the database");
-            throw;
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An error occurred while setting up the database");
+                throw;
+            }
         }
     }
-}
 
 
     // Configure Middleware

@@ -325,5 +325,50 @@ namespace xyz_university_payment_api.Services
                 throw new DatabaseException($"Failed to check enrollment eligibility for student {studentNumber}", ex);
             }
         }
+
+        public async Task<EnrollmentEligibilityResult> CheckEnrollmentEligibilityAsync(string studentNumber)
+        {
+            try
+            {
+                _logger.LogInformation("Checking detailed enrollment eligibility for student: {StudentNumber}", studentNumber);
+
+                var result = new EnrollmentEligibilityResult();
+                var student = await _unitOfWork.Students.FirstOrDefaultAsync(s => s.StudentNumber == studentNumber);
+                
+                if (student == null)
+                {
+                    result.IsEligible = false;
+                    result.Reasons.Add("Student not found in the system");
+                    return result;
+                }
+
+                // Check if student is active
+                if (!student.IsActive)
+                {
+                    result.Reasons.Add("Student account is not active");
+                }
+
+                // Check if student has completed required prerequisites (placeholder for future implementation)
+                // This could include checking academic standing, completed courses, etc.
+
+                // Check if student has any outstanding financial obligations (placeholder)
+                // This could include checking payment status, outstanding fees, etc.
+
+                // For now, eligibility is based on active status
+                result.IsEligible = student.IsActive;
+                
+                if (result.IsEligible)
+                {
+                    result.Reasons.Add("Student meets all enrollment requirements");
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking detailed enrollment eligibility for student: {StudentNumber}", studentNumber);
+                throw new DatabaseException($"Failed to check enrollment eligibility for student {studentNumber}", ex);
+            }
+        }
     }
 }

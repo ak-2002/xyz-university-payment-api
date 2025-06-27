@@ -39,5 +39,14 @@ namespace xyz_university_payment_api.Interfaces
         Task<(bool IsValid, List<string> Errors)> ValidateStudentAsync(Student student);
 
         Task<bool> IsStudentEligibleForEnrollmentAsync(string studentNumber);
+
+        // Enhanced enrollment eligibility check
+        Task<EnrollmentEligibilityResult> CheckEnrollmentEligibilityAsync(string studentNumber);
+    }
+
+    public class EnrollmentEligibilityResult
+    {
+        public bool IsEligible { get; set; }
+        public List<string> Reasons { get; set; } = new List<string>();
     }
 } 
