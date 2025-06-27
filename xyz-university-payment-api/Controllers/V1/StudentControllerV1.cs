@@ -1,12 +1,12 @@
 // Purpose: V1 Student Controller - Original implementation
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using xyz_university_payment_api.Models;
 using xyz_university_payment_api.Services;
 using xyz_university_payment_api.Interfaces;
-using xyz_university_payment_api.Models;
 using xyz_university_payment_api.DTOs;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Authorization;
 using AutoMapper;
+using Microsoft.Extensions.Logging;
 
 namespace xyz_university_payment_api.Controllers.V1
 {
@@ -226,9 +226,4 @@ namespace xyz_university_payment_api.Controllers.V1
             });
         }
     }
-
-    public class UpdateStatusRequest
-    {
-        public bool IsActive { get; set; }
-    }
-}
+} 

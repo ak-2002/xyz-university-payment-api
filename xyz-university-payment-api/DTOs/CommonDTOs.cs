@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 // Purpose: Common Data Transfer Objects used across the application
 namespace xyz_university_payment_api.DTOs
 {
@@ -18,7 +20,10 @@ namespace xyz_university_payment_api.DTOs
     // Pagination parameters
     public class PaginationDto
     {
+        [Range(1, int.MaxValue, ErrorMessage = "Page number must be greater than 0")]
         public int PageNumber { get; set; } = 1;
+
+        [Range(1, 100, ErrorMessage = "Page size must be between 1 and 100")]
         public int PageSize { get; set; } = 10;
         public string? SortBy { get; set; }
         public string? SortOrder { get; set; } = "asc"; // "asc" or "desc"
@@ -107,5 +112,22 @@ namespace xyz_university_payment_api.DTOs
         public string? NewValues { get; set; }
         public string? IpAddress { get; set; }
         public string? UserAgent { get; set; }
+    }
+
+    public class PaginatedResponseDto<T>
+    {
+        public List<T> Data { get; set; } = new List<T>();
+        public int TotalCount { get; set; }
+        public int PageNumber { get; set; }
+        public int PageSize { get; set; }
+        public int TotalPages { get; set; }
+        public bool HasPreviousPage { get; set; }
+        public bool HasNextPage { get; set; }
+    }
+
+    public class UpdateStatusRequest
+    {
+        [Required(ErrorMessage = "IsActive status is required")]
+        public bool IsActive { get; set; }
     }
 } 

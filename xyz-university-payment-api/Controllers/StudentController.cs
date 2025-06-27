@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authorization;
 using xyz_university_payment_api.Attributes;
+using xyz_university_payment_api.DTOs;
 
 namespace xyz_university_payment_api.Controllers
 {
@@ -220,11 +221,5 @@ namespace xyz_university_payment_api.Controllers
                 reasons = eligibility.Reasons 
             });
         }
-    }
-
-    // Request models
-    public class UpdateStatusRequest
-    {
-        public bool IsActive { get; set; }
     }
 }

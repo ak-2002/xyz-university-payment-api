@@ -13,3 +13,4 @@ Microsoft.Extensions.Hosting.HostAbortedException: The host was aborted.
 2025-06-27 15:24:55.403 +03:00 [INF] EF command detected, skipping application startup {"MachineName":"DESKTOP-F3AMJ10","ThreadId":4,"ProcessId":16796,"Application":"XYZ University Payment API"}
 2025-06-27 15:27:18.946 +03:00 [INF] Starting XYZ University Payment API {"MachineName":"DESKTOP-F3AMJ10","ThreadId":4,"ProcessId":3004,"Application":"XYZ University Payment API"}
 2025-06-27 15:27:19.005 +03:00 [INF] EF command detected, skipping application startup {"MachineName":"DESKTOP-F3AMJ10","ThreadId":4,"ProcessId":3004,"Application":"XYZ University Payment API"}
+2025-06-27 15:37:10.703 +03:00 [INF] Starting XYZ University Payment API {"MachineName":"DESKTOP-F3AMJ10","ThreadId":1,"ProcessId":17848,"Application":"XYZ University Payment API"}
