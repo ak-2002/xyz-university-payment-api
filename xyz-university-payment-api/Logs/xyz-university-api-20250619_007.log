@@ -1,3 +1,0 @@
-2025-06-19 12:30:36.543 +03:00 [INF] Ensuring database is created {"MachineName":"DESKTOP-F3AMJ10","ThreadId":1,"ProcessId":15888,"Application":"XYZ University Payment API","Environment":"Development"}
-2025-06-19 12:30:36.568 +03:00 [INF] Database created successfully {"MachineName":"DESKTOP-F3AMJ10","ThreadId":1,"ProcessId":15888,"Application":"XYZ University Payment API","Environment":"Development"}
-2025-06-19 12:30:37.226 +03:00 [INF] XYZ University Payment API started successfully {"MachineName":"DESKTOP-F3AMJ10","ThreadId":1,"ProcessId":15888,"Application":"XYZ University Payment API","Environment":"Development"}

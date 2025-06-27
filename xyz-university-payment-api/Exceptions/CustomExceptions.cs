@@ -95,6 +95,20 @@ namespace xyz_university_payment_api.Exceptions
         }
     }
 
+    // Generic not found exception
+    public class NotFoundException : ApiException
+    {
+        public NotFoundException(string message) 
+            : base(message, "NOT_FOUND", 404)
+        {
+        }
+
+        public NotFoundException(string entityType, object id) 
+            : base($"{entityType} with ID {id} was not found.", "NOT_FOUND", 404)
+        {
+        }
+    }
+
     // Validation exceptions
     public class ValidationException : ApiException
     {
@@ -172,6 +186,20 @@ namespace xyz_university_payment_api.Exceptions
 
         public MessageQueueException(string message, Exception innerException) 
             : base($"Message queue operation failed: {message}", "MESSAGE_QUEUE_ERROR", 500, innerException)
+        {
+        }
+    }
+
+    // Messaging exceptions
+    public class MessagingException : ApiException
+    {
+        public MessagingException(string message) 
+            : base($"Messaging operation failed: {message}", "MESSAGING_ERROR", 500)
+        {
+        }
+
+        public MessagingException(string message, Exception innerException) 
+            : base($"Messaging operation failed: {message}", "MESSAGING_ERROR", 500, innerException)
         {
         }
     }
