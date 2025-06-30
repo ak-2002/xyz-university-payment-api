@@ -68,6 +68,19 @@ try
     builder.Services.AddDbContext<AppDbContext>(options =>
         options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+    // Configure Redis
+    builder.Services.AddStackExchangeRedisCache(options =>
+    {
+        options.Configuration = builder.Configuration.GetConnectionString("Redis");
+        options.InstanceName = builder.Configuration["Redis:InstanceName"] ?? "xyz-university-api:";
+    });
+
+    // Configure Redis settings
+    builder.Services.Configure<RedisConfig>(builder.Configuration.GetSection("Redis"));
+
+    // Register Cache Service
+    builder.Services.AddScoped<ICacheService, CacheService>();
+
     // Register Unit of Work and Generic Repository
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
