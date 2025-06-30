@@ -15,6 +15,7 @@ namespace xyz_university_payment_api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize] // Require authentication for all payment endpoints
     public class PaymentController : ControllerBase
     {
         private readonly IPaymentService _paymentService;
@@ -31,7 +32,8 @@ namespace xyz_university_payment_api.Controllers
         // POST api/payments/notify
         // Receives and processes payment notifications from Family Bank
         [HttpPost("notify")]
-        [AuthorizePermission("Payments", "Create")]
+        [AuthorizePayment("create")]
+        [Authorize(Roles = "Admin,FinanceManager,Accountant")]
         public async Task<IActionResult> NotifyPayment([FromBody] CreatePaymentDto createPaymentDto)
         {
             _logger.LogInformation("NotifyPayment endpoint called with reference: {PaymentReference}", createPaymentDto.PaymentReference);
@@ -58,7 +60,8 @@ namespace xyz_university_payment_api.Controllers
         // GET api/payments
         // Retrieves all payments
         [HttpGet]
-        [AuthorizePermission("Payments", "Read")]
+        [AuthorizePayment("read")]
+        [Authorize(Policy = "PaymentAccess")]
         public async Task<IActionResult> GetAllPayments([FromQuery] PaginationDto pagination)
         {
             _logger.LogInformation("GetAllPayments endpoint called with page {PageNumber}", pagination.PageNumber);
@@ -102,7 +105,8 @@ namespace xyz_university_payment_api.Controllers
         // GET api/payments/{id}
         // Retrieves a payment by ID
         [HttpGet("{id}")]
-        [AuthorizePermission("Payments", "Read")]
+        [AuthorizePayment("read")]
+        [Authorize(Policy = "PaymentAccess")]
         public async Task<IActionResult> GetPaymentById(int id)
         {
             _logger.LogInformation("GetPaymentById endpoint called with ID: {PaymentId}", id);
@@ -120,7 +124,8 @@ namespace xyz_university_payment_api.Controllers
         // GET api/payments/student/{studentNumber}
         // Retrieves payments for a specific student
         [HttpGet("student/{studentNumber}")]
-        [AuthorizePermission("Payments", "Read")]
+        [AuthorizePayment("read")]
+        [Authorize(Policy = "PaymentAccess")]
         public async Task<IActionResult> GetPaymentsByStudent(string studentNumber, [FromQuery] PaginationDto pagination)
         {
             _logger.LogInformation("GetPaymentsByStudent endpoint called for student: {StudentNumber}", studentNumber);
@@ -164,7 +169,8 @@ namespace xyz_university_payment_api.Controllers
         // GET api/payments/range
         // Retrieves payments within a date range
         [HttpGet("range")]
-        [AuthorizePermission("Payments", "Read")]
+        [AuthorizePayment("read")]
+        [Authorize(Policy = "PaymentAccess")]
         public async Task<IActionResult> GetPaymentsByDateRange([FromQuery] DateRangeDto dateRange, [FromQuery] PaginationDto pagination)
         {
             _logger.LogInformation("GetPaymentsByDateRange endpoint called from {StartDate} to {EndDate}", dateRange.StartDate, dateRange.EndDate);
@@ -208,7 +214,8 @@ namespace xyz_university_payment_api.Controllers
         // GET api/payments/reference/{paymentReference}
         // Retrieves a payment by reference
         [HttpGet("reference/{paymentReference}")]
-        [AuthorizePermission("Payments", "Read")]
+        [AuthorizePayment("read")]
+        [Authorize(Policy = "PaymentAccess")]
         public async Task<IActionResult> GetPaymentByReference(string paymentReference)
         {
             _logger.LogInformation("GetPaymentByReference endpoint called with reference: {PaymentReference}", paymentReference);
@@ -226,7 +233,8 @@ namespace xyz_university_payment_api.Controllers
         // POST api/payments/validate
         // Validates a payment without processing it
         [HttpPost("validate")]
-        [AuthorizePermission("Payments", "Read")]
+        [AuthorizePayment("read")]
+        [Authorize(Policy = "PaymentAccess")]
         public async Task<IActionResult> ValidatePayment([FromBody] CreatePaymentDto createPaymentDto)
         {
             _logger.LogInformation("ValidatePayment endpoint called with reference: {PaymentReference}", createPaymentDto.PaymentReference);
@@ -246,7 +254,8 @@ namespace xyz_university_payment_api.Controllers
         // GET api/payments/validate-reference/{paymentReference}
         // Validates if a payment reference exists
         [HttpGet("validate-reference/{paymentReference}")]
-        [AuthorizePermission("Payments", "Read")]
+        [AuthorizePayment("read")]
+        [Authorize(Policy = "PaymentAccess")]
         public async Task<IActionResult> ValidatePaymentReference(string paymentReference)
         {
             _logger.LogInformation("ValidatePaymentReference endpoint called with reference: {PaymentReference}", paymentReference);
@@ -263,7 +272,8 @@ namespace xyz_university_payment_api.Controllers
         // GET api/payments/student/{studentNumber}/total
         // Gets total amount paid by a student
         [HttpGet("student/{studentNumber}/total")]
-        [AuthorizePermission("Payments", "Read")]
+        [AuthorizePayment("read")]
+        [Authorize(Policy = "PaymentAccess")]
         public async Task<IActionResult> GetTotalAmountPaidByStudent(string studentNumber)
         {
             _logger.LogInformation("GetTotalAmountPaidByStudent endpoint called for student: {StudentNumber}", studentNumber);
@@ -280,7 +290,8 @@ namespace xyz_university_payment_api.Controllers
         // GET api/payments/student/{studentNumber}/summary
         // Gets payment summary for a student
         [HttpGet("student/{studentNumber}/summary")]
-        [AuthorizePermission("Payments", "Read")]
+        [AuthorizePayment("read")]
+        [Authorize(Policy = "ReportingAccess")]
         public async Task<IActionResult> GetPaymentSummary(string studentNumber)
         {
             _logger.LogInformation("GetPaymentSummary endpoint called for student: {StudentNumber}", studentNumber);
@@ -298,7 +309,8 @@ namespace xyz_university_payment_api.Controllers
         // POST api/payments/batch
         // Processes multiple payments in batch
         [HttpPost("batch")]
-        [AuthorizePermission("Payments", "Create")]
+        [AuthorizePayment("create")]
+        [Authorize(Roles = "Admin,FinanceManager")]
         public async Task<IActionResult> ProcessBatchPayments([FromBody] BatchPaymentDto batchPaymentDto)
         {
             _logger.LogInformation("ProcessBatchPayments endpoint called with {Count} payments", batchPaymentDto.Payments.Count);
@@ -319,7 +331,8 @@ namespace xyz_university_payment_api.Controllers
         // POST api/payments/reconcile
         // Reconciles payments with bank data
         [HttpPost("reconcile")]
-        [AuthorizePermission("Payments", "Update")]
+        [AuthorizePayment("update")]
+        [Authorize(Roles = "Admin,FinanceManager,Accountant")]
         public async Task<IActionResult> ReconcilePayments([FromBody] List<BankPaymentDataDto> bankData)
         {
             _logger.LogInformation("ReconcilePayments endpoint called with {Count} bank records", bankData.Count);
@@ -344,7 +357,7 @@ namespace xyz_university_payment_api.Controllers
         // POST api/payments/test-messaging
         // Tests the messaging system
         [HttpPost("test-messaging")]
-        [AuthorizePermission("Payments", "Create")]
+        [AuthorizeAdmin]
         public async Task<IActionResult> TestMessaging()
         {
             _logger.LogInformation("TestMessaging endpoint called");

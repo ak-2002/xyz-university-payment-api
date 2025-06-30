@@ -203,6 +203,18 @@ try
             policy.RequireAuthenticatedUser();
             policy.RequireClaim("scope", "xyz_api");
         });
+
+        // Add custom authorization policies
+        options.AddActiveUserPolicy();
+        options.AddAdminPolicy();
+        options.AddPaymentPolicy();
+        options.AddStudentPolicy();
+        options.AddUserManagementPolicy();
+        options.AddReadOnlyPolicy();
+        options.AddWritePolicy();
+        options.AddDeletePolicy();
+        options.AddFinancialPolicy();
+        options.AddReportingPolicy();
     });
 
     var app = builder.Build();
