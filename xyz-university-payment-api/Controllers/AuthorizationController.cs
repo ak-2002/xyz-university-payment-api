@@ -492,13 +492,13 @@ namespace xyz_university_payment_api.Controllers
         }
 
         /// <summary>
-        /// Get all roles
+        /// Get all roles (Admin only)
         /// </summary>
         /// <returns>List of all roles</returns>
-        [HttpGet("roles")]
-        [AuthorizePermission("Roles", "Read")]
-        [ProducesResponseType(typeof(ApiResponse<IEnumerable<RoleDto>>), 200)]
-        public async Task<IActionResult> GetAllRoles()
+        [HttpGet("admin/roles")]
+        [AuthorizeUserManagement("read")]
+        [Authorize(Roles = "Admin,UserManager")]
+        public async Task<IActionResult> GetAllRolesAdmin()
         {
             try
             {
@@ -506,13 +506,13 @@ namespace xyz_university_payment_api.Controllers
                 return Ok(new ApiResponse<IEnumerable<RoleDto>>
                 {
                     Success = true,
-                    Message = "Roles retrieved successfully",
+                    Message = "Roles retrieved successfully (Admin access)",
                     Data = result
                 });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error retrieving all roles");
+                _logger.LogError(ex, "Error retrieving all roles (Admin access)");
                 return BadRequest(new ApiResponse<object>
                 {
                     Success = false,
@@ -603,13 +603,13 @@ namespace xyz_university_payment_api.Controllers
         }
 
         /// <summary>
-        /// Get all permissions
+        /// Get all permissions (Admin only)
         /// </summary>
         /// <returns>List of all permissions</returns>
-        [HttpGet("permissions")]
-        [AuthorizePermission("Permissions", "Read")]
-        [ProducesResponseType(typeof(ApiResponse<IEnumerable<PermissionDto>>), 200)]
-        public async Task<IActionResult> GetAllPermissions()
+        [HttpGet("admin/permissions")]
+        [AuthorizeUserManagement("read")]
+        [Authorize(Roles = "Admin,UserManager")]
+        public async Task<IActionResult> GetAllPermissionsAdmin()
         {
             try
             {
@@ -617,13 +617,13 @@ namespace xyz_university_payment_api.Controllers
                 return Ok(new ApiResponse<IEnumerable<PermissionDto>>
                 {
                     Success = true,
-                    Message = "Permissions retrieved successfully",
+                    Message = "Permissions retrieved successfully (Admin access)",
                     Data = result
                 });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error retrieving all permissions");
+                _logger.LogError(ex, "Error retrieving all permissions (Admin access)");
                 return BadRequest(new ApiResponse<object>
                 {
                     Success = false,
@@ -937,99 +937,6 @@ namespace xyz_university_payment_api.Controllers
                 {
                     Success = false,
                     Message = "Error checking permission",
-                    Errors = new List<string> { ex.Message }
-                });
-            }
-        }
-
-        /// <summary>
-        /// Get all users (admin only)
-        /// </summary>
-        [HttpGet("users")]
-        [AuthorizeUserManagement("read")]
-        [Authorize(Roles = "Admin,UserManager")]
-        public async Task<IActionResult> GetAllUsersAdmin()
-        {
-            try
-            {
-                var users = await _authorizationService.GetAllUsersAsync();
-                
-                return Ok(new ApiResponse<IEnumerable<UserDto>>
-                {
-                    Success = true,
-                    Message = "Users retrieved successfully",
-                    Data = users
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving users");
-                return StatusCode(500, new ApiResponse<IEnumerable<UserDto>>
-                {
-                    Success = false,
-                    Message = "Error retrieving users",
-                    Errors = new List<string> { ex.Message }
-                });
-            }
-        }
-
-        /// <summary>
-        /// Get all roles (admin only)
-        /// </summary>
-        [HttpGet("roles")]
-        [AuthorizeUserManagement("read")]
-        [Authorize(Roles = "Admin,UserManager")]
-        public async Task<IActionResult> GetAllRolesAdmin()
-        {
-            try
-            {
-                var roles = await _authorizationService.GetAllRolesAsync();
-                
-                return Ok(new ApiResponse<IEnumerable<RoleDto>>
-                {
-                    Success = true,
-                    Message = "Roles retrieved successfully",
-                    Data = roles
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving roles");
-                return StatusCode(500, new ApiResponse<IEnumerable<RoleDto>>
-                {
-                    Success = false,
-                    Message = "Error retrieving roles",
-                    Errors = new List<string> { ex.Message }
-                });
-            }
-        }
-
-        /// <summary>
-        /// Get all permissions (admin only)
-        /// </summary>
-        [HttpGet("permissions")]
-        [AuthorizeUserManagement("read")]
-        [Authorize(Roles = "Admin,UserManager")]
-        public async Task<IActionResult> GetAllPermissionsAdmin()
-        {
-            try
-            {
-                var permissions = await _authorizationService.GetAllPermissionsAsync();
-                
-                return Ok(new ApiResponse<IEnumerable<PermissionDto>>
-                {
-                    Success = true,
-                    Message = "Permissions retrieved successfully",
-                    Data = permissions
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving permissions");
-                return StatusCode(500, new ApiResponse<IEnumerable<PermissionDto>>
-                {
-                    Success = false,
-                    Message = "Error retrieving permissions",
                     Errors = new List<string> { ex.Message }
                 });
             }

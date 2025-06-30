@@ -163,3 +163,4 @@ C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\bin\Debug\net8.0\Microsoft
 C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\bin\Debug\net8.0\Microsoft.Extensions.Options.dll
 C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\bin\Debug\net8.0\Pipelines.Sockets.Unofficial.dll
 C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\bin\Debug\net8.0\StackExchange.Redis.dll
+C:\Users\wanja\Desktop\XYZ\xyz-university-payment-api\bin\Debug\net8.0\Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer.dll
