@@ -13,6 +13,8 @@ using FluentValidation.AspNetCore;
 using FluentValidation;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Reflection;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 
 
 // Configure Serilog
@@ -78,8 +80,14 @@ try
     // Configure Redis settings
     builder.Services.Configure<RedisConfig>(builder.Configuration.GetSection("Redis"));
 
+    // Configure API Versioning
+    builder.Services.Configure<ApiVersionConfig>(builder.Configuration.GetSection("ApiVersioning"));
+
     // Register Cache Service
     builder.Services.AddScoped<ICacheService, CacheService>();
+
+    // Register API Version Service
+    builder.Services.AddScoped<ApiVersionService>();
 
     // Register Unit of Work and Generic Repository
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -145,7 +153,39 @@ try
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen(c =>
     {
-        c.SwaggerDoc("v1", new OpenApiInfo { Title = "XYZ University Payment API", Version = "v1" });
+        // Add version-specific documents
+        c.SwaggerDoc("v1", new OpenApiInfo { 
+            Title = "XYZ University Payment API v1 (Deprecated)", 
+            Version = "v1",
+            Description = "V1 API endpoints (Deprecated - use V2 or V3)",
+            Contact = new OpenApiContact
+            {
+                Name = "XYZ University API Support",
+                Email = "api-support@xyz-university.com"
+            }
+        });
+
+        c.SwaggerDoc("v2", new OpenApiInfo { 
+            Title = "XYZ University Payment API v2", 
+            Version = "v2",
+            Description = "V2 API endpoints with enhanced features",
+            Contact = new OpenApiContact
+            {
+                Name = "XYZ University API Support",
+                Email = "api-support@xyz-university.com"
+            }
+        });
+
+        c.SwaggerDoc("v3", new OpenApiInfo { 
+            Title = "XYZ University Payment API v3", 
+            Version = "v3",
+            Description = "V3 API endpoints with latest features",
+            Contact = new OpenApiContact
+            {
+                Name = "XYZ University API Support",
+                Email = "api-support@xyz-university.com"
+            }
+        });
 
         c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
         {
@@ -171,6 +211,17 @@ try
                 Array.Empty<string>()
             }
         });
+
+        // Add operation filter for API versioning
+        c.OperationFilter<ApiVersionOperationFilter>();
+
+        // Include XML comments if available
+        var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+        var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+        if (File.Exists(xmlPath))
+        {
+            c.IncludeXmlComments(xmlPath);
+        }
     });
 
    
@@ -215,6 +266,26 @@ try
         options.AddDeletePolicy();
         options.AddFinancialPolicy();
         options.AddReportingPolicy();
+    });
+
+    // Add API Versioning
+    builder.Services.AddApiVersioning(options =>
+    {
+        options.DefaultApiVersion = new Microsoft.AspNetCore.Mvc.ApiVersion(2, 0);
+        options.AssumeDefaultVersionWhenUnspecified = true;
+        options.ReportApiVersions = true;
+        options.ApiVersionReader = Microsoft.AspNetCore.Mvc.Versioning.ApiVersionReader.Combine(
+            new Microsoft.AspNetCore.Mvc.Versioning.UrlSegmentApiVersionReader(),
+            new Microsoft.AspNetCore.Mvc.Versioning.HeaderApiVersionReader("X-API-Version"),
+            new Microsoft.AspNetCore.Mvc.Versioning.QueryStringApiVersionReader("api-version")
+        );
+    });
+
+    // Add API Versioning Explorer for Swagger
+    builder.Services.AddVersionedApiExplorer(options =>
+    {
+        options.GroupNameFormat = "'v'VVV";
+        options.SubstituteApiVersionInUrl = true;
     });
 
     var app = builder.Build();
@@ -295,18 +366,27 @@ try
     if (app.Environment.IsDevelopment())
     {
         app.UseSwagger();
+        
         app.UseSwaggerUI(c =>
         {
-            c.SwaggerEndpoint("/swagger/v1/swagger.json", "XYZ University Payment API v1");
+            c.SwaggerEndpoint("/swagger/v1/swagger.json", "XYZ University Payment API v1 (Deprecated)");
+            c.SwaggerEndpoint("/swagger/v2/swagger.json", "XYZ University Payment API v2");
+            c.SwaggerEndpoint("/swagger/v3/swagger.json", "XYZ University Payment API v3");
             c.RoutePrefix = string.Empty; // Serve Swagger UI at the app's root
             c.DocumentTitle = "XYZ University Payment API Documentation";
             c.DefaultModelsExpandDepth(-1); // Hide schemas section
+            c.DisplayRequestDuration();
+            c.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.List);
+            c.DefaultModelRendering(Swashbuckle.AspNetCore.SwaggerUI.ModelRendering.Example);
         });
     }
 
     app.UseHttpsRedirection();
 
     app.UseCors("AllowAll");
+
+    // Add API Versioning Middleware
+    app.UseApiVersioning();
 
     app.UseAuthentication();
 
