@@ -44,13 +44,17 @@ namespace xyz_university_payment_api.Services
                     new Claim(ClaimTypes.Name, user.Username),
                     new Claim(ClaimTypes.Email, user.Email),
                     new Claim("user_id", user.Id.ToString()),
-                    new Claim("is_active", user.IsActive.ToString())
+                    new Claim("is_active", user.IsActive.ToString()),
+                    new Claim("jti", Guid.NewGuid().ToString()), // JWT ID for token uniqueness
+                    new Claim("iat", DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64), // Issued at
+                    new Claim("scope", "xyz_api") // API scope
                 };
 
                 // Add roles to claims
                 foreach (var role in userRoles)
                 {
                     claims.Add(new Claim(ClaimTypes.Role, role));
+                    claims.Add(new Claim("role", role)); // Additional role claim for flexibility
                 }
 
                 // Add permissions to claims
@@ -58,6 +62,10 @@ namespace xyz_university_payment_api.Services
                 {
                     claims.Add(new Claim("permission", permission));
                 }
+
+                // Add custom claims for better authorization
+                claims.Add(new Claim("user_type", user.IsActive ? "active" : "inactive"));
+                claims.Add(new Claim("created_at", user.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ssZ")));
 
                 // Create JWT token
                 var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? "your-super-secret-key-with-at-least-32-characters"));
@@ -67,9 +75,13 @@ namespace xyz_university_payment_api.Services
                     issuer: _configuration["Jwt:Issuer"] ?? "xyz-university",
                     audience: _configuration["Jwt:Audience"] ?? "xyz-api",
                     claims: claims,
-                    expires: DateTime.UtcNow.AddHours(1), // 1 hour expiration
+                    expires: DateTime.UtcNow.AddHours(Convert.ToInt32(_configuration["Jwt:ExpiryInHours"] ?? "1")),
+                    notBefore: DateTime.UtcNow,
                     signingCredentials: credentials
                 );
+
+                _logger.LogInformation("Generated access token for user {Username} with {RoleCount} roles and {PermissionCount} permissions", 
+                    user.Username, userRoles.Count(), userPermissions.Count());
 
                 return new JwtSecurityTokenHandler().WriteToken(token);
             }

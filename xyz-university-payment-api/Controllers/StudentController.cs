@@ -13,6 +13,7 @@ namespace xyz_university_payment_api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize] // Require authentication for all student endpoints
     public class StudentController : ControllerBase
     {
         private readonly IStudentService _studentService;
@@ -27,7 +28,8 @@ namespace xyz_university_payment_api.Controllers
         // GET api/students
         // Retrieves all students
         [HttpGet]
-        [AuthorizePermission("Students", "Read")]
+        [AuthorizeStudent("read")]
+        [Authorize(Policy = "StudentAccess")]
         public async Task<IActionResult> GetAllStudents()
         {
             _logger.LogInformation("GetAllStudents endpoint called");
@@ -38,7 +40,8 @@ namespace xyz_university_payment_api.Controllers
         // GET api/students/{id}
         // Retrieves a student by ID
         [HttpGet("{id}")]
-        [AuthorizePermission("Students", "Read")]
+        [AuthorizeStudent("read")]
+        [Authorize(Policy = "StudentAccess")]
         public async Task<IActionResult> GetStudentById(int id)
         {
             _logger.LogInformation("GetStudentById endpoint called with ID: {StudentId}", id);
@@ -56,7 +59,8 @@ namespace xyz_university_payment_api.Controllers
         // GET api/students/number/{studentNumber}
         // Retrieves a student by student number
         [HttpGet("number/{studentNumber}")]
-        [AuthorizePermission("Students", "Read")]
+        [AuthorizeStudent("read")]
+        [Authorize(Policy = "StudentAccess")]
         public async Task<IActionResult> GetStudentByNumber(string studentNumber)
         {
             _logger.LogInformation("GetStudentByNumber endpoint called with number: {StudentNumber}", studentNumber);
@@ -74,7 +78,8 @@ namespace xyz_university_payment_api.Controllers
         // POST api/students
         // Creates a new student
         [HttpPost]
-        [AuthorizePermission("Students", "Create")]
+        [AuthorizeStudent("create")]
+        [Authorize(Roles = "Admin,UserManager")]
         public async Task<IActionResult> CreateStudent([FromBody] Student student)
         {
             _logger.LogInformation("CreateStudent endpoint called for student: {StudentNumber}", student.StudentNumber);
@@ -94,7 +99,8 @@ namespace xyz_university_payment_api.Controllers
         // PUT api/students/{id}
         // Updates an existing student
         [HttpPut("{id}")]
-        [AuthorizePermission("Students", "Update")]
+        [AuthorizeStudent("update")]
+        [Authorize(Roles = "Admin,UserManager")]
         public async Task<IActionResult> UpdateStudent(int id, [FromBody] Student student)
         {
             _logger.LogInformation("UpdateStudent endpoint called for student ID: {StudentId}", id);
@@ -119,7 +125,8 @@ namespace xyz_university_payment_api.Controllers
         // DELETE api/students/{id}
         // Deletes a student
         [HttpDelete("{id}")]
-        [AuthorizePermission("Students", "Delete")]
+        [AuthorizeStudent("delete")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteStudent(int id)
         {
             _logger.LogInformation("DeleteStudent endpoint called for student ID: {StudentId}", id);
@@ -144,7 +151,8 @@ namespace xyz_university_payment_api.Controllers
         // GET api/students/active
         // Retrieves all active students
         [HttpGet("active")]
-        [AuthorizePermission("Students", "Read")]
+        [AuthorizeStudent("read")]
+        [Authorize(Policy = "StudentAccess")]
         public async Task<IActionResult> GetActiveStudents()
         {
             _logger.LogInformation("GetActiveStudents endpoint called");
@@ -155,7 +163,8 @@ namespace xyz_university_payment_api.Controllers
         // GET api/students/program/{program}
         // Retrieves students by program
         [HttpGet("program/{program}")]
-        [AuthorizePermission("Students", "Read")]
+        [AuthorizeStudent("read")]
+        [Authorize(Policy = "StudentAccess")]
         public async Task<IActionResult> GetStudentsByProgram(string program)
         {
             _logger.LogInformation("GetStudentsByProgram endpoint called for program: {Program}", program);
@@ -166,7 +175,8 @@ namespace xyz_university_payment_api.Controllers
         // GET api/students/search/{searchTerm}
         // Searches students by name
         [HttpGet("search/{searchTerm}")]
-        [AuthorizePermission("Students", "Read")]
+        [AuthorizeStudent("read")]
+        [Authorize(Policy = "StudentAccess")]
         public async Task<IActionResult> SearchStudents(string searchTerm)
         {
             _logger.LogInformation("SearchStudents endpoint called with term: {SearchTerm}", searchTerm);
@@ -177,7 +187,8 @@ namespace xyz_university_payment_api.Controllers
         // PUT api/students/{id}/status
         // Updates student active status
         [HttpPut("{id}/status")]
-        [AuthorizePermission("Students", "Update")]
+        [AuthorizeStudent("update")]
+        [Authorize(Roles = "Admin,UserManager")]
         public async Task<IActionResult> UpdateStudentStatus(int id, [FromBody] UpdateStatusRequest request)
         {
             _logger.LogInformation("UpdateStudentStatus endpoint called for student ID: {StudentId}", id);
@@ -197,7 +208,8 @@ namespace xyz_university_payment_api.Controllers
         // POST api/students/validate
         // Validates student data
         [HttpPost("validate")]
-        [AuthorizePermission("Students", "Read")]
+        [AuthorizeStudent("read")]
+        [Authorize(Policy = "StudentAccess")]
         public async Task<IActionResult> ValidateStudent([FromBody] Student student)
         {
             _logger.LogInformation("ValidateStudent endpoint called for student: {StudentNumber}", student.StudentNumber);
@@ -209,7 +221,8 @@ namespace xyz_university_payment_api.Controllers
         // GET api/students/{studentNumber}/eligible
         // Checks if student is eligible for enrollment
         [HttpGet("{studentNumber}/eligible")]
-        [AuthorizePermission("Students", "Read")]
+        [AuthorizeStudent("read")]
+        [Authorize(Policy = "StudentAccess")]
         public async Task<IActionResult> CheckEnrollmentEligibility(string studentNumber)
         {
             _logger.LogInformation("CheckEnrollmentEligibility endpoint called for student: {StudentNumber}", studentNumber);

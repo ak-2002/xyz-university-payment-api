@@ -6,22 +6,27 @@ using xyz_university_payment_api.DTOs;
 using xyz_university_payment_api.Interfaces;
 using xyz_university_payment_api.Models;
 using xyz_university_payment_api.Exceptions;
+using xyz_university_payment_api.Services;
+using System.Security.Claims;
 
 namespace xyz_university_payment_api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Produces("application/json")]
+    [Authorize] // Require authentication for all authorization endpoints
     public class AuthorizationController : ControllerBase
     {
         private readonly xyz_university_payment_api.Interfaces.IAuthorizationService _authorizationService;
+        private readonly IJwtTokenService _jwtTokenService;
         private readonly ILogger<AuthorizationController> _logger;
 
         public AuthorizationController(
             xyz_university_payment_api.Interfaces.IAuthorizationService authorizationService,
+            IJwtTokenService jwtTokenService,
             ILogger<AuthorizationController> logger)
         {
             _authorizationService = authorizationService;
+            _jwtTokenService = jwtTokenService;
             _logger = logger;
         }
 
@@ -764,5 +769,270 @@ namespace xyz_university_payment_api.Controllers
         }
 
         #endregion
+
+        /// <summary>
+        /// Test endpoint for admin users only
+        /// </summary>
+        [HttpGet("admin-test")]
+        [AuthorizeAdmin]
+        public IActionResult AdminTest()
+        {
+            var user = User;
+            var username = user.FindFirst(ClaimTypes.Name)?.Value;
+            var roles = user.FindAll(ClaimTypes.Role).Select(c => c.Value);
+            var permissions = user.FindAll("permission").Select(c => c.Value);
+
+            return Ok(new
+            {
+                Message = "Admin access granted",
+                Username = username,
+                Roles = roles,
+                Permissions = permissions,
+                Timestamp = DateTime.UtcNow
+            });
+        }
+
+        /// <summary>
+        /// Test endpoint for payment operations
+        /// </summary>
+        [HttpGet("payment-test")]
+        [AuthorizePayment("read")]
+        [Authorize(Policy = "PaymentAccess")]
+        public IActionResult PaymentTest()
+        {
+            var user = User;
+            var username = user.FindFirst(ClaimTypes.Name)?.Value;
+            var roles = user.FindAll(ClaimTypes.Role).Select(c => c.Value);
+            var permissions = user.FindAll("permission").Select(c => c.Value);
+
+            return Ok(new
+            {
+                Message = "Payment access granted",
+                Username = username,
+                Roles = roles,
+                Permissions = permissions,
+                Timestamp = DateTime.UtcNow
+            });
+        }
+
+        /// <summary>
+        /// Test endpoint for student operations
+        /// </summary>
+        [HttpGet("student-test")]
+        [AuthorizeStudent("read")]
+        [Authorize(Policy = "StudentAccess")]
+        public IActionResult StudentTest()
+        {
+            var user = User;
+            var username = user.FindFirst(ClaimTypes.Name)?.Value;
+            var roles = user.FindAll(ClaimTypes.Role).Select(c => c.Value);
+            var permissions = user.FindAll("permission").Select(c => c.Value);
+
+            return Ok(new
+            {
+                Message = "Student access granted",
+                Username = username,
+                Roles = roles,
+                Permissions = permissions,
+                Timestamp = DateTime.UtcNow
+            });
+        }
+
+        /// <summary>
+        /// Test endpoint for financial operations
+        /// </summary>
+        [HttpGet("financial-test")]
+        [Authorize(Roles = "Admin,FinanceManager,Accountant")]
+        [Authorize(Policy = "FinancialAccess")]
+        public IActionResult FinancialTest()
+        {
+            var user = User;
+            var username = user.FindFirst(ClaimTypes.Name)?.Value;
+            var roles = user.FindAll(ClaimTypes.Role).Select(c => c.Value);
+
+            return Ok(new
+            {
+                Message = "Financial access granted",
+                Username = username,
+                Roles = roles,
+                Timestamp = DateTime.UtcNow
+            });
+        }
+
+        /// <summary>
+        /// Test endpoint for reporting operations
+        /// </summary>
+        [HttpGet("reporting-test")]
+        [Authorize(Policy = "ReportingAccess")]
+        public IActionResult ReportingTest()
+        {
+            var user = User;
+            var username = user.FindFirst(ClaimTypes.Name)?.Value;
+            var roles = user.FindAll(ClaimTypes.Role).Select(c => c.Value);
+            var permissions = user.FindAll("permission").Select(c => c.Value);
+
+            return Ok(new
+            {
+                Message = "Reporting access granted",
+                Username = username,
+                Roles = roles,
+                Permissions = permissions,
+                Timestamp = DateTime.UtcNow
+            });
+        }
+
+        /// <summary>
+        /// Get current user's claims and permissions
+        /// </summary>
+        [HttpGet("my-info")]
+        public IActionResult GetMyInfo()
+        {
+            var user = User;
+            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var username = user.FindFirst(ClaimTypes.Name)?.Value;
+            var email = user.FindFirst(ClaimTypes.Email)?.Value;
+            var isActive = user.FindFirst("is_active")?.Value;
+            var roles = user.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
+            var permissions = user.FindAll("permission").Select(c => c.Value).ToList();
+            var userType = user.FindFirst("user_type")?.Value;
+            var createdAt = user.FindFirst("created_at")?.Value;
+
+            return Ok(new
+            {
+                UserId = userId,
+                Username = username,
+                Email = email,
+                IsActive = isActive == "True",
+                UserType = userType,
+                CreatedAt = createdAt,
+                Roles = roles,
+                Permissions = permissions,
+                TotalRoles = roles.Count,
+                TotalPermissions = permissions.Count,
+                Timestamp = DateTime.UtcNow
+            });
+        }
+
+        /// <summary>
+        /// Test permission check for a specific resource and action
+        /// </summary>
+        [HttpPost("test-permission")]
+        public async Task<IActionResult> TestPermission([FromBody] CheckPermissionDto checkPermissionDto)
+        {
+            try
+            {
+                var result = await _authorizationService.CheckPermissionAsync(checkPermissionDto);
+                
+                return Ok(new ApiResponse<PermissionCheckResultDto>
+                {
+                    Success = true,
+                    Message = "Permission check completed",
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking permission");
+                return StatusCode(500, new ApiResponse<PermissionCheckResultDto>
+                {
+                    Success = false,
+                    Message = "Error checking permission",
+                    Errors = new List<string> { ex.Message }
+                });
+            }
+        }
+
+        /// <summary>
+        /// Get all users (admin only)
+        /// </summary>
+        [HttpGet("users")]
+        [AuthorizeUserManagement("read")]
+        [Authorize(Roles = "Admin,UserManager")]
+        public async Task<IActionResult> GetAllUsersAdmin()
+        {
+            try
+            {
+                var users = await _authorizationService.GetAllUsersAsync();
+                
+                return Ok(new ApiResponse<IEnumerable<UserDto>>
+                {
+                    Success = true,
+                    Message = "Users retrieved successfully",
+                    Data = users
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving users");
+                return StatusCode(500, new ApiResponse<IEnumerable<UserDto>>
+                {
+                    Success = false,
+                    Message = "Error retrieving users",
+                    Errors = new List<string> { ex.Message }
+                });
+            }
+        }
+
+        /// <summary>
+        /// Get all roles (admin only)
+        /// </summary>
+        [HttpGet("roles")]
+        [AuthorizeUserManagement("read")]
+        [Authorize(Roles = "Admin,UserManager")]
+        public async Task<IActionResult> GetAllRolesAdmin()
+        {
+            try
+            {
+                var roles = await _authorizationService.GetAllRolesAsync();
+                
+                return Ok(new ApiResponse<IEnumerable<RoleDto>>
+                {
+                    Success = true,
+                    Message = "Roles retrieved successfully",
+                    Data = roles
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving roles");
+                return StatusCode(500, new ApiResponse<IEnumerable<RoleDto>>
+                {
+                    Success = false,
+                    Message = "Error retrieving roles",
+                    Errors = new List<string> { ex.Message }
+                });
+            }
+        }
+
+        /// <summary>
+        /// Get all permissions (admin only)
+        /// </summary>
+        [HttpGet("permissions")]
+        [AuthorizeUserManagement("read")]
+        [Authorize(Roles = "Admin,UserManager")]
+        public async Task<IActionResult> GetAllPermissionsAdmin()
+        {
+            try
+            {
+                var permissions = await _authorizationService.GetAllPermissionsAsync();
+                
+                return Ok(new ApiResponse<IEnumerable<PermissionDto>>
+                {
+                    Success = true,
+                    Message = "Permissions retrieved successfully",
+                    Data = permissions
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving permissions");
+                return StatusCode(500, new ApiResponse<IEnumerable<PermissionDto>>
+                {
+                    Success = false,
+                    Message = "Error retrieving permissions",
+                    Errors = new List<string> { ex.Message }
+                });
+            }
+        }
     }
 } 
