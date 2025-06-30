@@ -16,12 +16,14 @@ namespace xyz_university_payment_api.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<PaymentService> _logger;
         private readonly IMessagePublisher _messagePublisher;
+        private readonly ICacheService _cacheService;
 
-        public PaymentService(IUnitOfWork unitOfWork, ILogger<PaymentService> logger, IMessagePublisher messagePublisher)
+        public PaymentService(IUnitOfWork unitOfWork, ILogger<PaymentService> logger, IMessagePublisher messagePublisher, ICacheService cacheService)
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
             _messagePublisher = messagePublisher;
+            _cacheService = cacheService;
         }
 
         public async Task<PaymentProcessingResult> ProcessPaymentAsync(PaymentNotification payment)
@@ -98,6 +100,9 @@ namespace xyz_university_payment_api.Services
 
             _logger.LogInformation("Payment processed successfully: {PaymentReference}", payment.PaymentReference);
 
+            // Invalidate related caches
+            await InvalidatePaymentCachesAsync(payment.StudentNumber, payment.PaymentReference);
+
             // Publish successful payment message
             await _messagePublisher.PublishPaymentProcessedAsync(new PaymentProcessedMessage
             {
@@ -151,14 +156,30 @@ namespace xyz_university_payment_api.Services
         public async Task<PaymentNotification?> GetPaymentByIdAsync(int id)
         {
             try
-        {
-            _logger.LogInformation("Retrieving payment with ID: {PaymentId}", id);
+            {
+                _logger.LogInformation("Retrieving payment with ID: {PaymentId}", id);
+                
+                // Try to get from cache first
+                var cacheKey = _cacheService.GetPaymentCacheKey($"id:{id}");
+                var cachedPayment = await _cacheService.GetAsync<PaymentNotification>(cacheKey);
+                
+                if (cachedPayment != null)
+                {
+                    _logger.LogInformation("Payment retrieved from cache: {PaymentId}", id);
+                    return cachedPayment;
+                }
+
+                // If not in cache, get from database
                 var payment = await _unitOfWork.Payments.GetByIdAsync(id);
                 
                 if (payment == null)
                 {
                     throw new PaymentNotFoundException(id);
                 }
+
+                // Cache the payment
+                await _cacheService.SetAsync(cacheKey, payment, TimeSpan.FromMinutes(60));
+                _logger.LogInformation("Payment cached: {PaymentId}", id);
                 
                 return payment;
             }
@@ -176,9 +197,27 @@ namespace xyz_university_payment_api.Services
         public async Task<IEnumerable<PaymentNotification>> GetPaymentsByStudentAsync(string studentNumber)
         {
             try
-        {
-            _logger.LogInformation("Retrieving payments for student: {StudentNumber}", studentNumber);
-                return await _unitOfWork.Payments.FindAsync(p => p.StudentNumber == studentNumber);
+            {
+                _logger.LogInformation("Retrieving payments for student: {StudentNumber}", studentNumber);
+                
+                // Try to get from cache first
+                var cacheKey = _cacheService.GetPaymentCacheKey($"student:{studentNumber}");
+                var cachedPayments = await _cacheService.GetAsync<IEnumerable<PaymentNotification>>(cacheKey);
+                
+                if (cachedPayments != null)
+                {
+                    _logger.LogInformation("Student payments retrieved from cache: {StudentNumber}", studentNumber);
+                    return cachedPayments;
+                }
+
+                // If not in cache, get from database
+                var payments = await _unitOfWork.Payments.FindAsync(p => p.StudentNumber == studentNumber);
+                
+                // Cache the payments
+                await _cacheService.SetAsync(cacheKey, payments, TimeSpan.FromMinutes(30));
+                _logger.LogInformation("Student payments cached: {StudentNumber}", studentNumber);
+                
+                return payments;
             }
             catch (Exception ex)
             {
@@ -292,12 +331,23 @@ namespace xyz_university_payment_api.Services
         {
             try
             {
+                // Try to get from cache first
+                var cacheKey = _cacheService.GetSummaryCacheKey(studentNumber);
+                var cachedSummary = await _cacheService.GetAsync<PaymentSummary>(cacheKey);
+                
+                if (cachedSummary != null)
+                {
+                    _logger.LogInformation("Payment summary retrieved from cache: {StudentNumber}", studentNumber);
+                    return cachedSummary;
+                }
+
+                // If not in cache, calculate from database
                 var payments = await _unitOfWork.Payments.FindAsync(p => p.StudentNumber == studentNumber);
                 var student = await _unitOfWork.Students.FirstOrDefaultAsync(s => s.StudentNumber == studentNumber);
 
-                return new PaymentSummary
-            {
-                StudentNumber = studentNumber,
+                var summary = new PaymentSummary
+                {
+                    StudentNumber = studentNumber,
                     StudentName = student?.FullName ?? "Unknown",
                     TotalAmount = payments.Sum(p => p.AmountPaid),
                     TotalPayments = payments.Count(),
@@ -305,6 +355,12 @@ namespace xyz_university_payment_api.Services
                     AveragePaymentAmount = payments.Any() ? payments.Average(p => p.AmountPaid) : null,
                     StudentIsActive = student?.IsActive ?? false
                 };
+
+                // Cache the summary
+                await _cacheService.SetAsync(cacheKey, summary, TimeSpan.FromMinutes(45));
+                _logger.LogInformation("Payment summary cached: {StudentNumber}", studentNumber);
+                
+                return summary;
             }
             catch (Exception ex)
             {
@@ -395,11 +451,11 @@ namespace xyz_university_payment_api.Services
                         result.UnmatchedPayments.Add(bankPayment);
                         result.DiscrepanciesFound++;
                         result.Discrepancies.Add($"Payment reference {bankPayment.PaymentReference} not found in system");
-                    }
+                }
             }
 
             result.ReconciliationSuccessful = result.DiscrepanciesFound == 0;
-                return result;
+            return result;
             }
             catch (Exception ex)
             {
@@ -457,6 +513,32 @@ namespace xyz_university_payment_api.Services
             {
                 _logger.LogError(ex, "Error testing messaging system");
                 throw new MessagingException("Failed to test messaging system", ex);
+            }
+        }
+
+        private async Task InvalidatePaymentCachesAsync(string studentNumber, string paymentReference)
+        {
+            try
+            {
+                // Invalidate student payments cache
+                var studentPaymentsKey = _cacheService.GetPaymentCacheKey($"student:{studentNumber}");
+                await _cacheService.RemoveAsync(studentPaymentsKey);
+                
+                // Invalidate payment summary cache
+                var summaryKey = _cacheService.GetSummaryCacheKey(studentNumber);
+                await _cacheService.RemoveAsync(summaryKey);
+                
+                // Invalidate specific payment cache (if it exists)
+                var paymentKey = _cacheService.GetPaymentCacheKey($"reference:{paymentReference}");
+                await _cacheService.RemoveAsync(paymentKey);
+                
+                _logger.LogDebug("Invalidated caches for student: {StudentNumber}, payment: {PaymentReference}", 
+                    studentNumber, paymentReference);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error invalidating caches for student: {StudentNumber}", studentNumber);
+                // Don't throw exception for cache invalidation failures
             }
         }
     }
