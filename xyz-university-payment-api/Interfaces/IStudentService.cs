@@ -1,5 +1,5 @@
 using xyz_university_payment_api.Models;
-
+using xyz_university_payment_api.DTOs;
 
 namespace xyz_university_payment_api.Interfaces
 {
@@ -42,6 +42,24 @@ namespace xyz_university_payment_api.Interfaces
 
         // Enhanced enrollment eligibility check
         Task<EnrollmentEligibilityResult> CheckEnrollmentEligibilityAsync(string studentNumber);
+
+        // V3 Methods
+        Task<ApiResponse<PaginatedResponseDto<StudentDtoV3>>> GetStudentsV3Async(
+            StudentFilterDtoV3 filter, int page, int pageSize, string sortBy, string sortOrder, bool includeAnalytics);
+
+        Task<ApiResponse<StudentDetailDtoV3>> GetStudentV3Async(int id, bool includePaymentHistory);
+
+        Task<ApiResponse<StudentDtoV3>> CreateStudentV3Async(CreateStudentDtoV3 createStudentDto);
+
+        Task<ApiResponse<StudentDtoV3>> UpdateStudentV3Async(int id, UpdateStudentDtoV3 updateStudentDto);
+
+        Task<ApiResponse<bool>> DeleteStudentV3Async(int id, bool permanent);
+
+        Task<ApiResponse<StudentAnalyticsDto>> GetStudentAnalyticsAsync(StudentAnalyticsFilterDto filter);
+
+        Task<ApiResponse<BulkOperationResultDto>> BulkOperationsAsync(BulkStudentOperationDto bulkOperation);
+
+        Task<ApiResponse<byte[]>> ExportStudentsAsync(StudentFilterDtoV3 filter, string format, bool includePaymentHistory);
     }
 
     public class EnrollmentEligibilityResult

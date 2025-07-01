@@ -3,6 +3,8 @@
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Context;
+using System;
+using System.Threading.Tasks;
 
 namespace xyz_university_payment_api.Services
 {
@@ -19,6 +21,7 @@ namespace xyz_university_payment_api.Services
         void LogBusinessRule(string rule, string context, string message, LogLevel level = LogLevel.Information);
         void LogSecurityEvent(string eventType, string user, string details, LogLevel level = LogLevel.Warning);
         void LogPerformance(string operation, long durationMs, string details = "", LogLevel level = LogLevel.Information);
+        Task LogErrorAsync(string operation, Exception ex);
     }
 
 
@@ -121,6 +124,17 @@ namespace xyz_university_payment_api.Services
             {
                 LogMessage(level, "Performance measurement");
             }
+        }
+
+        public async Task LogErrorAsync(string operation, Exception ex)
+        {
+            using (LogContext.PushProperty("Operation", operation))
+            using (LogContext.PushProperty("Category", "Error"))
+            using (LogContext.PushProperty("ExceptionType", ex.GetType().Name))
+            {
+                _logger.LogError(ex, "Error in operation: {Operation}", operation);
+            }
+            await Task.CompletedTask; // For async compatibility
         }
 
         private void LogMessage(LogLevel level, string message)

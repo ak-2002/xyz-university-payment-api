@@ -13,6 +13,8 @@ namespace xyz_university_payment_api.Controllers.V2
     [Authorize(Policy = "ApiScope")]
     [ApiController]
     [Route("api/v2/[controller]")]
+    [ApiVersion("2.0")]
+    [ApiExplorerSettings(GroupName = "v2")]
     public class PaymentController : ControllerBase
     {
         private readonly IPaymentService _paymentService;
