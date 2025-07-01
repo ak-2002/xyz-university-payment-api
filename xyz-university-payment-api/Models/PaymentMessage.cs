@@ -10,6 +10,7 @@ namespace xyz_university_payment_api.Models
         public string Status {get; set;} = string.Empty;
         public string Message {get; set;} = string.Empty;
         public DateTime Timestamp {get; set;} = DateTime.UtcNow;
+        public string MessageType { get; set; } = string.Empty;
     }
 
 

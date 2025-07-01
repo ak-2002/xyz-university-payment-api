@@ -9,11 +9,16 @@ using xyz_university_payment_api.Exceptions;
 using xyz_university_payment_api.Services;
 using System.Security.Claims;
 
+
+
 namespace xyz_university_payment_api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
     [Authorize] // Require authentication for all authorization endpoints
+    [ApiVersion("1.0")]
+    [ApiVersion("2.0")]
+    [ApiVersion("3.0")]
     public class AuthorizationController : ControllerBase
     {
         private readonly xyz_university_payment_api.Interfaces.IAuthorizationService _authorizationService;
@@ -938,6 +943,58 @@ namespace xyz_university_payment_api.Controllers
                     Success = false,
                     Message = "Error checking permission",
                     Errors = new List<string> { ex.Message }
+                });
+            }
+        }
+
+        /// <summary>
+        /// Create admin user for testing (public endpoint)
+        /// </summary>
+        /// <returns>Success status</returns>
+        [HttpPost("create-admin")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        public async Task<IActionResult> CreateAdminUser()
+        {
+            try
+            {
+                // Check if admin user already exists
+                var existingAdmin = await _authorizationService.GetUserByUsernameAsync("admin");
+                if (existingAdmin != null)
+                {
+                    return Ok(new ApiResponse<object>
+                    {
+                        Success = true,
+                        Message = "Admin user already exists",
+                        Data = null
+                    });
+                }
+
+                // Create admin user
+                var createUserDto = new CreateUserDto
+                {
+                    Username = "admin",
+                    Email = "admin@xyzuniversity.edu",
+                    Password = "Admin123!"
+                };
+
+                var result = await _authorizationService.CreateUserAsync(createUserDto);
+
+                return Ok(new ApiResponse<object>
+                {
+                    Success = true,
+                    Message = "Admin user created successfully. Username: admin, Password: Admin123!",
+                    Data = new { Username = "admin", Password = "Admin123!" }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating admin user");
+                return BadRequest(new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "Failed to create admin user",
+                    Data = null
                 });
             }
         }

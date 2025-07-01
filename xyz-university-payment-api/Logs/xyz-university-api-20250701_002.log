@@ -33,3 +33,4 @@ System.IO.IOException: Failed to bind to address http://127.0.0.1:5260: address 
    at Microsoft.Extensions.Hosting.Internal.Host.<StartAsync>b__15_1(IHostedService service, CancellationToken token)
    at Microsoft.Extensions.Hosting.Internal.Host.ForeachService[T](IEnumerable`1 services, CancellationToken token, Boolean concurrent, Boolean abortOnFirstException, List`1 exceptions, Func`3 operation)
 2025-07-01 09:28:55.248 +03:00 [WRN] Failed to stop bus: "rabbitmq://localhost/DESKTOPF3AMJ10_xyzuniversitypaymentapi_bus_uotyyydqttg8ukzabdq5o4rpd1?temporary=true" (Not Started)
+2025-07-01 10:30:19.337 +03:00 [INF] Starting XYZ University Payment API {"MachineName":"DESKTOP-F3AMJ10","ThreadId":1,"ProcessId":17004,"Application":"XYZ University Payment API"}

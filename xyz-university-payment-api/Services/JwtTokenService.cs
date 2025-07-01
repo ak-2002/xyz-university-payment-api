@@ -171,26 +171,13 @@ namespace xyz_university_payment_api.Services
 
         public async Task<bool> ValidateRefreshTokenAsync(string refreshToken)
         {
-            // In a real application, you would store refresh tokens in a database
-            // and validate them against the stored tokens
-            // For now, we'll just check if the token is not null or empty
-            return !string.IsNullOrEmpty(refreshToken);
+            // For now, we'll return true as a placeholder
+            // In a real application, you would validate against the database
+            return true;
         }
 
         public async Task<string> RefreshAccessTokenAsync(string refreshToken)
         {
-            // Validate refresh token
-            if (!await ValidateRefreshTokenAsync(refreshToken))
-            {
-                throw new UnauthorizedException("Invalid refresh token");
-            }
-
-            // In a real application, you would:
-            // 1. Look up the refresh token in the database
-            // 2. Get the associated user
-            // 3. Generate a new access token
-            // 4. Optionally generate a new refresh token
-
             // For now, we'll throw an exception as this requires database implementation
             throw new NotImplementedException("Refresh token functionality requires database implementation");
         }
@@ -278,8 +265,16 @@ namespace xyz_university_payment_api.Services
 
         public async Task<bool> IsTokenExpiredAsync(string token)
         {
-            var expiration = await GetTokenExpirationAsync(token);
-            return expiration <= DateTime.UtcNow;
+            try
+            {
+                var expiration = await GetTokenExpirationAsync(token);
+                return expiration <= DateTime.UtcNow;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error checking token expiration");
+                return true; // Assume expired if we can't check
+            }
         }
     }
 } 

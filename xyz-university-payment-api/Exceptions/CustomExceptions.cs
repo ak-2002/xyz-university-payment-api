@@ -194,12 +194,12 @@ namespace xyz_university_payment_api.Exceptions
     public class MessagingException : ApiException
     {
         public MessagingException(string message) 
-            : base($"Messaging operation failed: {message}", "MESSAGING_ERROR", 500)
+            : base($"Messaging failed: {message}", "MESSAGING_ERROR", 500)
         {
         }
 
         public MessagingException(string message, Exception innerException) 
-            : base($"Messaging operation failed: {message}", "MESSAGING_ERROR", 500, innerException)
+            : base($"Messaging failed: {message}", "MESSAGING_ERROR", 500, innerException)
         {
         }
     }
@@ -237,6 +237,20 @@ namespace xyz_university_payment_api.Exceptions
 
         public ReconciliationException(string message, Exception innerException) 
             : base($"Reconciliation failed: {message}", "RECONCILIATION_ERROR", 500, innerException)
+        {
+        }
+    }
+
+    // Cache exceptions
+    public class CacheException : ApiException
+    {
+        public CacheException(string message) 
+            : base($"Cache operation failed: {message}", "CACHE_ERROR", 500)
+        {
+        }
+
+        public CacheException(string message, Exception innerException) 
+            : base($"Cache operation failed: {message}", "CACHE_ERROR", 500, innerException)
         {
         }
     }
