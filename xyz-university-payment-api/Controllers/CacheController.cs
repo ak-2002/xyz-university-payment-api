@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using xyz_university_payment_api.Interfaces;
 using xyz_university_payment_api.DTOs;
+using Microsoft.AspNetCore.Mvc.Versioning;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 
 namespace xyz_university_payment_api.Controllers
 {
@@ -9,6 +11,9 @@ namespace xyz_university_payment_api.Controllers
     /// </summary>
     [ApiController]
     [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [ApiVersion("2.0")]
+    [ApiVersion("3.0")]
     public class CacheController : ControllerBase
     {
         private readonly ICacheService _cacheService;

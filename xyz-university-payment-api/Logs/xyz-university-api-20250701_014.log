@@ -1,0 +1,12 @@
+2025-07-01 15:30:49.263 +03:00 [INF] Ensuring database is created
+2025-07-01 15:30:51.371 +03:00 [INF] Database created successfully
+2025-07-01 15:30:51.379 +03:00 [INF] Seeding default roles and permissions
+2025-07-01 15:30:51.909 +03:00 [INF] Default roles and permissions seeded successfully
+2025-07-01 15:30:52.145 +03:00 [INF] XYZ University Payment API started successfully
+2025-07-01 15:30:52.462 +03:00 [INF] Configured endpoint PaymentProcessedMessage, Consumer: xyz_university_payment_api.Services.PaymentProcessedMessageConsumer
+2025-07-01 15:30:52.495 +03:00 [INF] Configured endpoint PaymentFailedMessage, Consumer: xyz_university_payment_api.Services.PaymentFailedMessageConsumer
+2025-07-01 15:30:52.522 +03:00 [INF] Configured endpoint PaymentValidationMessage, Consumer: xyz_university_payment_api.Services.PaymentValidationMessageConsumer
+2025-07-01 15:30:53.670 +03:00 [INF] Bus started: "rabbitmq://localhost/"
+2025-07-01 15:33:01.944 +03:00 [WRN] Failed to determine the https port for redirect.
+2025-07-01 15:37:55.708 +03:00 [INF] Bus stopped: "rabbitmq://localhost/"
+2025-07-01 15:38:14.694 +03:00 [INF] Starting XYZ University Payment API {"MachineName":"DESKTOP-F3AMJ10","ThreadId":1,"ProcessId":25312,"Application":"XYZ University Payment API"}

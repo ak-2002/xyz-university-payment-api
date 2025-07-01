@@ -156,7 +156,38 @@ try
         c.SwaggerDoc("v1", new OpenApiInfo { 
             Title = "XYZ University Payment API v1 (Deprecated)", 
             Version = "v1",
-            Description = "V1 API endpoints (Deprecated - use V2 or V3)",
+            Description = @"## V1 API Endpoints (Deprecated - Use V2 or V3)
+
+**⚠️ This version is deprecated and will be removed in future releases.**
+
+### Available Endpoints:
+- **Payments**: `/api/v1/payments`
+  - POST `/notify` - Process payment notification
+  - GET `/` - Get all payments with pagination
+  - GET `/{id}` - Get payment by ID
+  - GET `/student/{studentNumber}` - Get payments by student
+  - GET `/student/{studentNumber}/summary` - Get payment summary
+
+- **Students**: `/api/v1/students`
+  - GET `/` - Get all students
+  - GET `/{id}` - Get student by ID
+  - GET `/number/{studentNumber}` - Get student by number
+  - POST `/` - Create new student
+  - PUT `/{id}` - Update student
+  - DELETE `/{id}` - Delete student
+  - GET `/active` - Get active students
+  - GET `/program/{program}` - Get students by program
+  - GET `/search/{searchTerm}` - Search students
+  - PUT `/{id}/status` - Update student status
+  - POST `/validate` - Validate student data
+
+### Features:
+- Basic CRUD operations
+- Simple pagination
+- Basic validation
+- Standard error responses
+
+**Migration Guide**: Please migrate to V2 or V3 for enhanced features and better performance.",
             Contact = new OpenApiContact
             {
                 Name = "XYZ University API Support",
@@ -167,7 +198,42 @@ try
         c.SwaggerDoc("v2", new OpenApiInfo { 
             Title = "XYZ University Payment API v2", 
             Version = "v2",
-            Description = "V2 API endpoints with enhanced features",
+            Description = @"## V2 API Endpoints (Recommended)
+
+**🚀 Enhanced version with improved features and performance.**
+
+### Available Endpoints:
+- **Payments**: `/api/v2/payments`
+  - POST `/notify` - Process payment notification (enhanced)
+  - GET `/` - Get all payments with advanced pagination
+  - GET `/analytics` - **NEW** Get payment analytics and statistics
+
+- **Students**: `/api/v2/students`
+  - GET `/` - Get all students with enhanced filtering
+  - GET `/{id}` - Get student by ID with detailed info
+  - GET `/number/{studentNumber}` - Get student by number
+  - POST `/` - Create new student with enhanced validation
+  - PUT `/{id}` - Update student
+  - DELETE `/{id}` - Delete student
+  - GET `/active` - Get active students
+  - GET `/program/{program}` - Get students by program
+  - GET `/search/{searchTerm}` - Advanced search with multiple criteria
+  - PUT `/{id}/status` - Update student status
+  - POST `/validate` - Enhanced validation
+  - GET `/export` - **NEW** Export students to CSV/Excel
+  - POST `/bulk-import` - **NEW** Bulk import students
+  - GET `/statistics` - **NEW** Student statistics and analytics
+
+### V2 Enhancements:
+- ✅ Advanced filtering and search capabilities
+- ✅ Enhanced pagination with sorting options
+- ✅ Payment analytics and reporting
+- ✅ Bulk operations (import/export)
+- ✅ Improved error handling and validation
+- ✅ Better performance and caching
+- ✅ Enhanced response metadata
+
+**Recommended for production use.**",
             Contact = new OpenApiContact
             {
                 Name = "XYZ University API Support",
@@ -178,7 +244,52 @@ try
         c.SwaggerDoc("v3", new OpenApiInfo { 
             Title = "XYZ University Payment API v3", 
             Version = "v3",
-            Description = "V3 API endpoints with latest features",
+            Description = @"## V3 API Endpoints (Latest Features)
+
+**🔥 Latest version with cutting-edge features and real-time capabilities.**
+
+### Available Endpoints:
+- **Payments**: `/api/v3/payments`
+  - POST `/notify` - Process payment notification (real-time)
+  - GET `/` - Get all payments with real-time stats
+  - GET `/{id}` - Get payment by ID with enhanced metadata
+  - GET `/real-time-stats` - **NEW** Real-time payment statistics
+  - POST `/webhook-test` - **NEW** Test webhook integration
+  - GET `/advanced-analytics` - **NEW** Advanced analytics with ML insights
+
+- **Students**: `/api/v3/students`
+  - GET `/` - Get all students with real-time data
+  - GET `/{id}` - Get student by ID with full profile
+  - GET `/number/{studentNumber}` - Get student by number
+  - POST `/` - Create new student with AI validation
+  - PUT `/{id}` - Update student
+  - DELETE `/{id}` - Delete student
+  - GET `/active` - Get active students
+  - GET `/program/{program}` - Get students by program
+  - GET `/search/{searchTerm}` - AI-powered search
+  - PUT `/{id}/status` - Update student status
+  - POST `/validate` - AI-enhanced validation
+  - GET `/export` - Export with multiple formats
+  - POST `/bulk-import` - Bulk import with validation
+  - GET `/statistics` - Real-time statistics
+  - GET `/analytics` - **NEW** Advanced student analytics
+  - POST `/bulk-operations` - **NEW** Bulk operations with progress tracking
+  - GET `/download-report` - **NEW** Download detailed reports
+  - GET `/predictive-insights` - **NEW** AI-powered predictive insights
+
+### V3 Innovations:
+- 🚀 Real-time processing and statistics
+- 🤖 AI-powered validation and search
+- 📊 Advanced analytics and ML insights
+- 🔄 Webhook integration support
+- 📈 Predictive analytics
+- 🎯 Enhanced bulk operations
+- 📱 Mobile-optimized responses
+- 🔒 Advanced security features
+- ⚡ Microservices-ready architecture
+- 🌐 GraphQL-compatible endpoints
+
+**Future-ready with the latest technology stack.**",
             Contact = new OpenApiContact
             {
                 Name = "XYZ University API Support",
@@ -210,9 +321,6 @@ try
                 Array.Empty<string>()
             }
         });
-
-        // Add operation filter for API versioning
-        c.OperationFilter<ApiVersionOperationFilter>();
 
         // Include XML comments if available
         var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
@@ -268,9 +376,10 @@ try
     });
 
     // Add API Versioning
+    /*
     builder.Services.AddApiVersioning(options =>
     {
-        options.DefaultApiVersion = new Microsoft.AspNetCore.Mvc.ApiVersion(2, 0);
+        options.DefaultApiVersion = new Microsoft.AspNetCore.Mvc.ApiVersion(1, 0);
         options.AssumeDefaultVersionWhenUnspecified = true;
         options.ReportApiVersions = true;
         options.ApiVersionReader = Microsoft.AspNetCore.Mvc.Versioning.ApiVersionReader.Combine(
@@ -286,6 +395,7 @@ try
         options.GroupNameFormat = "'v'VVV";
         options.SubstituteApiVersionInUrl = true;
     });
+    */
 
     var app = builder.Build();
 
