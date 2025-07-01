@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\wanja\\Desktop\\XYZ\\xyz-university-payment-api\\xyz-university-payment-api.csproj": {}
+    "C:\\Users\\wanja\\Desktop\\jj\\xyz-university-payment-api\\xyz-university-payment-api\\xyz-university-payment-api.csproj": {}
   },
   "projects": {
-    "C:\\Users\\wanja\\Desktop\\XYZ\\xyz-university-payment-api\\xyz-university-payment-api.csproj": {
+    "C:\\Users\\wanja\\Desktop\\jj\\xyz-university-payment-api\\xyz-university-payment-api\\xyz-university-payment-api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\wanja\\Desktop\\XYZ\\xyz-university-payment-api\\xyz-university-payment-api.csproj",
+        "projectUniqueName": "C:\\Users\\wanja\\Desktop\\jj\\xyz-university-payment-api\\xyz-university-payment-api\\xyz-university-payment-api.csproj",
         "projectName": "xyz-university-payment-api",
-        "projectPath": "C:\\Users\\wanja\\Desktop\\XYZ\\xyz-university-payment-api\\xyz-university-payment-api.csproj",
+        "projectPath": "C:\\Users\\wanja\\Desktop\\jj\\xyz-university-payment-api\\xyz-university-payment-api\\xyz-university-payment-api.csproj",
         "packagesPath": "C:\\Users\\wanja\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\wanja\\Desktop\\XYZ\\xyz-university-payment-api\\obj\\",
+        "outputPath": "C:\\Users\\wanja\\Desktop\\jj\\xyz-university-payment-api\\xyz-university-payment-api\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\wanja\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -63,10 +63,6 @@
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
               "version": "[8.0.4, )"
-            },
-            "Microsoft.AspNetCore.Mvc.Versioning": {
-              "target": "Package",
-              "version": "[5.1.0, )"
             },
             "Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer": {
               "target": "Package",

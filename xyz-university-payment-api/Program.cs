@@ -16,7 +16,6 @@ using System.Text;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 
-
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(new ConfigurationBuilder()
@@ -408,3 +407,5 @@ finally
 {
     Log.CloseAndFlush();
 }
+
+

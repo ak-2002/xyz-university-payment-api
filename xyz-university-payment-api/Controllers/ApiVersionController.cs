@@ -206,7 +206,7 @@ namespace xyz_university_payment_api.Controllers
                 Data = new
                 {
                     RecommendedVersion = recommendedVersion,
-                    VersionInfo = versionInfo,
+                    VersionInfo = versionInfo ?? new ApiVersionInfo(),
                     Reason = "Latest stable version with all features"
                 }
             });

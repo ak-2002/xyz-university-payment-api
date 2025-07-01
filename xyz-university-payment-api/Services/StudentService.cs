@@ -3,8 +3,13 @@
 using xyz_university_payment_api.Interfaces;
 using xyz_university_payment_api.Models;
 using xyz_university_payment_api.Exceptions;
+using xyz_university_payment_api.DTOs;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using System.Linq;
+using System.Collections.Generic;
+using static System.Math;
+using Microsoft.EntityFrameworkCore;
 
 namespace xyz_university_payment_api.Services
 {
@@ -413,24 +418,520 @@ namespace xyz_university_payment_api.Services
         {
             try
             {
-                // Invalidate student by number cache
-                var studentByNumberKey = _cacheService.GetStudentCacheKey($"number:{studentNumber}");
-                await _cacheService.RemoveAsync(studentByNumberKey);
-                
-                // Invalidate related payment caches
-                var studentPaymentsKey = _cacheService.GetPaymentCacheKey($"student:{studentNumber}");
-                await _cacheService.RemoveAsync(studentPaymentsKey);
-                
-                // Invalidate payment summary cache
-                var summaryKey = _cacheService.GetSummaryCacheKey(studentNumber);
-                await _cacheService.RemoveAsync(summaryKey);
-                
-                _logger.LogDebug("Invalidated caches for student: {StudentNumber}", studentNumber);
+                var cacheKeys = new[]
+                {
+                    _cacheService.GetStudentCacheKey($"number:{studentNumber}"),
+                    _cacheService.GetStudentCacheKey("all"),
+                    _cacheService.GetStudentCacheKey("active")
+                };
+
+                foreach (var key in cacheKeys)
+                {
+                    await _cacheService.RemoveAsync(key);
+                }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error invalidating caches for student: {StudentNumber}", studentNumber);
-                // Don't throw exception for cache invalidation failures
+                _logger.LogWarning(ex, "Failed to invalidate student caches for: {StudentNumber}", studentNumber);
+            }
+        }
+
+        // V3 Methods Implementation
+        public async Task<ApiResponse<PaginatedResponseDto<StudentDtoV3>>> GetStudentsV3Async(
+            StudentFilterDtoV3 filter, int page, int pageSize, string sortBy, string sortOrder, bool includeAnalytics)
+        {
+            try
+            {
+                _logger.LogInformation("Retrieving students V3 with filter: {@Filter}", filter);
+
+                var query = _unitOfWork.Students.Query();
+
+                // Apply filters
+                if (!string.IsNullOrEmpty(filter.StudentNumber))
+                    query = query.Where(s => s.StudentNumber.Contains(filter.StudentNumber));
+
+                if (!string.IsNullOrEmpty(filter.FullName))
+                    query = query.Where(s => s.FullName.Contains(filter.FullName));
+
+                if (!string.IsNullOrEmpty(filter.Program))
+                    query = query.Where(s => s.Program == filter.Program);
+
+                if (filter.IsActive.HasValue)
+                    query = query.Where(s => s.IsActive == filter.IsActive.Value);
+
+                if (filter.CreatedFrom.HasValue)
+                    query = query.Where(s => s.CreatedAt >= filter.CreatedFrom.Value);
+
+                if (filter.CreatedTo.HasValue)
+                    query = query.Where(s => s.CreatedAt <= filter.CreatedTo.Value);
+
+                if (!string.IsNullOrEmpty(filter.SearchTerm))
+                {
+                    query = query.Where(s => s.StudentNumber.Contains(filter.SearchTerm) ||
+                                           s.FullName.Contains(filter.SearchTerm) ||
+                                           s.Program.Contains(filter.SearchTerm));
+                }
+
+                // Apply sorting
+                query = sortBy.ToLower() switch
+                {
+                    "name" => sortOrder.ToLower() == "desc" ? query.OrderByDescending(s => s.FullName) : query.OrderBy(s => s.FullName),
+                    "program" => sortOrder.ToLower() == "desc" ? query.OrderByDescending(s => s.Program) : query.OrderBy(s => s.Program),
+                    "created" => sortOrder.ToLower() == "desc" ? query.OrderByDescending(s => s.CreatedAt) : query.OrderBy(s => s.CreatedAt),
+                    _ => sortOrder.ToLower() == "desc" ? query.OrderByDescending(s => s.Id) : query.OrderBy(s => s.Id)
+                };
+
+                var totalCount = await query.CountAsync();
+                var students = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+
+                // Calculate analytics values if needed
+                int activeStudents = 0;
+                int inactiveStudents = 0;
+                Dictionary<string, int> studentsByProgram = new();
+                
+                if (includeAnalytics)
+                {
+                    activeStudents = await query.CountAsync(st => st.IsActive);
+                    inactiveStudents = await query.CountAsync(st => !st.IsActive);
+                    studentsByProgram = await query.GroupBy(st => st.Program)
+                        .ToDictionaryAsync(g => g.Key, g => g.Count());
+                }
+
+                var studentDtos = students.Select(s => new StudentDtoV3
+                {
+                    Id = s.Id,
+                    StudentNumber = s.StudentNumber,
+                    FullName = s.FullName,
+                    Program = s.Program,
+                    IsActive = s.IsActive,
+                    CreatedAt = s.CreatedAt,
+                    UpdatedAt = s.UpdatedAt,
+                    Tags = new List<string>(), // TODO: Implement tags
+                    Metadata = new Dictionary<string, object>(), // TODO: Implement metadata
+                    Statistics = includeAnalytics ? new StudentStatisticsDto
+                    {
+                        TotalStudents = totalCount,
+                        ActiveStudents = activeStudents,
+                        InactiveStudents = inactiveStudents,
+                        StudentsByProgram = studentsByProgram
+                    } : new StudentStatisticsDto()
+                }).ToList();
+
+                var paginatedResponse = new PaginatedResponseDto<StudentDtoV3>
+                {
+                    Data = studentDtos,
+                    PageNumber = page,
+                    PageSize = pageSize,
+                    TotalCount = totalCount,
+                    TotalPages = (int)Math.Ceiling((double)totalCount / pageSize)
+                };
+
+                return new ApiResponse<PaginatedResponseDto<StudentDtoV3>>
+                {
+                    Success = true,
+                    Data = paginatedResponse,
+                    Message = "Students retrieved successfully"
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving students V3");
+                return new ApiResponse<PaginatedResponseDto<StudentDtoV3>>
+                {
+                    Success = false,
+                    Message = "Failed to retrieve students",
+                    Errors = new List<string> { ex.Message }
+                };
+            }
+        }
+
+        public async Task<ApiResponse<StudentDetailDtoV3>> GetStudentV3Async(int id, bool includePaymentHistory)
+        {
+            try
+            {
+                _logger.LogInformation("Retrieving student V3 with ID: {StudentId}", id);
+
+                var student = await GetStudentByIdAsync(id);
+                if (student == null)
+                {
+                    return new ApiResponse<StudentDetailDtoV3>
+                    {
+                        Success = false,
+                        Message = "Student not found"
+                    };
+                }
+
+                var studentDetail = new StudentDetailDtoV3
+                {
+                    Id = student.Id,
+                    StudentNumber = student.StudentNumber,
+                    FullName = student.FullName,
+                    Program = student.Program,
+                    IsActive = student.IsActive,
+                    CreatedAt = student.CreatedAt,
+                    UpdatedAt = student.UpdatedAt,
+                    Tags = new List<string>(), // TODO: Implement tags
+                    Metadata = new Dictionary<string, object>(), // TODO: Implement metadata
+                    Profile = new StudentProfileDto
+                    {
+                        Email = student.Email,
+                        PhoneNumber = student.PhoneNumber,
+                        DateOfBirth = student.DateOfBirth,
+                        Address = student.Address,
+                        EmergencyContact = "", // TODO: Add to model
+                        EmergencyPhone = "" // TODO: Add to model
+                    },
+                    Preferences = new StudentPreferencesDto(),
+                    RecentActivity = new List<StudentActivityDto>(),
+                    PaymentHistory = includePaymentHistory ? new List<PaymentDto>() : new List<PaymentDto>() // TODO: Get payment history
+                };
+
+                return new ApiResponse<StudentDetailDtoV3>
+                {
+                    Success = true,
+                    Data = studentDetail,
+                    Message = "Student details retrieved successfully"
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving student V3 with ID: {StudentId}", id);
+                return new ApiResponse<StudentDetailDtoV3>
+                {
+                    Success = false,
+                    Message = "Failed to retrieve student details",
+                    Errors = new List<string> { ex.Message }
+                };
+            }
+        }
+
+        public async Task<ApiResponse<StudentDtoV3>> CreateStudentV3Async(CreateStudentDtoV3 createStudentDto)
+        {
+            try
+            {
+                _logger.LogInformation("Creating student V3: {StudentNumber}", createStudentDto.StudentNumber);
+
+                var student = new Student
+                {
+                    StudentNumber = createStudentDto.StudentNumber,
+                    FullName = createStudentDto.FullName,
+                    Program = createStudentDto.Program,
+                    Email = createStudentDto.Email,
+                    PhoneNumber = createStudentDto.PhoneNumber,
+                    DateOfBirth = createStudentDto.DateOfBirth,
+                    Address = createStudentDto.Address,
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                var createdStudent = await CreateStudentAsync(student);
+
+                var studentDto = new StudentDtoV3
+                {
+                    Id = createdStudent.Id,
+                    StudentNumber = createdStudent.StudentNumber,
+                    FullName = createdStudent.FullName,
+                    Program = createdStudent.Program,
+                    IsActive = createdStudent.IsActive,
+                    CreatedAt = createdStudent.CreatedAt,
+                    UpdatedAt = createdStudent.UpdatedAt,
+                    Tags = createStudentDto.Tags,
+                    Metadata = createStudentDto.Metadata,
+                    Statistics = new StudentStatisticsDto()
+                };
+
+                return new ApiResponse<StudentDtoV3>
+                {
+                    Success = true,
+                    Data = studentDto,
+                    Message = "Student created successfully"
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating student V3: {StudentNumber}", createStudentDto.StudentNumber);
+                return new ApiResponse<StudentDtoV3>
+                {
+                    Success = false,
+                    Message = "Failed to create student",
+                    Errors = new List<string> { ex.Message }
+                };
+            }
+        }
+
+        public async Task<ApiResponse<StudentDtoV3>> UpdateStudentV3Async(int id, UpdateStudentDtoV3 updateStudentDto)
+        {
+            try
+            {
+                _logger.LogInformation("Updating student V3 with ID: {StudentId}", id);
+
+                var existingStudent = await GetStudentByIdAsync(id);
+                if (existingStudent == null)
+                {
+                    return new ApiResponse<StudentDtoV3>
+                    {
+                        Success = false,
+                        Message = "Student not found"
+                    };
+                }
+
+                // Update only provided fields
+                if (!string.IsNullOrEmpty(updateStudentDto.FullName))
+                    existingStudent.FullName = updateStudentDto.FullName;
+
+                if (!string.IsNullOrEmpty(updateStudentDto.Program))
+                    existingStudent.Program = updateStudentDto.Program;
+
+                if (!string.IsNullOrEmpty(updateStudentDto.Email))
+                    existingStudent.Email = updateStudentDto.Email;
+
+                if (!string.IsNullOrEmpty(updateStudentDto.PhoneNumber))
+                    existingStudent.PhoneNumber = updateStudentDto.PhoneNumber;
+
+                if (!string.IsNullOrEmpty(updateStudentDto.Address))
+                    existingStudent.Address = updateStudentDto.Address;
+
+                if (updateStudentDto.IsActive.HasValue)
+                    existingStudent.IsActive = updateStudentDto.IsActive.Value;
+
+                existingStudent.UpdatedAt = DateTime.UtcNow;
+
+                var updatedStudent = await UpdateStudentAsync(existingStudent);
+
+                var studentDto = new StudentDtoV3
+                {
+                    Id = updatedStudent.Id,
+                    StudentNumber = updatedStudent.StudentNumber,
+                    FullName = updatedStudent.FullName,
+                    Program = updatedStudent.Program,
+                    IsActive = updatedStudent.IsActive,
+                    CreatedAt = updatedStudent.CreatedAt,
+                    UpdatedAt = updatedStudent.UpdatedAt,
+                    Tags = updateStudentDto.Tags ?? new List<string>(),
+                    Metadata = updateStudentDto.Metadata ?? new Dictionary<string, object>(),
+                    Statistics = new StudentStatisticsDto()
+                };
+
+                return new ApiResponse<StudentDtoV3>
+                {
+                    Success = true,
+                    Data = studentDto,
+                    Message = "Student updated successfully"
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating student V3 with ID: {StudentId}", id);
+                return new ApiResponse<StudentDtoV3>
+                {
+                    Success = false,
+                    Message = "Failed to update student",
+                    Errors = new List<string> { ex.Message }
+                };
+            }
+        }
+
+        public async Task<ApiResponse<bool>> DeleteStudentV3Async(int id, bool permanent)
+        {
+            try
+            {
+                _logger.LogInformation("Deleting student V3 with ID: {StudentId}, Permanent: {Permanent}", id, permanent);
+
+                var result = await DeleteStudentAsync(id);
+
+                return new ApiResponse<bool>
+                {
+                    Success = result,
+                    Data = result,
+                    Message = result ? "Student deleted successfully" : "Failed to delete student"
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting student V3 with ID: {StudentId}", id);
+                return new ApiResponse<bool>
+                {
+                    Success = false,
+                    Data = false,
+                    Message = "Failed to delete student",
+                    Errors = new List<string> { ex.Message }
+                };
+            }
+        }
+
+        public async Task<ApiResponse<StudentAnalyticsDto>> GetStudentAnalyticsAsync(StudentAnalyticsFilterDto filter)
+        {
+            try
+            {
+                _logger.LogInformation("Retrieving student analytics with filter: {@Filter}", filter);
+
+                var query = _unitOfWork.Students.Query();
+
+                // Apply filters
+                if (filter.FromDate.HasValue)
+                    query = query.Where(s => s.CreatedAt >= filter.FromDate.Value);
+
+                if (filter.ToDate.HasValue)
+                    query = query.Where(s => s.CreatedAt <= filter.ToDate.Value);
+
+                if (!string.IsNullOrEmpty(filter.Program))
+                    query = query.Where(s => s.Program == filter.Program);
+
+                if (!filter.IncludeInactive)
+                    query = query.Where(s => s.IsActive);
+
+                var totalStudents = await query.CountAsync();
+                var activeStudents = await query.CountAsync(s => s.IsActive);
+
+                var analytics = new StudentAnalyticsDto
+                {
+                    TotalStudents = totalStudents,
+                    ActiveStudents = activeStudents,
+                    TotalRevenue = 0, // TODO: Calculate from payments
+                    AverageRevenuePerStudent = 0, // TODO: Calculate from payments
+                    StudentsByProgram = await query.GroupBy(s => s.Program)
+                        .ToDictionaryAsync(g => g.Key, g => g.Count()),
+                    RevenueByMonth = new Dictionary<string, decimal>(), // TODO: Calculate from payments
+                    Trends = new List<StudentTrendDto>(), // TODO: Calculate trends
+                    CustomMetrics = new Dictionary<string, object>()
+                };
+
+                return new ApiResponse<StudentAnalyticsDto>
+                {
+                    Success = true,
+                    Data = analytics,
+                    Message = "Student analytics retrieved successfully"
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving student analytics");
+                return new ApiResponse<StudentAnalyticsDto>
+                {
+                    Success = false,
+                    Message = "Failed to retrieve student analytics",
+                    Errors = new List<string> { ex.Message }
+                };
+            }
+        }
+
+        public async Task<ApiResponse<BulkOperationResultDto>> BulkOperationsAsync(BulkStudentOperationDto bulkOperation)
+        {
+            try
+            {
+                _logger.LogInformation("Performing bulk operation: {Operation} on {Count} students", 
+                    bulkOperation.Operation, bulkOperation.StudentIds.Count);
+
+                var result = new BulkOperationResultDto
+                {
+                    TotalProcessed = bulkOperation.StudentIds.Count,
+                    SuccessCount = 0,
+                    FailureCount = 0,
+                    Errors = new List<string>(),
+                    Details = new List<BulkOperationDetailDto>()
+                };
+
+                foreach (var studentId in bulkOperation.StudentIds)
+                {
+                    try
+                    {
+                        var detail = new BulkOperationDetailDto
+                        {
+                            StudentId = studentId,
+                            Success = false,
+                            Changes = new Dictionary<string, object>()
+                        };
+
+                        switch (bulkOperation.Operation.ToLower())
+                        {
+                            case "activate":
+                                await UpdateStudentStatusAsync(studentId, true);
+                                detail.Success = true;
+                                detail.Changes["Status"] = "Activated";
+                                break;
+
+                            case "deactivate":
+                                await UpdateStudentStatusAsync(studentId, false);
+                                detail.Success = true;
+                                detail.Changes["Status"] = "Deactivated";
+                                break;
+
+                            case "delete":
+                                await DeleteStudentAsync(studentId);
+                                detail.Success = true;
+                                detail.Changes["Action"] = "Deleted";
+                                break;
+
+                            default:
+                                detail.ErrorMessage = $"Unknown operation: {bulkOperation.Operation}";
+                                break;
+                        }
+
+                        if (detail.Success)
+                            result.SuccessCount++;
+                        else
+                            result.FailureCount++;
+
+                        result.Details.Add(detail);
+                    }
+                    catch (Exception ex)
+                    {
+                        result.FailureCount++;
+                        result.Errors.Add($"Student {studentId}: {ex.Message}");
+                        result.Details.Add(new BulkOperationDetailDto
+                        {
+                            StudentId = studentId,
+                            Success = false,
+                            ErrorMessage = ex.Message
+                        });
+                    }
+                }
+
+                return new ApiResponse<BulkOperationResultDto>
+                {
+                    Success = true,
+                    Data = result,
+                    Message = $"Bulk operation completed. Success: {result.SuccessCount}, Failed: {result.FailureCount}"
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error performing bulk operation");
+                return new ApiResponse<BulkOperationResultDto>
+                {
+                    Success = false,
+                    Message = "Failed to perform bulk operation",
+                    Errors = new List<string> { ex.Message }
+                };
+            }
+        }
+
+        public async Task<ApiResponse<byte[]>> ExportStudentsAsync(StudentFilterDtoV3 filter, string format, bool includePaymentHistory)
+        {
+            try
+            {
+                _logger.LogInformation("Exporting students with format: {Format}", format);
+
+                // For now, return empty byte array as placeholder
+                // TODO: Implement actual export logic
+                var exportData = new byte[0];
+
+                return new ApiResponse<byte[]>
+                {
+                    Success = true,
+                    Data = exportData,
+                    Message = "Students exported successfully"
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error exporting students");
+                return new ApiResponse<byte[]>
+                {
+                    Success = false,
+                    Message = "Failed to export students",
+                    Errors = new List<string> { ex.Message }
+                };
             }
         }
     }
