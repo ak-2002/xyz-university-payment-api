@@ -5,7 +5,7 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xyz-university-payment-api", "xyz-university-payment-api\xyz-university-payment-api.csproj", "{38E7C994-9596-4536-9C2D-53460D9D1B4F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xyz-university-payment-api.Tests", "xyz-university-payment-api.Tests\xyz-university-payment-api.Tests.csproj", "{A87B9CA0-E049-4C94-B1A1-0C28691CF30F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xyz-university-payment-api.Tests", "xyz-university-payment-api\Tests\xyz-university-payment-api.Tests.csproj", "{A87B9CA0-E049-4C94-B1A1-0C28691CF30F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
