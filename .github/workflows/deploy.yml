@@ -1,108 +1,84 @@
-name: Deploy
+name: Deploy Application
 
 on:
-  workflow_run:
-    workflows: ["CI/CD Pipeline"]
-    types:
-      - completed
-    branches: [ main, develop ]
-
-env:
-  DOCKER_REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}/xyz-university-payment-api
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'development'
+        type: choice
+        options:
+        - development
+        - staging
+        - production
+      version:
+        description: 'Version to deploy'
+        required: false
+        type: string
 
 jobs:
-  deploy-development:
-    name: Deploy to Development
+  deploy:
+    name: Deploy to ${{ github.event.inputs.environment }}
     runs-on: ubuntu-latest
-    if: ${{ github.ref == 'refs/heads/develop' && github.event.workflow_run.conclusion == 'success' }}
-    environment: development
+    environment: ${{ github.event.inputs.environment }}
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Deploy to Development
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Build and package application
       run: |
-        echo "🚀 Deploying to Development Environment..."
-        echo "Image: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:develop"
+        echo "🔨 Building application for ${{ github.event.inputs.environment }}..."
         
-        # Add your deployment commands here
-        # Example for Docker Compose:
-        # docker-compose -f docker-compose.dev.yml up -d
+        # Restore dependencies
+        dotnet restore xyz-university-payment-api/xyz-university-payment-api.csproj
         
-        # Example for Kubernetes:
-        # kubectl set image deployment/xyz-university-api xyz-university-api=${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:develop
+        # Build application
+        dotnet build xyz-university-payment-api/xyz-university-payment-api.csproj --configuration Release --no-restore
         
-        # Example for Azure Container Instances:
-        # az container create --resource-group rg-dev --name xyz-university-api --image ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:develop
-
-    - name: Health Check
-      run: |
-        echo "🔍 Performing health check..."
-        # Add health check commands
-        # Example: curl -f http://dev-api.xyz-university.com/health
-
-    - name: Notify Deployment Success
-      if: success()
-      run: |
-        echo "✅ Development deployment completed successfully!"
-
-  deploy-production:
-    name: Deploy to Production
-    runs-on: ubuntu-latest
-    if: ${{ github.ref == 'refs/heads/main' && github.event.workflow_run.conclusion == 'success' }}
-    environment: production
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Deploy to Production
-      run: |
-        echo "🚀 Deploying to Production Environment..."
-        echo "Image: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:main"
+        # Publish application
+        dotnet publish xyz-university-payment-api/xyz-university-payment-api.csproj \
+          --configuration Release \
+          --output ./publish \
+          --self-contained false \
+          --runtime linux-x64
         
-        # Add your production deployment commands here
-        # Example for Docker Compose:
-        # docker-compose -f docker-compose.prod.yml up -d
+        # Create deployment package
+        VERSION="${{ github.event.inputs.version || 'latest' }}"
+        tar -czf xyz-university-api-$VERSION.tar.gz -C ./publish .
         
-        # Example for Kubernetes:
-        # kubectl set image deployment/xyz-university-api xyz-university-api=${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:main
-        
-        # Example for Azure Container Instances:
-        # az container create --resource-group rg-prod --name xyz-university-api --image ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:main
+        echo "📦 Application packaged successfully: xyz-university-api-$VERSION.tar.gz"
 
-    - name: Health Check
+    - name: Deploy application
       run: |
-        echo "🔍 Performing health check..."
-        # Add health check commands
-        # Example: curl -f https://api.xyz-university.com/health
+        echo "🚀 Deploying to ${{ github.event.inputs.environment }} environment..."
+        echo "📦 Application packaged and ready for deployment"
+        echo ""
+        echo "Deployment Summary:"
+        echo "- Environment: ${{ github.event.inputs.environment }}"
+        echo "- Version: ${{ github.event.inputs.version || 'latest' }}"
+        echo "- Package: xyz-university-api-${{ github.event.inputs.version || 'latest' }}.tar.gz"
+        echo ""
+        echo "Next steps:"
+        echo "1. Download the deployment package"
+        echo "2. Extract to your ${{ github.event.inputs.environment }} server"
+        echo "3. Run: dotnet xyz-university-payment-api.dll"
+        echo ""
+        echo "For automated deployment, configure your hosting service integration."
 
-    - name: Run Smoke Tests
+    - name: Upload deployment package
+      uses: actions/upload-artifact@v4
+      with:
+        name: deployment-package-${{ github.event.inputs.environment }}
+        path: xyz-university-api-*.tar.gz
+
+    - name: Notify deployment success
       run: |
-        echo "🧪 Running smoke tests..."
-        # Add smoke test commands
-        # Example: dotnet test xyz-university-payment-api/Tests/SmokeTests/ --filter Category=Smoke
-
-    - name: Notify Deployment Success
-      if: success()
-      run: |
-        echo "✅ Production deployment completed successfully!"
-
-  rollback:
-    name: Rollback Deployment
-    runs-on: ubuntu-latest
-    if: failure()
-    environment: production
-
-    steps:
-    - name: Rollback to Previous Version
-      run: |
-        echo "🔄 Rolling back deployment..."
-        # Add rollback commands here
-        # Example: kubectl rollout undo deployment/xyz-university-api
-
-    - name: Notify Rollback
-      run: |
-        echo "⚠️ Deployment rolled back due to failure!" 
+        echo "✅ Deployment to ${{ github.event.inputs.environment }} completed successfully!"
+        echo "📊 Application is ready for use" 

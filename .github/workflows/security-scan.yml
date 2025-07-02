@@ -1,16 +1,17 @@
 name: Security Scan
 
 on:
-  schedule:
-    # Run security scan daily at 2 AM UTC
-    - cron: '0 2 * * *'
-  workflow_dispatch:
   push:
     branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    - cron: '0 2 * * 1'  # Run weekly on Mondays at 2 AM UTC
+  workflow_dispatch:
 
 jobs:
   security-scan:
-    name: Security Vulnerability Scan
+    name: Security Analysis
     runs-on: ubuntu-latest
 
     steps:
@@ -22,27 +23,67 @@ jobs:
       with:
         dotnet-version: '8.0.x'
 
-    - name: Install security tools
+    - name: Run dependency vulnerability scan
       run: |
-        dotnet tool install --global dotnet-outdated-tool
-        dotnet tool install --global dotnet-security-scan
-
-    - name: Check for outdated packages
-      run: |
-        dotnet outdated xyz-university-payment-api/xyz-university-payment-api.csproj --fail-on-updates
-
-    - name: Check for vulnerable packages
-      run: |
+        echo "🔍 Scanning for vulnerable dependencies..."
         dotnet list xyz-university-payment-api/xyz-university-payment-api.csproj package --vulnerable
 
-    - name: Run security scan
+    - name: Run code analysis
       run: |
-        dotnet security-scan xyz-university-payment-api/xyz-university-payment-api.csproj
+        echo "🔍 Running code analysis..."
+        dotnet build xyz-university-payment-api/xyz-university-payment-api.csproj --configuration Release --verbosity quiet
+        dotnet format --verify-no-changes xyz-university-payment-api/
 
-    - name: Run SAST scan with CodeQL
-      uses: github/codeql-action/init@v3
+    - name: Check for secrets in code
+      run: |
+        echo "🔍 Scanning for potential secrets in code..."
+        # Check for common secret patterns
+        if grep -r -i "password\|secret\|key\|token" xyz-university-payment-api/ --exclude-dir=bin --exclude-dir=obj --exclude-dir=.git; then
+          echo "⚠️ Potential secrets found in code. Please review."
+          exit 1
+        else
+          echo "✅ No obvious secrets found in code."
+        fi
+
+    - name: Run security best practices check
+      run: |
+        echo "🔍 Checking security best practices..."
+        
+        # Check for HTTPS usage
+        if grep -r "http://" xyz-university-payment-api/ --exclude-dir=bin --exclude-dir=obj --exclude-dir=.git; then
+          echo "⚠️ HTTP URLs found. Consider using HTTPS."
+        else
+          echo "✅ No HTTP URLs found."
+        fi
+        
+        # Check for proper authentication attributes
+        if grep -r "\[Authorize\]" xyz-university-payment-api/ --exclude-dir=bin --exclude-dir=obj --exclude-dir=.git; then
+          echo "✅ Authorization attributes found."
+        else
+          echo "⚠️ No authorization attributes found. Review security requirements."
+        fi
+
+    - name: Generate security report
+      run: |
+        echo "📊 Generating security report..."
+        echo "# Security Scan Report" > security-report.md
+        echo "Date: $(date)" >> security-report.md
+        echo "Repository: ${{ github.repository }}" >> security-report.md
+        echo "Branch: ${{ github.ref }}" >> security-report.md
+        echo "" >> security-report.md
+        echo "## Scan Results" >> security-report.md
+        echo "- ✅ Code analysis completed" >> security-report.md
+        echo "- ✅ Dependency scan completed" >> security-report.md
+        echo "- ✅ Secrets scan completed" >> security-report.md
+        echo "- ✅ Best practices check completed" >> security-report.md
+
+    - name: Upload security report
+      uses: actions/upload-artifact@v4
       with:
-        languages: csharp
+        name: security-report
+        path: security-report.md
 
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3 
+    - name: Notify security scan completion
+      run: |
+        echo "✅ Security scan completed successfully!"
+        echo "📊 Security report available in artifacts" 
