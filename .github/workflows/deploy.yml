@@ -1,0 +1,108 @@
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: ["CI/CD Pipeline"]
+    types:
+      - completed
+    branches: [ main, develop ]
+
+env:
+  DOCKER_REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/xyz-university-payment-api
+
+jobs:
+  deploy-development:
+    name: Deploy to Development
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/develop' && github.event.workflow_run.conclusion == 'success' }}
+    environment: development
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy to Development
+      run: |
+        echo "🚀 Deploying to Development Environment..."
+        echo "Image: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:develop"
+        
+        # Add your deployment commands here
+        # Example for Docker Compose:
+        # docker-compose -f docker-compose.dev.yml up -d
+        
+        # Example for Kubernetes:
+        # kubectl set image deployment/xyz-university-api xyz-university-api=${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:develop
+        
+        # Example for Azure Container Instances:
+        # az container create --resource-group rg-dev --name xyz-university-api --image ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:develop
+
+    - name: Health Check
+      run: |
+        echo "🔍 Performing health check..."
+        # Add health check commands
+        # Example: curl -f http://dev-api.xyz-university.com/health
+
+    - name: Notify Deployment Success
+      if: success()
+      run: |
+        echo "✅ Development deployment completed successfully!"
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/main' && github.event.workflow_run.conclusion == 'success' }}
+    environment: production
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy to Production
+      run: |
+        echo "🚀 Deploying to Production Environment..."
+        echo "Image: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:main"
+        
+        # Add your production deployment commands here
+        # Example for Docker Compose:
+        # docker-compose -f docker-compose.prod.yml up -d
+        
+        # Example for Kubernetes:
+        # kubectl set image deployment/xyz-university-api xyz-university-api=${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:main
+        
+        # Example for Azure Container Instances:
+        # az container create --resource-group rg-prod --name xyz-university-api --image ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:main
+
+    - name: Health Check
+      run: |
+        echo "🔍 Performing health check..."
+        # Add health check commands
+        # Example: curl -f https://api.xyz-university.com/health
+
+    - name: Run Smoke Tests
+      run: |
+        echo "🧪 Running smoke tests..."
+        # Add smoke test commands
+        # Example: dotnet test xyz-university-payment-api/Tests/SmokeTests/ --filter Category=Smoke
+
+    - name: Notify Deployment Success
+      if: success()
+      run: |
+        echo "✅ Production deployment completed successfully!"
+
+  rollback:
+    name: Rollback Deployment
+    runs-on: ubuntu-latest
+    if: failure()
+    environment: production
+
+    steps:
+    - name: Rollback to Previous Version
+      run: |
+        echo "🔄 Rolling back deployment..."
+        # Add rollback commands here
+        # Example: kubectl rollout undo deployment/xyz-university-api
+
+    - name: Notify Rollback
+      run: |
+        echo "⚠️ Deployment rolled back due to failure!" 
