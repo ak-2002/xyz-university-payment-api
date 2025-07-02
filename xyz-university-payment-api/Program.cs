@@ -1,10 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using xyz_university_payment_api.Data;
-using xyz_university_payment_api.Services;
-using xyz_university_payment_api.Models;
-using xyz_university_payment_api.Interfaces;
-using xyz_university_payment_api.Filters;
+using xyz_university_payment_api.Infrastructure.Data;
+using xyz_university_payment_api.Core.Application.Services;
+using xyz_university_payment_api.Core.Domain.Entities;
+using xyz_university_payment_api.Core.Application.Interfaces;
+using xyz_university_payment_api.Presentation.Filters;
+using xyz_university_payment_api.Infrastructure.External.Caching;
+using xyz_university_payment_api.Core.Shared.Constants;
 using Serilog;
 using Serilog.Events;
 using MassTransit;
@@ -77,29 +79,29 @@ try
     });
 
     // Configure Redis settings
-    builder.Services.Configure<RedisConfig>(builder.Configuration.GetSection("Redis"));
+    builder.Services.Configure<xyz_university_payment_api.Infrastructure.External.Caching.RedisConfig>(builder.Configuration.GetSection("Redis"));
 
     // Configure API Versioning
-    builder.Services.Configure<ApiVersionConfig>(builder.Configuration.GetSection("ApiVersioning"));
+    builder.Services.Configure<xyz_university_payment_api.Core.Shared.Constants.ApiVersionConfig>(builder.Configuration.GetSection("ApiVersioning"));
 
     // Register Cache Service
-    builder.Services.AddScoped<ICacheService, CacheService>();
+    builder.Services.AddScoped<ICacheService, xyz_university_payment_api.Core.Application.Services.CacheService>();
 
     // Register API Version Service
-    builder.Services.AddScoped<ApiVersionService>();
+    builder.Services.AddScoped<xyz_university_payment_api.Core.Application.Services.ApiVersionService>();
 
     // Register Unit of Work and Generic Repository
-    builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+    builder.Services.AddScoped<IUnitOfWork, xyz_university_payment_api.Infrastructure.Data.UnitOfWork>();
 
     // Register Services
-    builder.Services.AddScoped<IStudentService, StudentService>();
-    builder.Services.AddScoped<IPaymentService, PaymentService>();
-    builder.Services.AddScoped<ILoggingService, LoggingService>();
-    builder.Services.AddScoped<IMessagePublisher, RabbitMQMessagePublisher>();
+    builder.Services.AddScoped<IStudentService, xyz_university_payment_api.Core.Application.Services.StudentService>();
+    builder.Services.AddScoped<IPaymentService, xyz_university_payment_api.Core.Application.Services.PaymentService>();
+    builder.Services.AddScoped<ILoggingService, xyz_university_payment_api.Core.Application.Services.LoggingService>();
+    builder.Services.AddScoped<IMessagePublisher, xyz_university_payment_api.Core.Application.Services.RabbitMQMessagePublisher>();
 
     // Register Authorization Services
-    builder.Services.AddScoped<IAuthorizationService, AuthorizationService>();
-    builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+    builder.Services.AddScoped<IAuthorizationService, xyz_university_payment_api.Core.Application.Services.AuthorizationService>();
+    builder.Services.AddScoped<IJwtTokenService, xyz_university_payment_api.Core.Application.Services.JwtTokenService>();
 
     // Add AutoMapper
     builder.Services.AddAutoMapper(typeof(Program).Assembly);
@@ -113,9 +115,9 @@ try
     {
 
         //Register Consumers
-        x.AddConsumer<PaymentProcessedMessageConsumer>();
-        x.AddConsumer<PaymentFailedMessageConsumer>();
-        x.AddConsumer<PaymentValidationMessageConsumer>();
+        x.AddConsumer<xyz_university_payment_api.Core.Application.Services.PaymentProcessedMessageConsumer>();
+        x.AddConsumer<xyz_university_payment_api.Core.Application.Services.PaymentFailedMessageConsumer>();
+        x.AddConsumer<xyz_university_payment_api.Core.Application.Services.PaymentValidationMessageConsumer>();
         
         x.UsingRabbitMq((
             context, cfg ) =>

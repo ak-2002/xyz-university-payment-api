@@ -559,11 +559,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\wanja\\Desktop\\XYZ\\IdentityServer\\IdentityServer.csproj",
+      "projectUniqueName": "C:\\Users\\wanja\\Desktop\\jj\\xyz-university-payment-api\\IdentityServer\\IdentityServer.csproj",
       "projectName": "IdentityServer",
-      "projectPath": "C:\\Users\\wanja\\Desktop\\XYZ\\IdentityServer\\IdentityServer.csproj",
+      "projectPath": "C:\\Users\\wanja\\Desktop\\jj\\xyz-university-payment-api\\IdentityServer\\IdentityServer.csproj",
       "packagesPath": "C:\\Users\\wanja\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\wanja\\Desktop\\XYZ\\IdentityServer\\obj\\",
+      "outputPath": "C:\\Users\\wanja\\Desktop\\jj\\xyz-university-payment-api\\IdentityServer\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\wanja\\AppData\\Roaming\\NuGet\\NuGet.Config"
