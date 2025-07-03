@@ -12,7 +12,7 @@ namespace xyz_university_payment_api.Presentation.Filters
         {
             // Add API version header parameter
             operation.Parameters ??= new List<OpenApiParameter>();
-            
+
             operation.Parameters.Add(new OpenApiParameter
             {
                 Name = "X-API-Version",
@@ -33,4 +33,4 @@ namespace xyz_university_payment_api.Presentation.Filters
             }
         }
     }
-} 
+}

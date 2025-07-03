@@ -87,14 +87,14 @@ namespace xyz_university_payment_api.Core.Application.Services
             }
 
             // Check if username is being changed and if it already exists
-            if (updateUserDto.Username != user.Username && 
+            if (updateUserDto.Username != user.Username &&
                 await _context.Users.AnyAsync(u => u.Username == updateUserDto.Username))
             {
                 throw new ValidationException("Username already exists", new List<string> { "Username must be unique" });
             }
 
             // Check if email is being changed and if it already exists
-            if (updateUserDto.Email != user.Email && 
+            if (updateUserDto.Email != user.Email &&
                 await _context.Users.AnyAsync(u => u.Email == updateUserDto.Email))
             {
                 throw new ValidationException("Email already exists", new List<string> { "Email must be unique" });
@@ -369,7 +369,7 @@ namespace xyz_university_payment_api.Core.Application.Services
             }
 
             // Check if role name is being changed and if it already exists
-            if (updateRoleDto.Name != role.Name && 
+            if (updateRoleDto.Name != role.Name &&
                 await _context.Roles.AnyAsync(r => r.Name == updateRoleDto.Name))
             {
                 throw new ValidationException("Role name already exists", new List<string> { "Name must be unique" });
@@ -493,11 +493,11 @@ namespace xyz_university_payment_api.Core.Application.Services
         public async Task<PermissionDto> CreatePermissionAsync(CreatePermissionDto createPermissionDto)
         {
             // Check if permission already exists for the same resource and action
-            if (await _context.Permissions.AnyAsync(p => 
-                p.Resource == createPermissionDto.Resource && 
+            if (await _context.Permissions.AnyAsync(p =>
+                p.Resource == createPermissionDto.Resource &&
                 p.Action == createPermissionDto.Action))
             {
-                throw new ValidationException("Permission already exists for this resource and action", 
+                throw new ValidationException("Permission already exists for this resource and action",
                     new List<string> { "Resource and Action combination must be unique" });
             }
 
@@ -530,12 +530,12 @@ namespace xyz_university_payment_api.Core.Application.Services
 
             // Check if permission is being changed and if it already exists
             if ((updatePermissionDto.Resource != permission.Resource || updatePermissionDto.Action != permission.Action) &&
-                await _context.Permissions.AnyAsync(p => 
-                    p.Resource == updatePermissionDto.Resource && 
+                await _context.Permissions.AnyAsync(p =>
+                    p.Resource == updatePermissionDto.Resource &&
                     p.Action == updatePermissionDto.Action &&
                     p.Id != permissionId))
             {
-                throw new ValidationException("Permission already exists for this resource and action", 
+                throw new ValidationException("Permission already exists for this resource and action",
                     new List<string> { "Resource and Action combination must be unique" });
             }
 
@@ -786,19 +786,19 @@ namespace xyz_university_payment_api.Core.Application.Services
             }
 
             // Check if user has the required permission through any of their roles
-            return user.UserRoles.Any(ur => 
-                ur.Role.IsActive && 
-                ur.Role.RolePermissions.Any(rp => 
-                    rp.Permission.IsActive && 
-                    rp.Permission.Resource == resource && 
+            return user.UserRoles.Any(ur =>
+                ur.Role.IsActive &&
+                ur.Role.RolePermissions.Any(rp =>
+                    rp.Permission.IsActive &&
+                    rp.Permission.Resource == resource &&
                     rp.Permission.Action == action));
         }
 
         public async Task<PermissionCheckResultDto> CheckPermissionAsync(CheckPermissionDto checkPermissionDto)
         {
             var hasPermission = await HasPermissionAsync(
-                checkPermissionDto.Username, 
-                checkPermissionDto.Resource, 
+                checkPermissionDto.Username,
+                checkPermissionDto.Resource,
                 checkPermissionDto.Action);
 
             var userRoles = await GetUserRolesAsync(checkPermissionDto.Username);
@@ -983,8 +983,8 @@ namespace xyz_university_payment_api.Core.Application.Services
             }).ToList();
 
             // Manager gets most permissions except user/role management
-            var managerPermissions = permissions.Where(p => 
-                !p.Resource.Equals("Users", StringComparison.OrdinalIgnoreCase) && 
+            var managerPermissions = permissions.Where(p =>
+                !p.Resource.Equals("Users", StringComparison.OrdinalIgnoreCase) &&
                 !p.Resource.Equals("Roles", StringComparison.OrdinalIgnoreCase)).ToList();
             var managerRolePermissions = managerPermissions.Select(p => new RolePermission
             {
@@ -995,9 +995,9 @@ namespace xyz_university_payment_api.Core.Application.Services
             }).ToList();
 
             // Staff gets read permissions for payments and students
-            var staffPermissions = permissions.Where(p => 
-                (p.Resource.Equals("Payments", StringComparison.OrdinalIgnoreCase) || 
-                 p.Resource.Equals("Students", StringComparison.OrdinalIgnoreCase)) && 
+            var staffPermissions = permissions.Where(p =>
+                (p.Resource.Equals("Payments", StringComparison.OrdinalIgnoreCase) ||
+                 p.Resource.Equals("Students", StringComparison.OrdinalIgnoreCase)) &&
                 p.Action.Equals("Read", StringComparison.OrdinalIgnoreCase)).ToList();
             var staffRolePermissions = staffPermissions.Select(p => new RolePermission
             {
@@ -1008,8 +1008,8 @@ namespace xyz_university_payment_api.Core.Application.Services
             }).ToList();
 
             // Student gets read permissions for their own data only
-            var studentPermissions = permissions.Where(p => 
-                p.Resource.Equals("Students", StringComparison.OrdinalIgnoreCase) && 
+            var studentPermissions = permissions.Where(p =>
+                p.Resource.Equals("Students", StringComparison.OrdinalIgnoreCase) &&
                 p.Action.Equals("Read", StringComparison.OrdinalIgnoreCase)).ToList();
             var studentRolePermissions = studentPermissions.Select(p => new RolePermission
             {
@@ -1073,4 +1073,4 @@ namespace xyz_university_payment_api.Core.Application.Services
 
         #endregion
     }
-} 
+}

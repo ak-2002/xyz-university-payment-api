@@ -13,7 +13,7 @@ namespace xyz_university_payment_api.Core.Domain.Entities
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? LastLoginAt { get; set; }
-        
+
         // Navigation properties
         public List<UserRole> UserRoles { get; set; } = new List<UserRole>();
     }
@@ -26,7 +26,7 @@ namespace xyz_university_payment_api.Core.Domain.Entities
         public string Description { get; set; } = string.Empty;
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        
+
         // Navigation properties
         public List<UserRole> UserRoles { get; set; } = new List<UserRole>();
         public List<RolePermission> RolePermissions { get; set; } = new List<RolePermission>();
@@ -42,7 +42,7 @@ namespace xyz_university_payment_api.Core.Domain.Entities
         public string Action { get; set; } = string.Empty; // e.g., "Read", "Write", "Delete"
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        
+
         // Navigation properties
         public List<RolePermission> RolePermissions { get; set; } = new List<RolePermission>();
     }
@@ -54,7 +54,7 @@ namespace xyz_university_payment_api.Core.Domain.Entities
         public int RoleId { get; set; }
         public DateTime AssignedAt { get; set; } = DateTime.UtcNow;
         public string? AssignedBy { get; set; }
-        
+
         // Navigation properties
         public User User { get; set; } = new User();
         public Role Role { get; set; } = new Role();
@@ -67,7 +67,7 @@ namespace xyz_university_payment_api.Core.Domain.Entities
         public int PermissionId { get; set; }
         public DateTime AssignedAt { get; set; } = DateTime.UtcNow;
         public string? AssignedBy { get; set; }
-        
+
         // Navigation properties
         public Role Role { get; set; } = new Role();
         public Permission Permission { get; set; } = new Permission();

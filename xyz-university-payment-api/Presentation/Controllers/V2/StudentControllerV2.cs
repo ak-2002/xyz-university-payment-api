@@ -34,14 +34,14 @@ namespace xyz_university_payment_api.Presentation.Controllers.V2
         {
             _logger.LogInformation("V2 GetAllStudents endpoint called");
             var students = await _studentService.GetAllStudentsAsync();
-            
+
             var studentDtos = _mapper.Map<List<StudentDto>>(students);
-            
+
             var totalCount = studentDtos.Count;
             var totalPages = (int)Math.Ceiling((double)totalCount / pagination.PageSize);
             var hasPreviousPage = pagination.PageNumber > 1;
             var hasNextPage = pagination.PageNumber < totalPages;
-            
+
             var pagedStudents = studentDtos
                 .Skip((pagination.PageNumber - 1) * pagination.PageSize)
                 .Take(pagination.PageSize)
@@ -80,7 +80,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V2
         {
             _logger.LogInformation("V2 GetStudentById endpoint called with ID: {StudentId}", id);
             var student = await _studentService.GetStudentByIdAsync(id);
-            
+
             var studentDto = _mapper.Map<StudentDto>(student);
             return Ok(new ApiResponseDto<StudentDto>
             {
@@ -101,7 +101,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V2
         {
             _logger.LogInformation("V2 GetStudentByNumber endpoint called with number: {StudentNumber}", studentNumber);
             var student = await _studentService.GetStudentByNumberAsync(studentNumber);
-            
+
             var studentDto = _mapper.Map<StudentDto>(student);
             return Ok(new ApiResponseDto<StudentDto>
             {
@@ -116,11 +116,11 @@ namespace xyz_university_payment_api.Presentation.Controllers.V2
         public async Task<IActionResult> CreateStudent([FromBody] CreateStudentDto createStudentDto)
         {
             _logger.LogInformation("V2 CreateStudent endpoint called for student: {StudentNumber}", createStudentDto.StudentNumber);
-            
+
             var student = _mapper.Map<Student>(createStudentDto);
             var createdStudent = await _studentService.CreateStudentAsync(student);
             var studentDto = _mapper.Map<StudentDto>(createdStudent);
-            
+
             return CreatedAtAction(nameof(GetStudentById), new { id = createdStudent.Id }, new ApiResponseDto<StudentDto>
             {
                 Success = true,
@@ -134,13 +134,13 @@ namespace xyz_university_payment_api.Presentation.Controllers.V2
         public async Task<IActionResult> UpdateStudent(int id, [FromBody] UpdateStudentDto updateStudentDto)
         {
             _logger.LogInformation("V2 UpdateStudent endpoint called for student ID: {StudentId}", id);
-            
+
             var student = _mapper.Map<Student>(updateStudentDto);
             student.Id = id;
-            
+
             var updatedStudent = await _studentService.UpdateStudentAsync(student);
             var studentDto = _mapper.Map<StudentDto>(updatedStudent);
-            
+
             return Ok(new ApiResponseDto<StudentDto>
             {
                 Success = true,
@@ -154,9 +154,9 @@ namespace xyz_university_payment_api.Presentation.Controllers.V2
         public async Task<IActionResult> DeleteStudent(int id)
         {
             _logger.LogInformation("V2 DeleteStudent endpoint called for student ID: {StudentId}", id);
-            
+
             var result = await _studentService.DeleteStudentAsync(id);
-            
+
             return Ok(new ApiResponseDto<object>
             {
                 Success = result,
@@ -171,14 +171,14 @@ namespace xyz_university_payment_api.Presentation.Controllers.V2
         {
             _logger.LogInformation("V2 GetActiveStudents endpoint called");
             var students = await _studentService.GetActiveStudentsAsync();
-            
+
             var studentDtos = _mapper.Map<List<StudentDto>>(students);
-            
+
             var totalCount = studentDtos.Count;
             var totalPages = (int)Math.Ceiling((double)totalCount / pagination.PageSize);
             var hasPreviousPage = pagination.PageNumber > 1;
             var hasNextPage = pagination.PageNumber < totalPages;
-            
+
             var pagedStudents = studentDtos
                 .Skip((pagination.PageNumber - 1) * pagination.PageSize)
                 .Take(pagination.PageSize)
@@ -210,9 +210,9 @@ namespace xyz_university_payment_api.Presentation.Controllers.V2
         public async Task<IActionResult> GetStudentAnalytics()
         {
             _logger.LogInformation("V2 GetStudentAnalytics endpoint called");
-            
+
             var students = await _studentService.GetAllStudentsAsync();
-            
+
             var analytics = new
             {
                 TotalStudents = students.Count(),
@@ -243,7 +243,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V2
         public async Task<IActionResult> SearchStudents([FromQuery] string q, [FromQuery] PaginationDto pagination)
         {
             _logger.LogInformation("V2 SearchStudents endpoint called with query: {Query}", q);
-            
+
             if (string.IsNullOrWhiteSpace(q))
             {
                 return BadRequest(new ApiResponseDto<object>
@@ -252,15 +252,15 @@ namespace xyz_university_payment_api.Presentation.Controllers.V2
                     Message = "Search query is required (V2)"
                 });
             }
-            
+
             var students = await _studentService.SearchStudentsAsync(q);
             var studentDtos = _mapper.Map<List<StudentDto>>(students);
-            
+
             var totalCount = studentDtos.Count;
             var totalPages = (int)Math.Ceiling((double)totalCount / pagination.PageSize);
             var hasPreviousPage = pagination.PageNumber > 1;
             var hasNextPage = pagination.PageNumber < totalPages;
-            
+
             var pagedStudents = studentDtos
                 .Skip((pagination.PageNumber - 1) * pagination.PageSize)
                 .Take(pagination.PageSize)

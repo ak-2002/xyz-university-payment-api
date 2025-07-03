@@ -33,9 +33,9 @@ try
 
     // Early exit for EF commands
     var commandArgs = Environment.GetCommandLineArgs();
-    var isEfCommand = commandArgs.Any(arg => 
-        arg.Contains("ef") || 
-        arg.Contains("migrations") || 
+    var isEfCommand = commandArgs.Any(arg =>
+        arg.Contains("ef") ||
+        arg.Contains("migrations") ||
         arg.Contains("database") ||
         arg.Contains("dotnet"));
 
@@ -55,7 +55,7 @@ try
         .ReadFrom.Services(services)
         .Enrich.FromLogContext()
         .WriteTo.Console()
-        .WriteTo.File("Logs/xyz-university-api-.log", 
+        .WriteTo.File("Logs/xyz-university-api-.log",
             rollingInterval: RollingInterval.Day,
             retainedFileCountLimit: 30,
             fileSizeLimitBytes: 10 * 1024 * 1024, // 10MB
@@ -118,9 +118,9 @@ try
         x.AddConsumer<xyz_university_payment_api.Core.Application.Services.PaymentProcessedMessageConsumer>();
         x.AddConsumer<xyz_university_payment_api.Core.Application.Services.PaymentFailedMessageConsumer>();
         x.AddConsumer<xyz_university_payment_api.Core.Application.Services.PaymentValidationMessageConsumer>();
-        
+
         x.UsingRabbitMq((
-            context, cfg ) =>
+            context, cfg) =>
             {
                 cfg.Host("localhost", "/", h =>
                 {
@@ -140,7 +140,7 @@ try
         options.Filters.Add<GlobalExceptionFilter>();
     });
 
-    builder.Services.AddCors(options => 
+    builder.Services.AddCors(options =>
     {
         options.AddPolicy("AllowAll", policy =>
         {
@@ -155,8 +155,9 @@ try
     builder.Services.AddSwaggerGen(c =>
     {
         // Add version-specific documents
-        c.SwaggerDoc("v1", new OpenApiInfo { 
-            Title = "XYZ University Payment API v1 (Deprecated)", 
+        c.SwaggerDoc("v1", new OpenApiInfo
+        {
+            Title = "XYZ University Payment API v1 (Deprecated)",
             Version = "v1",
             Description = @"## V1 API Endpoints (Deprecated - Use V2 or V3)
 
@@ -197,8 +198,9 @@ try
             }
         });
 
-        c.SwaggerDoc("v2", new OpenApiInfo { 
-            Title = "XYZ University Payment API v2", 
+        c.SwaggerDoc("v2", new OpenApiInfo
+        {
+            Title = "XYZ University Payment API v2",
             Version = "v2",
             Description = @"## V2 API Endpoints (Recommended)
 
@@ -243,8 +245,9 @@ try
             }
         });
 
-        c.SwaggerDoc("v3", new OpenApiInfo { 
-            Title = "XYZ University Payment API v3", 
+        c.SwaggerDoc("v3", new OpenApiInfo
+        {
+            Title = "XYZ University Payment API v3",
             Version = "v3",
             Description = @"## V3 API Endpoints (Latest Features)
 
@@ -476,7 +479,7 @@ try
     if (app.Environment.IsDevelopment())
     {
         app.UseSwagger();
-        
+
         app.UseSwaggerUI(c =>
         {
             c.SwaggerEndpoint("/swagger/v1/swagger.json", "XYZ University Payment API v1 (Deprecated)");

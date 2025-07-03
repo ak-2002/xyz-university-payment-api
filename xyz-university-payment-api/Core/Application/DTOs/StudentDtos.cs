@@ -239,4 +239,4 @@ namespace xyz_university_payment_api.Core.Application.DTOs
         public string? ErrorMessage { get; set; }
         public Dictionary<string, object>? Changes { get; set; }
     }
-} 
+}

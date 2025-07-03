@@ -33,7 +33,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V2
         public async Task<IActionResult> NotifyPayment([FromBody] CreatePaymentDto createPaymentDto)
         {
             _logger.LogInformation("V2 NotifyPayment endpoint called with reference: {PaymentReference}", createPaymentDto.PaymentReference);
-            
+
             var payment = _mapper.Map<PaymentNotification>(createPaymentDto);
             var result = await _paymentService.ProcessPaymentAsync(payment);
 
@@ -57,14 +57,14 @@ namespace xyz_university_payment_api.Presentation.Controllers.V2
         {
             _logger.LogInformation("V2 GetAllPayments endpoint called with page {PageNumber}", pagination.PageNumber);
             var payments = await _paymentService.GetAllPaymentsAsync();
-            
+
             var paymentDtos = _mapper.Map<List<PaymentDto>>(payments);
-            
+
             var totalCount = paymentDtos.Count;
             var totalPages = (int)Math.Ceiling((double)totalCount / pagination.PageSize);
             var hasPreviousPage = pagination.PageNumber > 1;
             var hasNextPage = pagination.PageNumber < totalPages;
-            
+
             var pagedPayments = paymentDtos
                 .Skip((pagination.PageNumber - 1) * pagination.PageSize)
                 .Take(pagination.PageSize)
@@ -96,13 +96,13 @@ namespace xyz_university_payment_api.Presentation.Controllers.V2
         public async Task<IActionResult> GetPaymentAnalytics([FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
         {
             _logger.LogInformation("V2 GetPaymentAnalytics endpoint called");
-            
+
             var payments = await _paymentService.GetAllPaymentsAsync();
             var filteredPayments = payments.AsEnumerable();
-            
+
             if (startDate.HasValue)
                 filteredPayments = filteredPayments.Where(p => p.PaymentDate >= startDate.Value);
-            
+
             if (endDate.HasValue)
                 filteredPayments = filteredPayments.Where(p => p.PaymentDate <= endDate.Value);
 

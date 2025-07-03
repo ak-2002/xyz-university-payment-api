@@ -44,7 +44,7 @@ namespace xyz_university_payment_api.Core.Application.Services
                           var permissions = user.FindAll("permission").Select(c => c.Value);
 
                           // Allow if user has Admin role or payment permissions
-                          return roles.Contains("Admin") || 
+                          return roles.Contains("Admin") ||
                                  permissions.Any(p => p.StartsWith("payments."));
                       }));
         }
@@ -64,7 +64,7 @@ namespace xyz_university_payment_api.Core.Application.Services
                           var permissions = user.FindAll("permission").Select(c => c.Value);
 
                           // Allow if user has Admin role or student permissions
-                          return roles.Contains("Admin") || 
+                          return roles.Contains("Admin") ||
                                  permissions.Any(p => p.StartsWith("students."));
                       }));
         }
@@ -95,7 +95,7 @@ namespace xyz_university_payment_api.Core.Application.Services
                           var permissions = user.FindAll("permission").Select(c => c.Value);
 
                           // Allow if user has any role or read permissions
-                          return roles.Any() || 
+                          return roles.Any() ||
                                  permissions.Any(p => p.EndsWith(".read"));
                       }));
         }
@@ -115,7 +115,7 @@ namespace xyz_university_payment_api.Core.Application.Services
                           var permissions = user.FindAll("permission").Select(c => c.Value);
 
                           // Allow if user has Admin role or write permissions
-                          return roles.Contains("Admin") || 
+                          return roles.Contains("Admin") ||
                                  permissions.Any(p => p.EndsWith(".write") || p.EndsWith(".create") || p.EndsWith(".update"));
                       }));
         }
@@ -135,7 +135,7 @@ namespace xyz_university_payment_api.Core.Application.Services
                           var permissions = user.FindAll("permission").Select(c => c.Value);
 
                           // Allow if user has Admin role or delete permissions
-                          return roles.Contains("Admin") || 
+                          return roles.Contains("Admin") ||
                                  permissions.Any(p => p.EndsWith(".delete"));
                       }));
         }
@@ -166,11 +166,11 @@ namespace xyz_university_payment_api.Core.Application.Services
                           var permissions = user.FindAll("permission").Select(c => c.Value);
 
                           // Allow if user has reporting roles or permissions
-                          return roles.Contains("Admin") || 
+                          return roles.Contains("Admin") ||
                                  roles.Contains("FinanceManager") ||
                                  roles.Contains("Accountant") ||
                                  permissions.Any(p => p.Contains("report") || p.Contains("summary"));
                       }));
         }
     }
-} 
+}

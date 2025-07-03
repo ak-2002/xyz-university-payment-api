@@ -86,14 +86,14 @@ namespace xyz_university_payment_api.Infrastructure.Data
         {
             if (predicate == null)
                 return await _dbSet.CountAsync();
-            
+
             return await _dbSet.CountAsync(predicate);
         }
 
         // Pagination
         public virtual async Task<(IEnumerable<T> Items, int TotalCount)> GetPagedAsync(
-            int pageNumber, 
-            int pageSize, 
+            int pageNumber,
+            int pageSize,
             Expression<Func<T, bool>>? predicate = null,
             Expression<Func<T, object>>? orderBy = null,
             bool ascending = true)
@@ -167,4 +167,4 @@ namespace xyz_university_payment_api.Infrastructure.Data
             return await _context.SaveChangesAsync();
         }
     }
-} 
+}

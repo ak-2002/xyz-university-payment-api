@@ -35,7 +35,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V1
             _logger.LogInformation("V1 GetAllStudents endpoint called");
             var students = await _studentService.GetAllStudentsAsync();
             var studentDtos = _mapper.Map<List<StudentDto>>(students);
-            
+
             return Ok(new ApiResponseDto<List<StudentDto>>
             {
                 Success = true,
@@ -50,7 +50,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V1
         {
             _logger.LogInformation("V1 GetStudentById endpoint called with ID: {StudentId}", id);
             var student = await _studentService.GetStudentByIdAsync(id);
-            
+
             var studentDto = _mapper.Map<StudentDto>(student);
             return Ok(new ApiResponseDto<StudentDto>
             {
@@ -66,7 +66,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V1
         {
             _logger.LogInformation("V1 GetStudentByNumber endpoint called with number: {StudentNumber}", studentNumber);
             var student = await _studentService.GetStudentByNumberAsync(studentNumber);
-            
+
             var studentDto = _mapper.Map<StudentDto>(student);
             return Ok(new ApiResponseDto<StudentDto>
             {
@@ -81,11 +81,11 @@ namespace xyz_university_payment_api.Presentation.Controllers.V1
         public async Task<IActionResult> CreateStudent([FromBody] CreateStudentDto createStudentDto)
         {
             _logger.LogInformation("V1 CreateStudent endpoint called for student: {StudentNumber}", createStudentDto.StudentNumber);
-            
+
             var student = _mapper.Map<Student>(createStudentDto);
             var createdStudent = await _studentService.CreateStudentAsync(student);
             var studentDto = _mapper.Map<StudentDto>(createdStudent);
-            
+
             return CreatedAtAction(nameof(GetStudentById), new { id = createdStudent.Id }, new ApiResponseDto<StudentDto>
             {
                 Success = true,
@@ -99,13 +99,13 @@ namespace xyz_university_payment_api.Presentation.Controllers.V1
         public async Task<IActionResult> UpdateStudent(int id, [FromBody] UpdateStudentDto updateStudentDto)
         {
             _logger.LogInformation("V1 UpdateStudent endpoint called for student ID: {StudentId}", id);
-            
+
             var student = _mapper.Map<Student>(updateStudentDto);
             student.Id = id;
-            
+
             var updatedStudent = await _studentService.UpdateStudentAsync(student);
             var studentDto = _mapper.Map<StudentDto>(updatedStudent);
-            
+
             return Ok(new ApiResponseDto<StudentDto>
             {
                 Success = true,
@@ -119,9 +119,9 @@ namespace xyz_university_payment_api.Presentation.Controllers.V1
         public async Task<IActionResult> DeleteStudent(int id)
         {
             _logger.LogInformation("V1 DeleteStudent endpoint called for student ID: {StudentId}", id);
-            
+
             var result = await _studentService.DeleteStudentAsync(id);
-            
+
             return Ok(new ApiResponseDto<object>
             {
                 Success = result,
@@ -137,7 +137,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V1
             _logger.LogInformation("V1 GetActiveStudents endpoint called");
             var students = await _studentService.GetActiveStudentsAsync();
             var studentDtos = _mapper.Map<List<StudentDto>>(students);
-            
+
             return Ok(new ApiResponseDto<List<StudentDto>>
             {
                 Success = true,
@@ -153,7 +153,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V1
             _logger.LogInformation("V1 GetStudentsByProgram endpoint called for program: {Program}", program);
             var students = await _studentService.GetStudentsByProgramAsync(program);
             var studentDtos = _mapper.Map<List<StudentDto>>(students);
-            
+
             return Ok(new ApiResponseDto<List<StudentDto>>
             {
                 Success = true,
@@ -169,7 +169,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V1
             _logger.LogInformation("V1 SearchStudents endpoint called with term: {SearchTerm}", searchTerm);
             var students = await _studentService.SearchStudentsAsync(searchTerm);
             var studentDtos = _mapper.Map<List<StudentDto>>(students);
-            
+
             return Ok(new ApiResponseDto<List<StudentDto>>
             {
                 Success = true,
@@ -183,10 +183,10 @@ namespace xyz_university_payment_api.Presentation.Controllers.V1
         public async Task<IActionResult> UpdateStudentStatus(int id, [FromBody] UpdateStatusRequest request)
         {
             _logger.LogInformation("V1 UpdateStudentStatus endpoint called for student ID: {StudentId}", id);
-            
+
             var updatedStudent = await _studentService.UpdateStudentStatusAsync(id, request.IsActive);
             var studentDto = _mapper.Map<StudentDto>(updatedStudent);
-            
+
             return Ok(new ApiResponseDto<StudentDto>
             {
                 Success = true,
@@ -200,10 +200,10 @@ namespace xyz_university_payment_api.Presentation.Controllers.V1
         public async Task<IActionResult> ValidateStudent([FromBody] CreateStudentDto createStudentDto)
         {
             _logger.LogInformation("V1 ValidateStudent endpoint called for student: {StudentNumber}", createStudentDto.StudentNumber);
-            
+
             var student = _mapper.Map<Student>(createStudentDto);
             var validation = await _studentService.ValidateStudentAsync(student);
-            
+
             return Ok(new ApiResponseDto<object>
             {
                 Success = validation.IsValid,
@@ -217,9 +217,9 @@ namespace xyz_university_payment_api.Presentation.Controllers.V1
         public async Task<IActionResult> CheckEnrollmentEligibility(string studentNumber)
         {
             _logger.LogInformation("V1 CheckEnrollmentEligibility endpoint called for student: {StudentNumber}", studentNumber);
-            
+
             var isEligible = await _studentService.IsStudentEligibleForEnrollmentAsync(studentNumber);
-            
+
             return Ok(new ApiResponseDto<object>
             {
                 Success = true,
@@ -228,4 +228,4 @@ namespace xyz_university_payment_api.Presentation.Controllers.V1
             });
         }
     }
-} 
+}

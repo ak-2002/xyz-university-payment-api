@@ -34,7 +34,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V1
         public async Task<IActionResult> NotifyPayment([FromBody] CreatePaymentDto createPaymentDto)
         {
             _logger.LogInformation("V1 NotifyPayment endpoint called with reference: {PaymentReference}", createPaymentDto.PaymentReference);
-            
+
             var payment = _mapper.Map<PaymentNotification>(createPaymentDto);
             var result = await _paymentService.ProcessPaymentAsync(payment);
 
@@ -58,14 +58,14 @@ namespace xyz_university_payment_api.Presentation.Controllers.V1
         {
             _logger.LogInformation("V1 GetAllPayments endpoint called with page {PageNumber}", pagination.PageNumber);
             var payments = await _paymentService.GetAllPaymentsAsync();
-            
+
             var paymentDtos = _mapper.Map<List<PaymentDto>>(payments);
-            
+
             var totalCount = paymentDtos.Count;
             var totalPages = (int)Math.Ceiling((double)totalCount / pagination.PageSize);
             var hasPreviousPage = pagination.PageNumber > 1;
             var hasNextPage = pagination.PageNumber < totalPages;
-            
+
             var pagedPayments = paymentDtos
                 .Skip((pagination.PageNumber - 1) * pagination.PageSize)
                 .Take(pagination.PageSize)
@@ -98,7 +98,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V1
         {
             _logger.LogInformation("V1 GetPaymentById endpoint called with ID: {PaymentId}", id);
             var payment = await _paymentService.GetPaymentByIdAsync(id);
-            
+
             var paymentDto = _mapper.Map<PaymentDto>(payment);
             return Ok(new ApiResponseDto<PaymentDto>
             {
@@ -114,14 +114,14 @@ namespace xyz_university_payment_api.Presentation.Controllers.V1
         {
             _logger.LogInformation("V1 GetPaymentsByStudent endpoint called for student: {StudentNumber}", studentNumber);
             var payments = await _paymentService.GetPaymentsByStudentAsync(studentNumber);
-            
+
             var paymentDtos = _mapper.Map<List<PaymentDto>>(payments);
-            
+
             var totalCount = paymentDtos.Count;
             var totalPages = (int)Math.Ceiling((double)totalCount / pagination.PageSize);
             var hasPreviousPage = pagination.PageNumber > 1;
             var hasNextPage = pagination.PageNumber < totalPages;
-            
+
             var pagedPayments = paymentDtos
                 .Skip((pagination.PageNumber - 1) * pagination.PageSize)
                 .Take(pagination.PageSize)
@@ -154,7 +154,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V1
         {
             _logger.LogInformation("V1 GetPaymentSummary endpoint called for student: {StudentNumber}", studentNumber);
             var summary = await _paymentService.GetPaymentSummaryAsync(studentNumber);
-            
+
             var summaryDto = _mapper.Map<PaymentSummaryDto>(summary);
             return Ok(new ApiResponseDto<PaymentSummaryDto>
             {

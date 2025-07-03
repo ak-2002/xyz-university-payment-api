@@ -25,7 +25,7 @@ namespace xyz_university_payment_api.Presentation.Middleware
         {
             // Extract API version from the request path
             var version = ExtractApiVersion(context.Request.Path);
-            
+
             if (!string.IsNullOrEmpty(version))
             {
                 // Log API version usage
@@ -55,15 +55,15 @@ namespace xyz_university_payment_api.Presentation.Middleware
                         context.Response.Headers.Append("X-API-Version-Deprecated", "true");
                         context.Response.Headers.Append("X-API-Version-Sunset-Date", deprecationWarning.SunsetDate?.ToString("yyyy-MM-dd"));
                         context.Response.Headers.Append("X-API-Version-Migration-Guide", deprecationWarning.MigrationGuide);
-                        
-                        _logger.LogWarning("Deprecated API version {Version} used. Sunset date: {SunsetDate}", 
+
+                        _logger.LogWarning("Deprecated API version {Version} used. Sunset date: {SunsetDate}",
                             version, deprecationWarning.SunsetDate);
                     }
                 }
 
                 // Add version information to response headers
                 context.Response.Headers.Append("X-API-Version", version);
-                context.Response.Headers.Append("X-API-Version-Status", 
+                context.Response.Headers.Append("X-API-Version-Status",
                     _apiVersionService.GetVersionInfo(version)?.Status ?? "Unknown");
             }
 
@@ -92,4 +92,4 @@ namespace xyz_university_payment_api.Presentation.Middleware
             return builder.UseMiddleware<ApiVersionMiddleware>();
         }
     }
-} 
+}

@@ -5,9 +5,9 @@ using Microsoft.Extensions.Logging;
 
 namespace xyz_university_payment_api.Core.Application.Services
 {
-  
+
     // Implementation of message publisher using RabbitMQ and MassTransit
-    
+
     public class RabbitMQMessagePublisher : IMessagePublisher
     {
         private readonly IPublishEndpoint _publishEndpoint;
@@ -38,7 +38,7 @@ namespace xyz_university_payment_api.Core.Application.Services
         {
             try
             {
-                _logger.LogWarning("Publishing payment failed message: {PaymentReference}, Reason: {ErrorReason}", 
+                _logger.LogWarning("Publishing payment failed message: {PaymentReference}, Reason: {ErrorReason}",
                     message.PaymentReference, message.ErrorReason);
                 await _publishEndpoint.Publish(message);
                 _logger.LogInformation("Successfully published payment failed message: {PaymentReference}", message.PaymentReference);

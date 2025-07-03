@@ -28,7 +28,7 @@ namespace xyz_university_payment_api.Infrastructure.Data
 
             modelBuilder.Entity<PaymentNotification>()
                 .Property(p => p.AmountPaid)
-                .HasPrecision(18,2);
+                .HasPrecision(18, 2);
 
             // User configuration
             modelBuilder.Entity<User>(entity =>
@@ -109,7 +109,7 @@ namespace xyz_university_payment_api.Infrastructure.Data
         public AppDbContext CreateDbContext(string[] args)
         {
             var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
-            
+
             // Use SQL Server with connection string from appsettings.json
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())

@@ -96,7 +96,7 @@ namespace xyz_university_payment_api.Infrastructure.Data
                 .ForMember(dest => dest.TotalStudents, opt => opt.MapFrom(src => src.Count()))
                 .ForMember(dest => dest.ActiveStudents, opt => opt.MapFrom(src => src.Count(s => s.IsActive)))
                 .ForMember(dest => dest.InactiveStudents, opt => opt.MapFrom(src => src.Count(s => !s.IsActive)))
-                .ForMember(dest => dest.StudentsByProgram, opt => opt.MapFrom(src => 
+                .ForMember(dest => dest.StudentsByProgram, opt => opt.MapFrom(src =>
                     src.GroupBy(s => s.Program)
                        .ToDictionary(g => g.Key, g => g.Count())))
                 .ForMember(dest => dest.TotalRevenue, opt => opt.MapFrom(src => 0)) // Will be calculated in service
@@ -104,4 +104,4 @@ namespace xyz_university_payment_api.Infrastructure.Data
                 .ForMember(dest => dest.StudentsWithOutstandingBalance, opt => opt.MapFrom(src => 0)); // Will be calculated in service
         }
     }
-} 
+}

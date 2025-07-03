@@ -11,4 +11,4 @@ namespace xyz_university_payment_api.Infrastructure.External.Caching
         public int StudentCacheExpirationMinutes { get; set; } = 120;
         public int SummaryCacheExpirationMinutes { get; set; } = 45;
     }
-} 
+}

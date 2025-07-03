@@ -55,4 +55,4 @@ namespace xyz_university_payment_api.Core.Application.Interfaces
         /// </summary>
         string GetSummaryCacheKey(string identifier);
     }
-} 
+}

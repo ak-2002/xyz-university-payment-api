@@ -6,25 +6,25 @@ namespace xyz_university_payment_api.Core.Application.Interfaces
 
     public interface IStudentService
     {
-   
+
         Task<IEnumerable<Student>> GetAllStudentsAsync();
 
 
         Task<Student?> GetStudentByIdAsync(int id);
 
-      
+
         Task<Student?> GetStudentByNumberAsync(string studentNumber);
 
 
         Task<Student> CreateStudentAsync(Student student);
 
-   
+
         Task<Student> UpdateStudentAsync(Student student);
 
 
         Task<bool> DeleteStudentAsync(int id);
 
-    
+
         Task<IEnumerable<Student>> GetActiveStudentsAsync();
 
 
@@ -32,7 +32,7 @@ namespace xyz_university_payment_api.Core.Application.Interfaces
 
         Task<IEnumerable<Student>> SearchStudentsAsync(string searchTerm);
 
-        
+
         Task<Student> UpdateStudentStatusAsync(int studentId, bool isActive);
 
 
@@ -67,4 +67,4 @@ namespace xyz_university_payment_api.Core.Application.Interfaces
         public bool IsEligible { get; set; }
         public List<string> Reasons { get; set; } = new List<string>();
     }
-} 
+}

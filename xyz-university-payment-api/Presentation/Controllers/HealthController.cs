@@ -25,7 +25,7 @@ namespace xyz_university_payment_api.Presentation.Controllers
         public IActionResult Get()
         {
             _logger.LogInformation("Health check requested");
-            
+
             return Ok(new
             {
                 Status = "Healthy",
@@ -44,9 +44,9 @@ namespace xyz_university_payment_api.Presentation.Controllers
         public async Task<IActionResult> GetDetailed()
         {
             _logger.LogInformation("Detailed health check requested");
-            
+
             var healthReport = await _healthCheckService.CheckHealthAsync();
-            
+
             var response = new
             {
                 Status = healthReport.Status.ToString(),
@@ -74,14 +74,14 @@ namespace xyz_university_payment_api.Presentation.Controllers
         public async Task<IActionResult> GetReady()
         {
             _logger.LogInformation("Readiness check requested");
-            
+
             var healthReport = await _healthCheckService.CheckHealthAsync(registration => registration.Tags.Contains("ready"));
-            
+
             if (healthReport.Status == HealthStatus.Healthy)
             {
                 return Ok(new { Status = "Ready", Timestamp = DateTime.UtcNow });
             }
-            
+
             return StatusCode(503, new { Status = "Not Ready", Timestamp = DateTime.UtcNow });
         }
 
@@ -93,8 +93,8 @@ namespace xyz_university_payment_api.Presentation.Controllers
         public IActionResult GetLive()
         {
             _logger.LogInformation("Liveness check requested");
-            
+
             return Ok(new { Status = "Alive", Timestamp = DateTime.UtcNow });
         }
     }
-} 
+}

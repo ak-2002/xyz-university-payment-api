@@ -927,7 +927,7 @@ namespace xyz_university_payment_api.Presentation.Controllers
             try
             {
                 var result = await _authorizationService.CheckPermissionAsync(checkPermissionDto);
-                
+
                 return Ok(new ApiResponse<PermissionCheckResultDto>
                 {
                     Success = true,
@@ -999,4 +999,4 @@ namespace xyz_university_payment_api.Presentation.Controllers
             }
         }
     }
-} 
+}

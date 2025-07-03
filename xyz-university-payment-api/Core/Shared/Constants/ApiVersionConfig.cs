@@ -38,4 +38,4 @@ namespace xyz_university_payment_api.Core.Shared.Constants
         public DateTime? SunsetDate { get; set; }
         public string MigrationGuide { get; set; } = string.Empty;
     }
-} 
+}

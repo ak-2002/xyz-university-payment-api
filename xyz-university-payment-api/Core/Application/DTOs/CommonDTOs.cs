@@ -130,4 +130,4 @@ namespace xyz_university_payment_api.Core.Application.DTOs
         [Required(ErrorMessage = "IsActive status is required")]
         public bool IsActive { get; set; }
     }
-} 
+}
