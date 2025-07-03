@@ -43,7 +43,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
         /// Get all students with advanced filtering and analytics
         /// </summary>
         [HttpGet]
-        [AuthorizePermission("students.read")]
+        [AuthorizePermission("Students", "Read")]
         public async Task<IActionResult> GetStudents(
             [FromQuery] StudentFilterDtoV3 filter,
             [FromQuery] int page = 1,
@@ -85,7 +85,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
         /// Get student by ID with detailed information and payment history
         /// </summary>
         [HttpGet("{id}")]
-        [AuthorizePermission("students.read")]
+        [AuthorizePermission("Students", "Read")]
         public async Task<IActionResult> GetStudent(int id, [FromQuery] bool includePaymentHistory = true)
         {
             try
@@ -119,7 +119,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
         /// Create a new student with enhanced validation
         /// </summary>
         [HttpPost]
-        [AuthorizePermission("students.create")]
+        [AuthorizePermission("Students", "Create")]
         public async Task<IActionResult> CreateStudent([FromBody] CreateStudentDtoV3 createStudentDto)
         {
             try
@@ -147,7 +147,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
         /// Update student with partial updates support
         /// </summary>
         [HttpPut("{id}")]
-        [AuthorizePermission("students.update")]
+        [AuthorizePermission("Students", "Update")]
         public async Task<IActionResult> UpdateStudent(int id, [FromBody] UpdateStudentDtoV3 updateStudentDto)
         {
             try
@@ -175,7 +175,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
         /// Delete student with soft delete support
         /// </summary>
         [HttpDelete("{id}")]
-        [AuthorizePermission("students.delete")]
+        [AuthorizePermission("Students", "Delete")]
         public async Task<IActionResult> DeleteStudent(int id, [FromQuery] bool permanent = false)
         {
             try
@@ -203,7 +203,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
         /// Get student analytics and statistics
         /// </summary>
         [HttpGet("analytics")]
-        [AuthorizePermission("students.analytics")]
+        [AuthorizePermission("Students", "Read")]
         public async Task<IActionResult> GetStudentAnalytics([FromQuery] StudentAnalyticsFilterDto filter)
         {
             try
@@ -237,7 +237,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
         /// Bulk operations on students
         /// </summary>
         [HttpPost("bulk")]
-        [AuthorizePermission("students.bulk")]
+        [AuthorizePermission("Students", "Create")]
         public async Task<IActionResult> BulkOperations([FromBody] BulkStudentOperationDto bulkOperation)
         {
             try
@@ -265,7 +265,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
         /// Export students data in various formats
         /// </summary>
         [HttpGet("export")]
-        [AuthorizePermission("students.export")]
+        [AuthorizePermission("Students", "Read")]
         public async Task<IActionResult> ExportStudents(
             [FromQuery] StudentFilterDtoV3 filter,
             [FromQuery] string format = "json",
