@@ -8,10 +8,11 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authorization;
 using AutoMapper;
+using xyz_university_payment_api.Presentation.Attributes;
 
 namespace xyz_university_payment_api.Presentation.Controllers.V3
 {
-    [Authorize(Policy = "ApiScope")]
+    [Authorize]
     [ApiController]
     [Route("api/v3/[controller]")]
     [ApiVersion("3.0")]
@@ -31,6 +32,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
 
         // POST api/v3/payments/notify
         [HttpPost("notify")]
+        [AuthorizePermission("Payments", "Create")]
         public async Task<IActionResult> NotifyPayment([FromBody] CreatePaymentDto createPaymentDto)
         {
             _logger.LogInformation("V3 NotifyPayment endpoint called with reference: {PaymentReference}", createPaymentDto.PaymentReference);
@@ -69,6 +71,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
 
         // GET api/v3/payments
         [HttpGet]
+        [AuthorizePermission("Payments", "Read")]
         public async Task<IActionResult> GetAllPayments([FromQuery] PaginationDto pagination)
         {
             _logger.LogInformation("V3 GetAllPayments endpoint called with page {PageNumber}", pagination.PageNumber);
@@ -122,6 +125,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
 
         // GET api/v3/payments/{id}
         [HttpGet("{id}")]
+        [AuthorizePermission("Payments", "Read")]
         public async Task<IActionResult> GetPaymentById(int id)
         {
             _logger.LogInformation("V3 GetPaymentById endpoint called with ID: {PaymentId}", id);
@@ -145,6 +149,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
 
         // NEW V3 ENDPOINT: GET api/v3/payments/real-time-stats
         [HttpGet("real-time-stats")]
+        [AuthorizePermission("Payments", "Read")]
         public async Task<IActionResult> GetRealTimeStats()
         {
             _logger.LogInformation("V3 GetRealTimeStats endpoint called");
@@ -180,6 +185,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
 
         // NEW V3 ENDPOINT: POST api/v3/payments/webhook-test
         [HttpPost("webhook-test")]
+        [AuthorizePermission("Payments", "Create")]
         public async Task<IActionResult> TestWebhook([FromBody] object webhookData)
         {
             _logger.LogInformation("V3 TestWebhook endpoint called");
