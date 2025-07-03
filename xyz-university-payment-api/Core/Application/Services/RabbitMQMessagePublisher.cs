@@ -1,4 +1,4 @@
-wusing MassTransit;
+using MassTransit;
 using xyz_university_payment_api.Core.Application.Interfaces;
 using xyz_university_payment_api.Core.Domain.Entities;
 using Microsoft.Extensions.Logging;
