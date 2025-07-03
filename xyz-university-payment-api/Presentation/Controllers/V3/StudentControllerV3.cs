@@ -288,7 +288,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
                     var fileName = $"students_export_{DateTime.UtcNow:yyyyMMdd_HHmmss}.{format}";
                     
                     Response.Headers["Content-Disposition"] = $"attachment; filename={fileName}";
-                    return File(result.Data as byte[], contentType, fileName);
+                    return File((result.Data as byte[])!, contentType, fileName);
                 }
 
                 return BadRequest(result);
