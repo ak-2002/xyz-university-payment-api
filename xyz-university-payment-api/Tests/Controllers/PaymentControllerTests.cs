@@ -13,16 +13,16 @@ namespace xyz_university_payment_api.Tests.Controllers
     public class PaymentControllerTests
     {
         private readonly Mock<IPaymentService> _paymentServiceMock;
-        private readonly Mock<ILogger<PaymentControllerV1>> _loggerMock;
+        private readonly Mock<ILogger<PaymentController>> _loggerMock;
         private readonly Mock<IMapper> _mapperMock;
-        private readonly PaymentControllerV1 _paymentController;
+        private readonly PaymentController _paymentController;
 
         public PaymentControllerTests()
         {
             _paymentServiceMock = new Mock<IPaymentService>();
-            _loggerMock = new Mock<ILogger<PaymentControllerV1>>();
+            _loggerMock = new Mock<ILogger<PaymentController>>();
             _mapperMock = new Mock<IMapper>();
-            _paymentController = new PaymentControllerV1(_paymentServiceMock.Object, _loggerMock.Object, _mapperMock.Object);
+            _paymentController = new PaymentController(_paymentServiceMock.Object, _loggerMock.Object, _mapperMock.Object);
         }
 
         [Fact]
