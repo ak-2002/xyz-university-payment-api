@@ -333,27 +333,26 @@ try
         }
     });
 
-   
     // Add authentication with custom JWT implementation
-   builder.Services.AddAuthentication("Bearer")
-    .AddJwtBearer("Bearer", options =>
-    {
+    builder.Services.AddAuthentication("Bearer")
+        .AddJwtBearer("Bearer", options =>
+        {
             var jwtKey = builder.Configuration["Jwt:Key"] ?? "your-super-secret-key-with-at-least-32-characters";
             var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "xyz-university";
             var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "xyz-api";
 
             options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
                 ValidIssuer = jwtIssuer,
                 ValidAudience = jwtAudience,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
                 ClockSkew = TimeSpan.Zero
-        };
-    });
+            };
+        });
 
     // Add Authorization
     builder.Services.AddAuthorization(options =>
@@ -519,5 +518,3 @@ finally
 {
     Log.CloseAndFlush();
 }
-
-
