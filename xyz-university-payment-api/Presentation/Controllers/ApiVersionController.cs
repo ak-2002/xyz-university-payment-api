@@ -65,7 +65,7 @@ namespace xyz_university_payment_api.Presentation.Controllers
             {
                 Success = true,
                 Message = $"API version {version} information retrieved",
-                Data = versionInfo
+                Data = versionInfo!
             };
 
             // Add deprecation warning if applicable

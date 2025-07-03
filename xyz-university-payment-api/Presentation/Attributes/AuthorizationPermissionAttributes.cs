@@ -16,9 +16,9 @@ namespace xyz_university_payment_api.Presentation.Attributes
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
     public class AuthorizePermissionAttribute : AuthorizeAttribute, IAuthorizationFilter
     {
-        private readonly string _resource;
-        private readonly string _action;
-        private readonly string[] _requiredRoles;
+        private readonly string? _resource;
+        private readonly string? _action;
+        private readonly string[]? _requiredRoles;
 
         /// <summary>
         /// Initialize with resource and action for permission-based authorization
