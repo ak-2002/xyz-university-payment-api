@@ -28,7 +28,7 @@ namespace xyz_university_payment_api.Presentation.Controllers
         public IActionResult GetAllVersions()
         {
             var versions = _apiVersionService.GetAllVersions();
-            
+
             return Ok(new ApiResponse<IEnumerable<ApiVersionInfo>>
             {
                 Success = true,
@@ -50,7 +50,7 @@ namespace xyz_university_payment_api.Presentation.Controllers
         public IActionResult GetVersionInfo(string version)
         {
             var versionInfo = _apiVersionService.GetVersionInfo(version);
-            
+
             if (versionInfo == null)
             {
                 return NotFound(new ApiResponse<object>
@@ -90,7 +90,7 @@ namespace xyz_university_payment_api.Presentation.Controllers
         public IActionResult GetDeprecationWarnings()
         {
             var warnings = new List<ApiVersionDeprecationWarning>();
-            
+
             foreach (var version in _apiVersionService.GetAllVersions())
             {
                 if (_apiVersionService.IsVersionDeprecated(version.Version))
@@ -133,7 +133,7 @@ namespace xyz_university_payment_api.Presentation.Controllers
             }
 
             var comparison = _apiVersionService.GetVersionComparison(fromVersion, toVersion);
-            
+
             return Ok(new ApiResponse<object>
             {
                 Success = true,
@@ -233,4 +233,4 @@ namespace xyz_university_payment_api.Presentation.Controllers
             return steps;
         }
     }
-} 
+}

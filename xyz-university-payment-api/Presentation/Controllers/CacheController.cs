@@ -34,14 +34,14 @@ namespace xyz_university_payment_api.Presentation.Controllers
             try
             {
                 var testKey = $"test:{request.Key}";
-                
+
                 // Set value in cache
                 await _cacheService.SetAsync(testKey, request.Value, TimeSpan.FromMinutes(5));
                 _logger.LogInformation("Test value cached: {Key}", testKey);
 
                 // Retrieve value from cache
                 var cachedValue = await _cacheService.GetAsync<string>(testKey);
-                
+
                 if (cachedValue == request.Value)
                 {
                     return Ok(new ApiResponse<string>
@@ -82,7 +82,7 @@ namespace xyz_university_payment_api.Presentation.Controllers
             try
             {
                 var exists = await _cacheService.ExistsAsync(key);
-                
+
                 return Ok(new ApiResponse<bool>
                 {
                     Success = true,
@@ -112,7 +112,7 @@ namespace xyz_university_payment_api.Presentation.Controllers
             {
                 await _cacheService.RemoveAsync(key);
                 _logger.LogInformation("Removed key from cache: {Key}", key);
-                
+
                 return Ok(new ApiResponse<string>
                 {
                     Success = true,

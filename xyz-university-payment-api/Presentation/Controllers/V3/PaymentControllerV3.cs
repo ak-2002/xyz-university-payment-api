@@ -34,7 +34,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
         public async Task<IActionResult> NotifyPayment([FromBody] CreatePaymentDto createPaymentDto)
         {
             _logger.LogInformation("V3 NotifyPayment endpoint called with reference: {PaymentReference}", createPaymentDto.PaymentReference);
-            
+
             var payment = _mapper.Map<PaymentNotification>(createPaymentDto);
             var result = await _paymentService.ProcessPaymentAsync(payment);
 
@@ -54,10 +54,10 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
                 {
                     ["ApiVersion"] = "3.0",
                     ["ProcessingTime"] = DateTime.UtcNow,
-                    ["Features"] = new[] { 
-                        "RealTimeProcessing", 
-                        "AdvancedAnalytics", 
-                        "WebhookSupport", 
+                    ["Features"] = new[] {
+                        "RealTimeProcessing",
+                        "AdvancedAnalytics",
+                        "WebhookSupport",
                         "GraphQLCompatible",
                         "MicroservicesReady"
                     },
@@ -73,14 +73,14 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
         {
             _logger.LogInformation("V3 GetAllPayments endpoint called with page {PageNumber}", pagination.PageNumber);
             var payments = await _paymentService.GetAllPaymentsAsync();
-            
+
             var paymentDtos = _mapper.Map<List<PaymentDto>>(payments);
-            
+
             var totalCount = paymentDtos.Count;
             var totalPages = (int)Math.Ceiling((double)totalCount / pagination.PageSize);
             var hasPreviousPage = pagination.PageNumber > 1;
             var hasNextPage = pagination.PageNumber < totalPages;
-            
+
             var pagedPayments = paymentDtos
                 .Skip((pagination.PageNumber - 1) * pagination.PageSize)
                 .Take(pagination.PageSize)
@@ -126,7 +126,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
         {
             _logger.LogInformation("V3 GetPaymentById endpoint called with ID: {PaymentId}", id);
             var payment = await _paymentService.GetPaymentByIdAsync(id);
-            
+
             var paymentDto = _mapper.Map<PaymentDto>(payment);
             return Ok(new ApiResponseDto<PaymentDto>
             {
@@ -148,7 +148,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
         public async Task<IActionResult> GetRealTimeStats()
         {
             _logger.LogInformation("V3 GetRealTimeStats endpoint called");
-            
+
             // Simulate real-time statistics
             var stats = new
             {
@@ -183,7 +183,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
         public async Task<IActionResult> TestWebhook([FromBody] object webhookData)
         {
             _logger.LogInformation("V3 TestWebhook endpoint called");
-            
+
             // Simulate webhook processing
             var webhookResult = new
             {

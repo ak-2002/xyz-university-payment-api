@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace xyz_university_payment_api.Core.Application.Services
 {
-    
+
     // Custom logging service that provides structured logging with business context
 
     public interface ILoggingService
@@ -26,7 +26,7 @@ namespace xyz_university_payment_api.Core.Application.Services
 
 
     // Implementation of custom logging service
-    
+
     public class LoggingService : ILoggingService
     {
         private readonly ILogger<LoggingService> _logger;

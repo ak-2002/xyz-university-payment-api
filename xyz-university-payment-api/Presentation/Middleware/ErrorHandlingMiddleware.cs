@@ -36,7 +36,7 @@ namespace xyz_university_payment_api.Presentation.Middleware
         {
             var requestId = context.TraceIdentifier;
             var errorResponse = CreateErrorResponse(exception, requestId);
-            
+
             // Set response properties
             context.Response.StatusCode = errorResponse.StatusCode;
             context.Response.ContentType = "application/json";
@@ -170,5 +170,5 @@ namespace xyz_university_payment_api.Presentation.Middleware
         }
     }
 
-  
+
 }

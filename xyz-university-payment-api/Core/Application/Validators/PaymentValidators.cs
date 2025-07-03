@@ -263,4 +263,4 @@ namespace xyz_university_payment_api.Validators
                 .PrecisionScale(10, 2, false).WithMessage("Amount cannot have more than 2 decimal places");
         }
     }
-} 
+}

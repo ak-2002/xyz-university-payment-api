@@ -18,4 +18,4 @@ namespace xyz_university_payment_api.Core.Application.Interfaces
         // Generic repository access
         IGenericRepository<T> Repository<T>() where T : class;
     }
-} 
+}

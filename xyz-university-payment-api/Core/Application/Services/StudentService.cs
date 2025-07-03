@@ -33,8 +33,8 @@ namespace xyz_university_payment_api.Core.Application.Services
         public async Task<IEnumerable<Student>> GetAllStudentsAsync()
         {
             try
-        {
-            _logger.LogInformation("Retrieving all students");
+            {
+                _logger.LogInformation("Retrieving all students");
                 return await _unitOfWork.Students.GetAllAsync();
             }
             catch (Exception ex)
@@ -49,11 +49,11 @@ namespace xyz_university_payment_api.Core.Application.Services
             try
             {
                 _logger.LogInformation("Retrieving student with ID: {StudentId}", id);
-                
+
                 // Try to get from cache first
                 var cacheKey = _cacheService.GetStudentCacheKey($"id:{id}");
                 var cachedStudent = await _cacheService.GetAsync<Student>(cacheKey);
-                
+
                 if (cachedStudent != null)
                 {
                     _logger.LogInformation("Student retrieved from cache: {StudentId}", id);
@@ -62,7 +62,7 @@ namespace xyz_university_payment_api.Core.Application.Services
 
                 // If not in cache, get from database
                 var student = await _unitOfWork.Students.GetByIdAsync(id);
-                
+
                 if (student == null)
                 {
                     throw new StudentNotFoundException(id);
@@ -71,7 +71,7 @@ namespace xyz_university_payment_api.Core.Application.Services
                 // Cache the student
                 await _cacheService.SetAsync(cacheKey, student, TimeSpan.FromMinutes(120));
                 _logger.LogInformation("Student cached: {StudentId}", id);
-                
+
                 return student;
             }
             catch (ApiException)
@@ -90,11 +90,11 @@ namespace xyz_university_payment_api.Core.Application.Services
             try
             {
                 _logger.LogInformation("Retrieving student with number: {StudentNumber}", studentNumber);
-                
+
                 // Try to get from cache first
                 var cacheKey = _cacheService.GetStudentCacheKey($"number:{studentNumber}");
                 var cachedStudent = await _cacheService.GetAsync<Student>(cacheKey);
-                
+
                 if (cachedStudent != null)
                 {
                     _logger.LogInformation("Student retrieved from cache: {StudentNumber}", studentNumber);
@@ -103,7 +103,7 @@ namespace xyz_university_payment_api.Core.Application.Services
 
                 // If not in cache, get from database
                 var student = await _unitOfWork.Students.FirstOrDefaultAsync(s => s.StudentNumber == studentNumber);
-                
+
                 if (student == null)
                 {
                     throw new StudentNotFoundException(studentNumber);
@@ -112,7 +112,7 @@ namespace xyz_university_payment_api.Core.Application.Services
                 // Cache the student
                 await _cacheService.SetAsync(cacheKey, student, TimeSpan.FromMinutes(120));
                 _logger.LogInformation("Student cached: {StudentNumber}", studentNumber);
-                
+
                 return student;
             }
             catch (ApiException)
@@ -129,30 +129,30 @@ namespace xyz_university_payment_api.Core.Application.Services
         public async Task<Student> CreateStudentAsync(Student student)
         {
             try
-        {
-            _logger.LogInformation("Creating new student: {StudentNumber}", student.StudentNumber);
-
-            // Business validation
-            var validation = await ValidateStudentAsync(student);
-            if (!validation.IsValid)
             {
-                _logger.LogWarning("Student validation failed: {Errors}", string.Join(", ", validation.Errors));
+                _logger.LogInformation("Creating new student: {StudentNumber}", student.StudentNumber);
+
+                // Business validation
+                var validation = await ValidateStudentAsync(student);
+                if (!validation.IsValid)
+                {
+                    _logger.LogWarning("Student validation failed: {Errors}", string.Join(", ", validation.Errors));
                     throw new ValidationException(validation.Errors);
-            }
+                }
 
-            // Check for duplicate student number
+                // Check for duplicate student number
                 if (await _unitOfWork.Students.AnyAsync(s => s.StudentNumber == student.StudentNumber))
-            {
-                _logger.LogWarning("Student number already exists: {StudentNumber}", student.StudentNumber);
+                {
+                    _logger.LogWarning("Student number already exists: {StudentNumber}", student.StudentNumber);
                     throw new DuplicateStudentException(student.StudentNumber);
-            }
+                }
 
                 var createdStudent = await _unitOfWork.Students.AddAsync(student);
                 _logger.LogInformation("Student created successfully: {StudentNumber}", student.StudentNumber);
-                
+
                 // Invalidate related caches
                 await InvalidateStudentCachesAsync(student.StudentNumber);
-                
+
                 return createdStudent;
             }
             catch (ApiException)
@@ -169,28 +169,28 @@ namespace xyz_university_payment_api.Core.Application.Services
         public async Task<Student> UpdateStudentAsync(Student student)
         {
             try
-        {
-            _logger.LogInformation("Updating student: {StudentNumber}", student.StudentNumber);
-
-            // Business validation
-            var validation = await ValidateStudentAsync(student);
-            if (!validation.IsValid)
             {
-                _logger.LogWarning("Student validation failed: {Errors}", string.Join(", ", validation.Errors));
+                _logger.LogInformation("Updating student: {StudentNumber}", student.StudentNumber);
+
+                // Business validation
+                var validation = await ValidateStudentAsync(student);
+                if (!validation.IsValid)
+                {
+                    _logger.LogWarning("Student validation failed: {Errors}", string.Join(", ", validation.Errors));
                     throw new ValidationException(validation.Errors);
-            }
+                }
 
-            // Check if student exists
+                // Check if student exists
                 var existingStudent = await _unitOfWork.Students.GetByIdAsync(student.Id);
-            if (existingStudent == null)
-            {
-                _logger.LogWarning("Student not found for update: {StudentId}", student.Id);
+                if (existingStudent == null)
+                {
+                    _logger.LogWarning("Student not found for update: {StudentId}", student.Id);
                     throw new StudentNotFoundException(student.Id);
-            }
+                }
 
                 var updatedStudent = await _unitOfWork.Students.UpdateAsync(student);
-            _logger.LogInformation("Student updated successfully: {StudentNumber}", student.StudentNumber);
-            return updatedStudent;
+                _logger.LogInformation("Student updated successfully: {StudentNumber}", student.StudentNumber);
+                return updatedStudent;
             }
             catch (ApiException)
             {
@@ -206,25 +206,25 @@ namespace xyz_university_payment_api.Core.Application.Services
         public async Task<bool> DeleteStudentAsync(int id)
         {
             try
-        {
-            _logger.LogInformation("Deleting student with ID: {StudentId}", id);
+            {
+                _logger.LogInformation("Deleting student with ID: {StudentId}", id);
 
                 var student = await _unitOfWork.Students.GetByIdAsync(id);
-            if (student == null)
-            {
-                _logger.LogWarning("Student not found for deletion: {StudentId}", id);
-                return false;
-            }
+                if (student == null)
+                {
+                    _logger.LogWarning("Student not found for deletion: {StudentId}", id);
+                    return false;
+                }
 
-            // Business rule: Check if student can be deleted
-            if (student.IsActive)
-            {
-                _logger.LogWarning("Cannot delete active student: {StudentNumber}", student.StudentNumber);
-                throw new InvalidOperationException($"Cannot delete active student {student.StudentNumber}");
-            }
+                // Business rule: Check if student can be deleted
+                if (student.IsActive)
+                {
+                    _logger.LogWarning("Cannot delete active student: {StudentNumber}", student.StudentNumber);
+                    throw new InvalidOperationException($"Cannot delete active student {student.StudentNumber}");
+                }
 
                 await _unitOfWork.Students.DeleteAsync(student);
-            _logger.LogInformation("Student deleted successfully: {StudentId}", id);
+                _logger.LogInformation("Student deleted successfully: {StudentId}", id);
                 return true;
             }
             catch (Exception ex)
@@ -237,8 +237,8 @@ namespace xyz_university_payment_api.Core.Application.Services
         public async Task<IEnumerable<Student>> GetActiveStudentsAsync()
         {
             try
-        {
-            _logger.LogInformation("Retrieving active students");
+            {
+                _logger.LogInformation("Retrieving active students");
                 return await _unitOfWork.Students.FindAsync(s => s.IsActive);
             }
             catch (Exception ex)
@@ -251,8 +251,8 @@ namespace xyz_university_payment_api.Core.Application.Services
         public async Task<IEnumerable<Student>> GetStudentsByProgramAsync(string program)
         {
             try
-        {
-            _logger.LogInformation("Retrieving students by program: {Program}", program);
+            {
+                _logger.LogInformation("Retrieving students by program: {Program}", program);
                 return await _unitOfWork.Students.FindAsync(s => s.Program.ToUpper() == program.ToUpper());
             }
             catch (Exception ex)
@@ -265,9 +265,9 @@ namespace xyz_university_payment_api.Core.Application.Services
         public async Task<IEnumerable<Student>> SearchStudentsAsync(string searchTerm)
         {
             try
-        {
-            _logger.LogInformation("Searching students with term: {SearchTerm}", searchTerm);
-                return await _unitOfWork.Students.FindAsync(s => 
+            {
+                _logger.LogInformation("Searching students with term: {SearchTerm}", searchTerm);
+                return await _unitOfWork.Students.FindAsync(s =>
                     s.FullName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
                     s.StudentNumber.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
             }
@@ -281,9 +281,9 @@ namespace xyz_university_payment_api.Core.Application.Services
         public async Task<Student> UpdateStudentStatusAsync(int studentId, bool isActive)
         {
             try
-        {
-            _logger.LogInformation("Updating student status: {StudentId} to {IsActive}", studentId, isActive);
-                
+            {
+                _logger.LogInformation("Updating student status: {StudentId} to {IsActive}", studentId, isActive);
+
                 var student = await _unitOfWork.Students.GetByIdAsync(studentId);
                 if (student == null)
                 {
@@ -349,18 +349,18 @@ namespace xyz_university_payment_api.Core.Application.Services
         public async Task<bool> IsStudentEligibleForEnrollmentAsync(string studentNumber)
         {
             try
-        {
-            _logger.LogInformation("Checking enrollment eligibility for student: {StudentNumber}", studentNumber);
+            {
+                _logger.LogInformation("Checking enrollment eligibility for student: {StudentNumber}", studentNumber);
 
                 var student = await _unitOfWork.Students.FirstOrDefaultAsync(s => s.StudentNumber == studentNumber);
-            if (student == null)
-            {
-                _logger.LogWarning("Student not found for enrollment check: {StudentNumber}", studentNumber);
-                return false;
-            }
+                if (student == null)
+                {
+                    _logger.LogWarning("Student not found for enrollment check: {StudentNumber}", studentNumber);
+                    return false;
+                }
 
-            // Business rule: Student must be active to be eligible for enrollment
-            return student.IsActive;
+                // Business rule: Student must be active to be eligible for enrollment
+                return student.IsActive;
             }
             catch (Exception ex)
             {
@@ -377,7 +377,7 @@ namespace xyz_university_payment_api.Core.Application.Services
 
                 var result = new EnrollmentEligibilityResult();
                 var student = await _unitOfWork.Students.FirstOrDefaultAsync(s => s.StudentNumber == studentNumber);
-                
+
                 if (student == null)
                 {
                     result.IsEligible = false;
@@ -399,7 +399,7 @@ namespace xyz_university_payment_api.Core.Application.Services
 
                 // For now, eligibility is based on active status
                 result.IsEligible = student.IsActive;
-                
+
                 if (result.IsEligible)
                 {
                     result.Reasons.Add("Student meets all enrollment requirements");
@@ -488,7 +488,7 @@ namespace xyz_university_payment_api.Core.Application.Services
                 int activeStudents = 0;
                 int inactiveStudents = 0;
                 Dictionary<string, int> studentsByProgram = new();
-                
+
                 if (includeAnalytics)
                 {
                     activeStudents = await query.CountAsync(st => st.IsActive);
@@ -819,7 +819,7 @@ namespace xyz_university_payment_api.Core.Application.Services
         {
             try
             {
-                _logger.LogInformation("Performing bulk operation: {Operation} on {Count} students", 
+                _logger.LogInformation("Performing bulk operation: {Operation} on {Count} students",
                     bulkOperation.Operation, bulkOperation.StudentIds.Count);
 
                 var result = new BulkOperationResultDto

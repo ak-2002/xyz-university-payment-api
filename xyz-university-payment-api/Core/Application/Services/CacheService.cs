@@ -59,7 +59,7 @@ namespace xyz_university_payment_api.Core.Application.Services
 
                 var serializedValue = JsonSerializer.Serialize(value);
                 await _cache.SetStringAsync(key, serializedValue, options);
-                
+
                 _logger.LogDebug("Cached value for key: {Key} with expiration: {Expiration}", key, expiration);
             }
             catch (Exception ex)
@@ -130,4 +130,4 @@ namespace xyz_university_payment_api.Core.Application.Services
             return GetCacheKey("summary", identifier);
         }
     }
-} 
+}

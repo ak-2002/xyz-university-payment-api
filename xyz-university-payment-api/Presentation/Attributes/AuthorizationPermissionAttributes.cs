@@ -84,7 +84,7 @@ namespace xyz_university_payment_api.Presentation.Attributes
             {
                 var userRoles = user.FindAll(ClaimTypes.Role).Select(c => c.Value);
                 var hasRequiredRole = _requiredRoles.Any(role => userRoles.Contains(role));
-                
+
                 if (!hasRequiredRole)
                 {
                     context.Result = new ForbidResult();
@@ -284,4 +284,4 @@ namespace xyz_university_payment_api.Presentation.Attributes
             }
         }
     }
-} 
+}

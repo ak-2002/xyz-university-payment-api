@@ -28,104 +28,104 @@ namespace xyz_university_payment_api.Core.Application.Services
 
         public async Task<PaymentProcessingResult> ProcessPaymentAsync(PaymentNotification payment)
         {
-            _logger.LogInformation("Processing payment: {PaymentReference} for student: {StudentNumber}", 
+            _logger.LogInformation("Processing payment: {PaymentReference} for student: {StudentNumber}",
                 payment.PaymentReference, payment.StudentNumber);
 
             try
             {
-            // Validate payment
-            var validation = await ValidatePaymentAsync(payment);
-            if (!validation.IsValid)
-            {
-                _logger.LogWarning("Payment validation failed: {Errors}", string.Join(", ", validation.Errors));
-                
-                // Publish validation failure message
-                await _messagePublisher.PublishPaymentValidationAsync(new PaymentValidationMessage
+                // Validate payment
+                var validation = await ValidatePaymentAsync(payment);
+                if (!validation.IsValid)
                 {
-                    PaymentReference = payment.PaymentReference,
-                    StudentNumber = payment.StudentNumber,
-                    Amount = payment.AmountPaid,
-                    PaymentDate = payment.PaymentDate,
-                    Status = "ValidationFailed",
-                    Message = $"Payment validation failed: {string.Join(", ", validation.Errors)}",
-                    ValidationErrors = validation.Errors
-                });
+                    _logger.LogWarning("Payment validation failed: {Errors}", string.Join(", ", validation.Errors));
+
+                    // Publish validation failure message
+                    await _messagePublisher.PublishPaymentValidationAsync(new PaymentValidationMessage
+                    {
+                        PaymentReference = payment.PaymentReference,
+                        StudentNumber = payment.StudentNumber,
+                        Amount = payment.AmountPaid,
+                        PaymentDate = payment.PaymentDate,
+                        Status = "ValidationFailed",
+                        Message = $"Payment validation failed: {string.Join(", ", validation.Errors)}",
+                        ValidationErrors = validation.Errors
+                    });
 
                     throw new ValidationException(validation.Errors);
-            }
+                }
 
-            // Check for duplicate payment reference
+                // Check for duplicate payment reference
                 if (await _unitOfWork.Payments.AnyAsync(p => p.PaymentReference == payment.PaymentReference))
-            {
-                _logger.LogWarning("Duplicate payment reference: {PaymentReference}", payment.PaymentReference);
-                
-                // Publish failed payment message
-                await _messagePublisher.PublishPaymentFailedAsync(new PaymentFailedMessage
                 {
-                    PaymentReference = payment.PaymentReference,
-                    StudentNumber = payment.StudentNumber,
-                    Amount = payment.AmountPaid,
-                    PaymentDate = payment.PaymentDate,
-                    Status = "DuplicateReference",
-                    Message = $"Payment reference {payment.PaymentReference} already exists",
-                    ErrorReason = "Duplicate payment reference"
-                });
+                    _logger.LogWarning("Duplicate payment reference: {PaymentReference}", payment.PaymentReference);
+
+                    // Publish failed payment message
+                    await _messagePublisher.PublishPaymentFailedAsync(new PaymentFailedMessage
+                    {
+                        PaymentReference = payment.PaymentReference,
+                        StudentNumber = payment.StudentNumber,
+                        Amount = payment.AmountPaid,
+                        PaymentDate = payment.PaymentDate,
+                        Status = "DuplicateReference",
+                        Message = $"Payment reference {payment.PaymentReference} already exists",
+                        ErrorReason = "Duplicate payment reference"
+                    });
 
                     throw new DuplicatePaymentException(payment.PaymentReference);
-            }
+                }
 
-            // Check if student exists
+                // Check if student exists
                 var student = await _unitOfWork.Students.FirstOrDefaultAsync(s => s.StudentNumber == payment.StudentNumber);
-            if (student == null)
-            {
-                _logger.LogWarning("Student not found for payment: {StudentNumber}", payment.StudentNumber);
-                
-                // Publish failed payment message
-                await _messagePublisher.PublishPaymentFailedAsync(new PaymentFailedMessage
+                if (student == null)
+                {
+                    _logger.LogWarning("Student not found for payment: {StudentNumber}", payment.StudentNumber);
+
+                    // Publish failed payment message
+                    await _messagePublisher.PublishPaymentFailedAsync(new PaymentFailedMessage
+                    {
+                        PaymentReference = payment.PaymentReference,
+                        StudentNumber = payment.StudentNumber,
+                        Amount = payment.AmountPaid,
+                        PaymentDate = payment.PaymentDate,
+                        Status = "StudentNotFound",
+                        Message = "Payment received but student not found.",
+                        ErrorReason = "Student not found in system"
+                    });
+
+                    throw new StudentNotFoundException(payment.StudentNumber);
+                }
+
+                // Save the payment regardless of student activity to keep all records
+                var processedPayment = await _unitOfWork.Payments.AddAsync(payment);
+
+                _logger.LogInformation("Payment processed successfully: {PaymentReference}", payment.PaymentReference);
+
+                // Invalidate related caches
+                await InvalidatePaymentCachesAsync(payment.StudentNumber, payment.PaymentReference);
+
+                // Publish successful payment message
+                await _messagePublisher.PublishPaymentProcessedAsync(new PaymentProcessedMessage
                 {
                     PaymentReference = payment.PaymentReference,
                     StudentNumber = payment.StudentNumber,
                     Amount = payment.AmountPaid,
                     PaymentDate = payment.PaymentDate,
-                    Status = "StudentNotFound",
-                    Message = "Payment received but student not found.",
-                    ErrorReason = "Student not found in system"
+                    Status = "Processed",
+                    Message = student.IsActive ? "Payment processed successfully. Student is currently enrolled."
+                                               : "Payment processed successfully. Student is not currently enrolled.",
+                    StudentExists = true,
+                    StudentIsActive = student.IsActive
                 });
 
-                    throw new StudentNotFoundException(payment.StudentNumber);
-            }
-
-            // Save the payment regardless of student activity to keep all records
-                var processedPayment = await _unitOfWork.Payments.AddAsync(payment);
-
-            _logger.LogInformation("Payment processed successfully: {PaymentReference}", payment.PaymentReference);
-
-            // Invalidate related caches
-            await InvalidatePaymentCachesAsync(payment.StudentNumber, payment.PaymentReference);
-
-            // Publish successful payment message
-            await _messagePublisher.PublishPaymentProcessedAsync(new PaymentProcessedMessage
-            {
-                PaymentReference = payment.PaymentReference,
-                StudentNumber = payment.StudentNumber,
-                Amount = payment.AmountPaid,
-                PaymentDate = payment.PaymentDate,
-                Status = "Processed",
-                Message = student.IsActive ? "Payment processed successfully. Student is currently enrolled." 
-                                           : "Payment processed successfully. Student is not currently enrolled.",
-                StudentExists = true,
-                StudentIsActive = student.IsActive
-            });
-
-            return new PaymentProcessingResult
-            {
-                Success = true,
-                Message = student.IsActive ? "Payment processed successfully. Student is currently enrolled." 
-                                           : "Payment processed successfully. Student is not currently enrolled.",
-                StudentExists = true,
-                StudentIsActive = student.IsActive,
-                ProcessedPayment = processedPayment
-            };
+                return new PaymentProcessingResult
+                {
+                    Success = true,
+                    Message = student.IsActive ? "Payment processed successfully. Student is currently enrolled."
+                                               : "Payment processed successfully. Student is not currently enrolled.",
+                    StudentExists = true,
+                    StudentIsActive = student.IsActive,
+                    ProcessedPayment = processedPayment
+                };
             }
             catch (ApiException)
             {
@@ -142,8 +142,8 @@ namespace xyz_university_payment_api.Core.Application.Services
         public async Task<IEnumerable<PaymentNotification>> GetAllPaymentsAsync()
         {
             try
-        {
-            _logger.LogInformation("Retrieving all payments");
+            {
+                _logger.LogInformation("Retrieving all payments");
                 return await _unitOfWork.Payments.GetAllAsync();
             }
             catch (Exception ex)
@@ -158,11 +158,11 @@ namespace xyz_university_payment_api.Core.Application.Services
             try
             {
                 _logger.LogInformation("Retrieving payment with ID: {PaymentId}", id);
-                
+
                 // Try to get from cache first
                 var cacheKey = _cacheService.GetPaymentCacheKey($"id:{id}");
                 var cachedPayment = await _cacheService.GetAsync<PaymentNotification>(cacheKey);
-                
+
                 if (cachedPayment != null)
                 {
                     _logger.LogInformation("Payment retrieved from cache: {PaymentId}", id);
@@ -171,7 +171,7 @@ namespace xyz_university_payment_api.Core.Application.Services
 
                 // If not in cache, get from database
                 var payment = await _unitOfWork.Payments.GetByIdAsync(id);
-                
+
                 if (payment == null)
                 {
                     throw new PaymentNotFoundException(id);
@@ -180,7 +180,7 @@ namespace xyz_university_payment_api.Core.Application.Services
                 // Cache the payment
                 await _cacheService.SetAsync(cacheKey, payment, TimeSpan.FromMinutes(60));
                 _logger.LogInformation("Payment cached: {PaymentId}", id);
-                
+
                 return payment;
             }
             catch (ApiException)
@@ -199,11 +199,11 @@ namespace xyz_university_payment_api.Core.Application.Services
             try
             {
                 _logger.LogInformation("Retrieving payments for student: {StudentNumber}", studentNumber);
-                
+
                 // Try to get from cache first
                 var cacheKey = _cacheService.GetPaymentCacheKey($"student:{studentNumber}");
                 var cachedPayments = await _cacheService.GetAsync<IEnumerable<PaymentNotification>>(cacheKey);
-                
+
                 if (cachedPayments != null)
                 {
                     _logger.LogInformation("Student payments retrieved from cache: {StudentNumber}", studentNumber);
@@ -212,11 +212,11 @@ namespace xyz_university_payment_api.Core.Application.Services
 
                 // If not in cache, get from database
                 var payments = await _unitOfWork.Payments.FindAsync(p => p.StudentNumber == studentNumber);
-                
+
                 // Cache the payments
                 await _cacheService.SetAsync(cacheKey, payments, TimeSpan.FromMinutes(30));
                 _logger.LogInformation("Student payments cached: {StudentNumber}", studentNumber);
-                
+
                 return payments;
             }
             catch (Exception ex)
@@ -229,8 +229,8 @@ namespace xyz_university_payment_api.Core.Application.Services
         public async Task<IEnumerable<PaymentNotification>> GetPaymentsByDateRangeAsync(DateTime startDate, DateTime endDate)
         {
             try
-        {
-            _logger.LogInformation("Retrieving payments from {StartDate} to {EndDate}", startDate, endDate);
+            {
+                _logger.LogInformation("Retrieving payments from {StartDate} to {EndDate}", startDate, endDate);
                 return await _unitOfWork.Payments.FindAsync(p => p.PaymentDate >= startDate && p.PaymentDate <= endDate);
             }
             catch (Exception ex)
@@ -243,15 +243,15 @@ namespace xyz_university_payment_api.Core.Application.Services
         public async Task<PaymentNotification?> GetPaymentByReferenceAsync(string paymentReference)
         {
             try
-        {
-            _logger.LogInformation("Retrieving payment by reference: {PaymentReference}", paymentReference);
+            {
+                _logger.LogInformation("Retrieving payment by reference: {PaymentReference}", paymentReference);
                 var payment = await _unitOfWork.Payments.FirstOrDefaultAsync(p => p.PaymentReference == paymentReference);
-                
+
                 if (payment == null)
                 {
                     throw new PaymentNotFoundException(paymentReference);
                 }
-                
+
                 return payment;
             }
             catch (ApiException)
@@ -334,7 +334,7 @@ namespace xyz_university_payment_api.Core.Application.Services
                 // Try to get from cache first
                 var cacheKey = _cacheService.GetSummaryCacheKey(studentNumber);
                 var cachedSummary = await _cacheService.GetAsync<PaymentSummary>(cacheKey);
-                
+
                 if (cachedSummary != null)
                 {
                     _logger.LogInformation("Payment summary retrieved from cache: {StudentNumber}", studentNumber);
@@ -359,7 +359,7 @@ namespace xyz_university_payment_api.Core.Application.Services
                 // Cache the summary
                 await _cacheService.SetAsync(cacheKey, summary, TimeSpan.FromMinutes(45));
                 _logger.LogInformation("Payment summary cached: {StudentNumber}", studentNumber);
-                
+
                 return summary;
             }
             catch (Exception ex)
@@ -387,9 +387,9 @@ namespace xyz_university_payment_api.Core.Application.Services
                 await _unitOfWork.BeginTransactionAsync();
 
                 foreach (var payment in payments)
-            {
-                try
                 {
+                    try
+                    {
                         var processedPayment = await ProcessPaymentAsync(payment);
                         result.SuccessfulPayments.Add(processedPayment.ProcessedPayment!);
                         result.Results.Add(processedPayment);
@@ -411,9 +411,9 @@ namespace xyz_university_payment_api.Core.Application.Services
 
                 await _unitOfWork.CommitAsync();
                 return result;
-                }
-                catch (Exception ex)
-                {
+            }
+            catch (Exception ex)
+            {
                 await _unitOfWork.RollbackAsync();
                 _logger.LogError(ex, "Error processing batch payments");
                 throw new BatchProcessingException("Failed to process batch payments", ex);
@@ -442,20 +442,20 @@ namespace xyz_university_payment_api.Core.Application.Services
                         p => p.PaymentReference == bankPayment.PaymentReference);
 
                     if (systemPayment != null)
-                {
+                    {
                         result.MatchedPayments++;
                         result.TotalReconciled++;
-                }
-                else
-                {
+                    }
+                    else
+                    {
                         result.UnmatchedPayments.Add(bankPayment);
                         result.DiscrepanciesFound++;
                         result.Discrepancies.Add($"Payment reference {bankPayment.PaymentReference} not found in system");
+                    }
                 }
-            }
 
-            result.ReconciliationSuccessful = result.DiscrepanciesFound == 0;
-            return result;
+                result.ReconciliationSuccessful = result.DiscrepanciesFound == 0;
+                return result;
             }
             catch (Exception ex)
             {
@@ -523,16 +523,16 @@ namespace xyz_university_payment_api.Core.Application.Services
                 // Invalidate student payments cache
                 var studentPaymentsKey = _cacheService.GetPaymentCacheKey($"student:{studentNumber}");
                 await _cacheService.RemoveAsync(studentPaymentsKey);
-                
+
                 // Invalidate payment summary cache
                 var summaryKey = _cacheService.GetSummaryCacheKey(studentNumber);
                 await _cacheService.RemoveAsync(summaryKey);
-                
+
                 // Invalidate specific payment cache (if it exists)
                 var paymentKey = _cacheService.GetPaymentCacheKey($"reference:{paymentReference}");
                 await _cacheService.RemoveAsync(paymentKey);
-                
-                _logger.LogDebug("Invalidated caches for student: {StudentNumber}, payment: {PaymentReference}", 
+
+                _logger.LogDebug("Invalidated caches for student: {StudentNumber}, payment: {PaymentReference}",
                     studentNumber, paymentReference);
             }
             catch (Exception ex)

@@ -10,4 +10,4 @@ namespace xyz_university_payment_api.Core.Domain.Entities
         public DateTime PaymentDate { get; set; } // Date when the payment was made
         public DateTime DateReceived { get; set; } = DateTime.UtcNow; // Date when the payment was received by the API
     }
-} 
+}

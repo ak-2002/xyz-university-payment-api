@@ -80,7 +80,7 @@ namespace xyz_university_payment_api.Core.Application.Services
                     signingCredentials: credentials
                 );
 
-                _logger.LogInformation("Generated access token for user {Username} with {RoleCount} roles and {PermissionCount} permissions", 
+                _logger.LogInformation("Generated access token for user {Username} with {RoleCount} roles and {PermissionCount} permissions",
                     user.Username, userRoles.Count(), userPermissions.Count());
 
                 return new JwtSecurityTokenHandler().WriteToken(token);
@@ -199,7 +199,7 @@ namespace xyz_university_payment_api.Core.Application.Services
             {
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var jwtToken = tokenHandler.ReadJwtToken(token);
-                
+
                 return jwtToken.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name)?.Value;
             }
             catch (Exception ex)
@@ -215,7 +215,7 @@ namespace xyz_university_payment_api.Core.Application.Services
             {
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var jwtToken = tokenHandler.ReadJwtToken(token);
-                
+
                 return jwtToken.Claims
                     .Where(x => x.Type == ClaimTypes.Role)
                     .Select(x => x.Value)
@@ -234,7 +234,7 @@ namespace xyz_university_payment_api.Core.Application.Services
             {
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var jwtToken = tokenHandler.ReadJwtToken(token);
-                
+
                 return jwtToken.Claims
                     .Where(x => x.Type == "permission")
                     .Select(x => x.Value)
@@ -253,7 +253,7 @@ namespace xyz_university_payment_api.Core.Application.Services
             {
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var jwtToken = tokenHandler.ReadJwtToken(token);
-                
+
                 return jwtToken.ValidTo;
             }
             catch (Exception ex)
@@ -277,4 +277,4 @@ namespace xyz_university_payment_api.Core.Application.Services
             }
         }
     }
-} 
+}

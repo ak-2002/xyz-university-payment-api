@@ -144,10 +144,10 @@ namespace xyz_university_payment_api.Core.Application.Services
                 {
                     Version = "2.0",
                     Status = "Current",
-                    Features = new[] { 
-                        "Enhanced Validation", 
-                        "Improved Error Handling", 
-                        "Metadata Support", 
+                    Features = new[] {
+                        "Enhanced Validation",
+                        "Improved Error Handling",
+                        "Metadata Support",
                         "Analytics Endpoints",
                         "Advanced Filtering",
                         "Real-time Notifications"
@@ -158,4 +158,4 @@ namespace xyz_university_payment_api.Core.Application.Services
             };
         }
     }
-} 
+}

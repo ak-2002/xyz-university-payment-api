@@ -2,26 +2,26 @@ using xyz_university_payment_api.Core.Domain.Entities;
 
 namespace xyz_university_payment_api.Core.Application.Interfaces
 {
-    
+
     public interface IPaymentService
     {
-        
+
         Task<PaymentProcessingResult> ProcessPaymentAsync(PaymentNotification payment);
 
-   
+
         Task<IEnumerable<PaymentNotification>> GetAllPaymentsAsync();
 
         Task<PaymentNotification?> GetPaymentByIdAsync(int id);
 
-        
+
         Task<IEnumerable<PaymentNotification>> GetPaymentsByStudentAsync(string studentNumber);
 
         Task<IEnumerable<PaymentNotification>> GetPaymentsByDateRangeAsync(DateTime startDate, DateTime endDate);
 
-      
+
         Task<PaymentNotification?> GetPaymentByReferenceAsync(string paymentReference);
 
-      
+
         Task<(bool IsValid, List<string> Errors)> ValidatePaymentAsync(PaymentNotification payment);
 
         Task<bool> IsPaymentReferenceValidAsync(string paymentReference);
@@ -29,14 +29,14 @@ namespace xyz_university_payment_api.Core.Application.Interfaces
         // Alias for consistency with controller
         Task<bool> PaymentReferenceExistsAsync(string paymentReference) => IsPaymentReferenceValidAsync(paymentReference);
 
-       
+
         Task<decimal> GetTotalAmountPaidByStudentAsync(string studentNumber);
 
-       
+
         Task<PaymentSummary> GetPaymentSummaryAsync(string studentNumber);
 
-       
-      
+
+
         Task<BatchProcessingResult> ProcessBatchPaymentsAsync(IEnumerable<PaymentNotification> payments);
 
         Task<ReconciliationResult> ReconcilePaymentsAsync(IEnumerable<BankPaymentData> bankData);
@@ -45,7 +45,7 @@ namespace xyz_university_payment_api.Core.Application.Interfaces
         Task TestMessagingAsync();
     }
 
-  
+
     public class PaymentProcessingResult
     {
         public bool Success { get; set; }
@@ -56,7 +56,7 @@ namespace xyz_university_payment_api.Core.Application.Interfaces
         public List<string> Warnings { get; set; } = new();
     }
 
-  
+
     public class BatchProcessingResult
     {
         public int TotalProcessed { get; set; }
@@ -74,7 +74,7 @@ namespace xyz_university_payment_api.Core.Application.Interfaces
         public string ErrorMessage { get; set; } = string.Empty;
     }
 
-  
+
     public class PaymentSummary
     {
         public string StudentNumber { get; set; } = string.Empty;
@@ -99,7 +99,7 @@ namespace xyz_university_payment_api.Core.Application.Interfaces
         public bool ReconciliationSuccessful { get; set; }
     }
 
-   
+
     public class BankPaymentData
     {
         public string PaymentReference { get; set; } = string.Empty;
@@ -107,4 +107,4 @@ namespace xyz_university_payment_api.Core.Application.Interfaces
         public DateTime PaymentDate { get; set; }
         public string StudentNumber { get; set; } = string.Empty;
     }
-} 
+}
