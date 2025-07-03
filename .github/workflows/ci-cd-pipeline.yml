@@ -17,31 +17,6 @@ jobs:
   build-and-test:
     name: Build and Test
     runs-on: ubuntu-latest
-    
-    services:
-      sqlserver:
-        image: mcr.microsoft.com/mssql/server:2022-latest
-        env:
-          SA_PASSWORD: TestPassword123!
-          ACCEPT_EULA: Y
-          MSSQL_PID: Developer
-        options: >-
-          --health-cmd "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P TestPassword123! -Q 'SELECT 1' || exit 1"
-          --health-interval 30s
-          --health-timeout 10s
-          --health-retries 10
-        ports:
-          - 1433:1433
-      
-      redis:
-        image: redis:7-alpine
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
 
     steps:
     - name: Checkout code
@@ -51,14 +26,6 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
-
-    - name: Wait for services to be ready
-      run: |
-        echo "Waiting for SQL Server to be ready..."
-        timeout 60 bash -c 'until /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P TestPassword123! -Q "SELECT 1" > /dev/null 2>&1; do sleep 2; done' || echo "SQL Server health check failed, continuing anyway..."
-        
-        echo "Waiting for Redis to be ready..."
-        timeout 30 bash -c 'until redis-cli ping > /dev/null 2>&1; do sleep 1; done' || echo "Redis health check failed, continuing anyway..."
 
     - name: Restore dependencies
       run: |
@@ -72,34 +39,14 @@ jobs:
 
     - name: Run unit tests
       run: |
-        dotnet test xyz-university-payment-api/Tests/xyz-university-payment-api.Tests.csproj --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage --logger "console;verbosity=normal"
+        dotnet test xyz-university-payment-api/Tests/xyz-university-payment-api.Tests.csproj --no-build --configuration Release --verbosity normal --logger "console;verbosity=normal"
 
-    - name: Upload test results
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: test-results
-        path: coverage/
-
-    - name: Generate test report
+    - name: Run code analysis
       run: |
-        if [ -d "coverage" ] && [ "$(ls -A coverage)" ]; then
-          dotnet tool install -g dotnet-reportgenerator-globaltool
-          reportgenerator -reports:coverage/**/coverage.cobertura.xml -targetdir:coverage-report -reporttypes:HtmlInline
-        else
-          echo "No coverage data found, skipping report generation"
-          mkdir -p coverage-report
-          echo "<html><body><h1>No Coverage Data Available</h1><p>Tests may have run without coverage collection enabled.</p></body></html>" > coverage-report/index.html
-        fi
+        dotnet build xyz-university-payment-api/xyz-university-payment-api.csproj --configuration Release --verbosity quiet
+        dotnet format --verify-no-changes xyz-university-payment-api/
 
-    - name: Upload coverage report
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: coverage-report
-        path: coverage-report/
-
-  # Security and Code Quality Job
+  # Security Scan Job
   security-scan:
     name: Security Scan
     runs-on: ubuntu-latest
@@ -118,10 +65,33 @@ jobs:
       run: |
         dotnet list xyz-university-payment-api/xyz-university-payment-api.csproj package --vulnerable
 
-    - name: Run code analysis
+    - name: Check for secrets in code
       run: |
-        dotnet build xyz-university-payment-api/xyz-university-payment-api.csproj --configuration Release --verbosity quiet
-        dotnet format --verify-no-changes xyz-university-payment-api/
+        echo "🔍 Scanning for potential secrets in code..."
+        if grep -r -i "password\|secret\|key\|token" xyz-university-payment-api/ --exclude-dir=bin --exclude-dir=obj --exclude-dir=.git; then
+          echo "⚠️ Potential secrets found in code. Please review."
+          exit 1
+        else
+          echo "✅ No obvious secrets found in code."
+        fi
+
+    - name: Run security best practices check
+      run: |
+        echo "🔍 Checking security best practices..."
+        
+        # Check for HTTPS usage
+        if grep -r "http://" xyz-university-payment-api/ --exclude-dir=bin --exclude-dir=obj --exclude-dir=.git; then
+          echo "⚠️ HTTP URLs found. Consider using HTTPS."
+        else
+          echo "✅ No HTTP URLs found."
+        fi
+        
+        # Check for proper authentication attributes
+        if grep -r "\[Authorize\]" xyz-university-payment-api/ --exclude-dir=bin --exclude-dir=obj --exclude-dir=.git; then
+          echo "✅ Authorization attributes found."
+        else
+          echo "⚠️ No authorization attributes found. Review security requirements."
+        fi
 
   # Package Application
   package:
@@ -223,8 +193,8 @@ jobs:
       if: success()
       run: |
         echo "✅ CI/CD Pipeline completed successfully!"
-        echo "📊 Test results and coverage reports available in artifacts"
         echo "📦 Deployment package ready for deployment"
+        echo "🔒 Security scan completed"
 
     - name: Notify on Failure
       if: failure()
