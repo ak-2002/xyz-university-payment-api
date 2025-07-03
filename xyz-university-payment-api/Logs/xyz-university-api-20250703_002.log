@@ -1,1 +1,9 @@
 2025-07-03 09:07:53.119 +03:00 [INF] Ensuring database is created
+2025-07-03 09:07:53.970 +03:00 [INF] Database created successfully
+2025-07-03 09:07:53.977 +03:00 [INF] Seeding default roles and permissions
+2025-07-03 09:07:54.154 +03:00 [INF] Default roles and permissions seeded successfully
+2025-07-03 09:07:54.270 +03:00 [INF] XYZ University Payment API started successfully
+2025-07-03 09:07:54.380 +03:00 [INF] Configured endpoint PaymentProcessedMessage, Consumer: xyz_university_payment_api.Core.Application.Services.PaymentProcessedMessageConsumer
+2025-07-03 09:07:54.393 +03:00 [INF] Configured endpoint PaymentFailedMessage, Consumer: xyz_university_payment_api.Core.Application.Services.PaymentFailedMessageConsumer
+2025-07-03 09:07:54.402 +03:00 [INF] Configured endpoint PaymentValidationMessage, Consumer: xyz_university_payment_api.Core.Application.Services.PaymentValidationMessageConsumer
+2025-07-03 09:07:54.694 +03:00 [INF] Bus started: "rabbitmq://localhost/"
