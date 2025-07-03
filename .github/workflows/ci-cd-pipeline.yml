@@ -69,11 +69,6 @@ jobs:
       run: |
         dotnet list xyz-university-payment-api/xyz-university-payment-api.csproj package --vulnerable || echo "No vulnerable packages found or check completed"
 
-    - name: Check for secrets in code
-      run: |
-        echo "🔍 Skipping secret detection to avoid false positives..."
-        echo "✅ Secret detection completed (skipped for false positive prevention)"
-
     - name: Run security best practices check
       run: |
         echo "🔍 Checking security best practices..."
