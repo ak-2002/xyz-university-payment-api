@@ -1031,7 +1031,7 @@ namespace xyz_university_payment_api.Core.Application.Services
             {
                 Username = "admin",
                 Email = "admin@xyzuniversity.edu",
-                PasswordHash = HashPassword("Admin123!"),
+                PasswordHash = HashPassword("Admin123!"), // This is a default password for initial setup only
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };

@@ -124,8 +124,8 @@ try
             {
                 cfg.Host("localhost", "/", h =>
                 {
-                    h.Username("guest");
-                    h.Password("guest");
+                    h.Username(builder.Configuration["RabbitMQ:Username"] ?? "guest");
+                    h.Password(builder.Configuration["RabbitMQ:Password"] ?? "guest");
                 });
 
                 cfg.ConfigureEndpoints(context);
@@ -340,7 +340,7 @@ try
     builder.Services.AddAuthentication("Bearer")
         .AddJwtBearer("Bearer", options =>
         {
-            var jwtKey = builder.Configuration["Jwt:Key"] ?? "your-super-secret-key-with-at-least-32-characters";
+            var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key is not configured. Please set the Jwt:Key configuration value.");
             var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "xyz-university";
             var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "xyz-api";
 

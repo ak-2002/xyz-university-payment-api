@@ -1,17 +1,13 @@
-// Purpose: Custom authorization attribute for permission-based access control
+// Purpose: Authorization attributes for role-based access control
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Extensions.DependencyInjection;
-using xyz_university_payment_api.Core.Application.Interfaces;
-using xyz_university_payment_api.Core.Domain.Exceptions;
 using System.Security.Claims;
-using System.Linq;
 
 namespace xyz_university_payment_api.Presentation.Attributes
 {
     /// <summary>
-    /// Custom authorization attribute for permission-based access control
+    /// Authorization attribute for permission-based access control
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
     public class AuthorizePermissionAttribute : AuthorizeAttribute, IAuthorizationFilter
@@ -21,19 +17,18 @@ namespace xyz_university_payment_api.Presentation.Attributes
         private readonly string[]? _requiredRoles;
 
         /// <summary>
-        /// Initialize with resource and action for permission-based authorization
+        /// Constructor for resource and action-based authorization
         /// </summary>
-        /// <param name="resource">The resource being accessed (e.g., "payments", "students")</param>
-        /// <param name="action">The action being performed (e.g., "read", "write", "delete")</param>
+        /// <param name="resource">Resource to authorize access to</param>
+        /// <param name="action">Action to authorize</param>
         public AuthorizePermissionAttribute(string resource, string action)
         {
             _resource = resource;
             _action = action;
-            Policy = "PermissionPolicy";
         }
 
         /// <summary>
-        /// Initialize with required roles for role-based authorization
+        /// Constructor for role-based authorization
         /// </summary>
         /// <param name="roles">Comma-separated list of required roles</param>
         public AuthorizePermissionAttribute(string roles)
@@ -41,14 +36,13 @@ namespace xyz_university_payment_api.Presentation.Attributes
             _requiredRoles = roles.Split(',', StringSplitOptions.RemoveEmptyEntries)
                                  .Select(r => r.Trim())
                                  .ToArray();
-            Policy = "RolePolicy";
         }
 
         /// <summary>
-        /// Initialize with both roles and permissions
+        /// Constructor for combined role and permission-based authorization
         /// </summary>
-        /// <param name="resource">The resource being accessed</param>
-        /// <param name="action">The action being performed</param>
+        /// <param name="resource">Resource to authorize access to</param>
+        /// <param name="action">Action to authorize</param>
         /// <param name="roles">Comma-separated list of required roles</param>
         public AuthorizePermissionAttribute(string resource, string action, string roles)
         {
@@ -57,30 +51,20 @@ namespace xyz_university_payment_api.Presentation.Attributes
             _requiredRoles = roles.Split(',', StringSplitOptions.RemoveEmptyEntries)
                                  .Select(r => r.Trim())
                                  .ToArray();
-            Policy = "PermissionAndRolePolicy";
         }
 
         public void OnAuthorization(AuthorizationFilterContext context)
         {
-            var user = context.HttpContext.User;
-
             // Check if user is authenticated
+            var user = context.HttpContext.User;
             if (!user.Identity?.IsAuthenticated ?? true)
             {
                 context.Result = new UnauthorizedResult();
                 return;
             }
 
-            // Check if user is active
-            var isActiveClaim = user.FindFirst("is_active")?.Value;
-            if (isActiveClaim != "True")
-            {
-                context.Result = new ForbidResult();
-                return;
-            }
-
             // Check roles if required
-            if (_requiredRoles != null && _requiredRoles.Length > 0)
+            if (_requiredRoles != null && _requiredRoles.Any())
             {
                 var userRoles = user.FindAll(ClaimTypes.Role).Select(c => c.Value);
                 var hasRequiredRole = _requiredRoles.Any(role => userRoles.Contains(role));
@@ -146,7 +130,7 @@ namespace xyz_university_payment_api.Presentation.Attributes
 
     // Attribute for requiring multiple permissions (ALL must be satisfied)
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
-    public class AuthorizePermissionsAttribute : Attribute, IAsyncAuthorizationFilter
+    public class AuthorizePermissionsAttribute : Attribute, IAuthorizationFilter
     {
         private readonly string _resource;
         private readonly string[] _actions;
@@ -157,7 +141,7 @@ namespace xyz_university_payment_api.Presentation.Attributes
             _actions = actions;
         }
 
-        public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
+        public void OnAuthorization(AuthorizationFilterContext context)
         {
             // Check if user is authenticated
             var user = context.HttpContext.User;
@@ -167,22 +151,14 @@ namespace xyz_university_payment_api.Presentation.Attributes
                 return;
             }
 
-            // Get username from claims
-            var username = user.FindFirst(ClaimTypes.Name)?.Value;
-            if (string.IsNullOrEmpty(username))
-            {
-                context.Result = new UnauthorizedResult();
-                return;
-            }
-
-            // Get authorization service
-            var authorizationService = context.HttpContext.RequestServices.GetRequiredService<xyz_university_payment_api.Core.Application.Interfaces.IAuthorizationService>();
+            // Get user permissions from JWT claims
+            var userPermissions = user.FindAll("permission").Select(c => c.Value).ToList();
 
             // Check if user has ALL required permissions
             foreach (var action in _actions)
             {
-                var hasPermission = await authorizationService.HasPermissionAsync(username, _resource, action);
-                if (!hasPermission)
+                var requiredPermission = $"{_resource}.{action}";
+                if (!userPermissions.Contains(requiredPermission))
                 {
                     context.Result = new ForbidResult();
                     return;
@@ -193,7 +169,7 @@ namespace xyz_university_payment_api.Presentation.Attributes
 
     // Attribute for requiring any of multiple permissions (ANY can satisfy)
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
-    public class AuthorizeAnyPermissionAttribute : Attribute, IAsyncAuthorizationFilter
+    public class AuthorizeAnyPermissionAttribute : Attribute, IAuthorizationFilter
     {
         private readonly string _resource;
         private readonly string[] _actions;
@@ -204,7 +180,7 @@ namespace xyz_university_payment_api.Presentation.Attributes
             _actions = actions;
         }
 
-        public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
+        public void OnAuthorization(AuthorizationFilterContext context)
         {
             // Check if user is authenticated
             var user = context.HttpContext.User;
@@ -214,22 +190,14 @@ namespace xyz_university_payment_api.Presentation.Attributes
                 return;
             }
 
-            // Get username from claims
-            var username = user.FindFirst(ClaimTypes.Name)?.Value;
-            if (string.IsNullOrEmpty(username))
-            {
-                context.Result = new UnauthorizedResult();
-                return;
-            }
-
-            // Get authorization service
-            var authorizationService = context.HttpContext.RequestServices.GetRequiredService<xyz_university_payment_api.Core.Application.Interfaces.IAuthorizationService>();
+            // Get user permissions from JWT claims
+            var userPermissions = user.FindAll("permission").Select(c => c.Value).ToList();
 
             // Check if user has ANY of the required permissions
             foreach (var action in _actions)
             {
-                var hasPermission = await authorizationService.HasPermissionAsync(username, _resource, action);
-                if (hasPermission)
+                var requiredPermission = $"{_resource}.{action}";
+                if (userPermissions.Contains(requiredPermission))
                 {
                     return; // User has at least one required permission
                 }
@@ -242,7 +210,7 @@ namespace xyz_university_payment_api.Presentation.Attributes
 
     // Attribute for requiring specific roles
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
-    public class AuthorizeRoleAttribute : Attribute, IAsyncAuthorizationFilter
+    public class AuthorizeRoleAttribute : Attribute, IAuthorizationFilter
     {
         private readonly string[] _roles;
 
@@ -251,7 +219,7 @@ namespace xyz_university_payment_api.Presentation.Attributes
             _roles = roles;
         }
 
-        public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
+        public void OnAuthorization(AuthorizationFilterContext context)
         {
             // Check if user is authenticated
             var user = context.HttpContext.User;
@@ -261,19 +229,8 @@ namespace xyz_university_payment_api.Presentation.Attributes
                 return;
             }
 
-            // Get username from claims
-            var username = user.FindFirst(ClaimTypes.Name)?.Value;
-            if (string.IsNullOrEmpty(username))
-            {
-                context.Result = new UnauthorizedResult();
-                return;
-            }
-
-            // Get authorization service
-            var authorizationService = context.HttpContext.RequestServices.GetRequiredService<xyz_university_payment_api.Core.Application.Interfaces.IAuthorizationService>();
-
-            // Get user roles
-            var userRoles = await authorizationService.GetUserRolesAsync(username);
+            // Get user roles from JWT claims
+            var userRoles = user.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
 
             // Check if user has ANY of the required roles
             var hasRequiredRole = _roles.Any(role => userRoles.Contains(role));

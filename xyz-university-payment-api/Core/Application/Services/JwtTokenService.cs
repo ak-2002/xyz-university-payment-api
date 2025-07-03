@@ -68,7 +68,8 @@ namespace xyz_university_payment_api.Core.Application.Services
                 claims.Add(new Claim("created_at", user.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ssZ")));
 
                 // Create JWT token
-                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? "your-super-secret-key-with-at-least-32-characters"));
+                var jwtKey = _configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key is not configured. Please set the Jwt:Key configuration value.");
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
                 var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
                 var token = new JwtSecurityToken(
@@ -146,7 +147,8 @@ namespace xyz_university_payment_api.Core.Application.Services
             try
             {
                 var tokenHandler = new JwtSecurityTokenHandler();
-                var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? "your-super-secret-key-with-at-least-32-characters");
+                var jwtKey = _configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key is not configured. Please set the Jwt:Key configuration value.");
+                var key = Encoding.UTF8.GetBytes(jwtKey);
 
                 tokenHandler.ValidateToken(token, new TokenValidationParameters
                 {

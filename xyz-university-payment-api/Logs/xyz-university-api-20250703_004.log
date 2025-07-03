@@ -7,3 +7,4 @@
 2025-07-03 11:09:52.850 +03:00 [INF] Configured endpoint PaymentFailedMessage, Consumer: xyz_university_payment_api.Core.Application.Services.PaymentFailedMessageConsumer
 2025-07-03 11:09:52.859 +03:00 [INF] Configured endpoint PaymentValidationMessage, Consumer: xyz_university_payment_api.Core.Application.Services.PaymentValidationMessageConsumer
 2025-07-03 11:09:53.124 +03:00 [INF] Bus started: "rabbitmq://localhost/"
+2025-07-03 13:47:08.337 +03:00 [INF] Bus stopped: "rabbitmq://localhost/"

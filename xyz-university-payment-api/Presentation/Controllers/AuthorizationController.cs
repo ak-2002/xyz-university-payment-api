@@ -975,7 +975,7 @@ namespace xyz_university_payment_api.Presentation.Controllers
                 {
                     Username = "admin",
                     Email = "admin@xyzuniversity.edu",
-                    Password = "Admin123!"
+                    Password = "[REDACTED]"
                 };
 
                 var result = await _authorizationService.CreateUserAsync(createUserDto);
@@ -983,8 +983,8 @@ namespace xyz_university_payment_api.Presentation.Controllers
                 return Ok(new ApiResponse<object>
                 {
                     Success = true,
-                    Message = "Admin user created successfully. Username: admin, Password: Admin123!",
-                    Data = new { Username = "admin", Password = "Admin123!" }
+                    Message = "Admin user created successfully. Username: admin, Password: [REDACTED]",
+                    Data = new { Username = "admin", Password = "[REDACTED]" }
                 });
             }
             catch (Exception ex)
