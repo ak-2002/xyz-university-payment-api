@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
-using xyz_university_payment_api.Presentation.Controllers;
+using xyz_university_payment_api.Presentation.Controllers.V1;
 using xyz_university_payment_api.Core.Application.Interfaces;
 using xyz_university_payment_api.Core.Domain.Entities;
 using xyz_university_payment_api.Core.Application.DTOs;
