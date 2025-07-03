@@ -7,3 +7,5 @@
 2025-07-03 09:07:54.393 +03:00 [INF] Configured endpoint PaymentFailedMessage, Consumer: xyz_university_payment_api.Core.Application.Services.PaymentFailedMessageConsumer
 2025-07-03 09:07:54.402 +03:00 [INF] Configured endpoint PaymentValidationMessage, Consumer: xyz_university_payment_api.Core.Application.Services.PaymentValidationMessageConsumer
 2025-07-03 09:07:54.694 +03:00 [INF] Bus started: "rabbitmq://localhost/"
+2025-07-03 11:09:04.161 +03:00 [INF] Bus stopped: "rabbitmq://localhost/"
+2025-07-03 11:09:51.639 +03:00 [INF] Starting XYZ University Payment API {"MachineName":"DESKTOP-F3AMJ10","ThreadId":1,"ProcessId":12092,"Application":"XYZ University Payment API"}
