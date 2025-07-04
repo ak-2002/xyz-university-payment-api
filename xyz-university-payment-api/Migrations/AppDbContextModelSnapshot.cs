@@ -22,7 +22,7 @@ namespace xyz_university_payment_api.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("xyz_university_payment_api.Models.AuthorizationAuditLog", b =>
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.AuthorizationAuditLog", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -72,7 +72,7 @@ namespace xyz_university_payment_api.Migrations
                     b.ToTable("AuthorizationAuditLogs");
                 });
 
-            modelBuilder.Entity("xyz_university_payment_api.Models.PaymentNotification", b =>
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.PaymentNotification", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -103,7 +103,7 @@ namespace xyz_university_payment_api.Migrations
                     b.ToTable("PaymentNotifications");
                 });
 
-            modelBuilder.Entity("xyz_university_payment_api.Models.Permission", b =>
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.Permission", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -145,7 +145,7 @@ namespace xyz_university_payment_api.Migrations
                     b.ToTable("Permissions");
                 });
 
-            modelBuilder.Entity("xyz_university_payment_api.Models.Role", b =>
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.Role", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -177,7 +177,7 @@ namespace xyz_university_payment_api.Migrations
                     b.ToTable("Roles");
                 });
 
-            modelBuilder.Entity("xyz_university_payment_api.Models.RolePermission", b =>
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.RolePermission", b =>
                 {
                     b.Property<int>("RoleId")
                         .HasColumnType("int");
@@ -198,7 +198,7 @@ namespace xyz_university_payment_api.Migrations
                     b.ToTable("RolePermissions");
                 });
 
-            modelBuilder.Entity("xyz_university_payment_api.Models.Student", b =>
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.Student", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -206,12 +206,30 @@ namespace xyz_university_payment_api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DateOfBirth")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Program")
                         .IsRequired()
@@ -221,12 +239,15 @@ namespace xyz_university_payment_api.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
                     b.HasKey("Id");
 
                     b.ToTable("Students");
                 });
 
-            modelBuilder.Entity("xyz_university_payment_api.Models.User", b =>
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -268,7 +289,7 @@ namespace xyz_university_payment_api.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("xyz_university_payment_api.Models.UserRole", b =>
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.UserRole", b =>
                 {
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -289,15 +310,15 @@ namespace xyz_university_payment_api.Migrations
                     b.ToTable("UserRoles");
                 });
 
-            modelBuilder.Entity("xyz_university_payment_api.Models.RolePermission", b =>
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.RolePermission", b =>
                 {
-                    b.HasOne("xyz_university_payment_api.Models.Permission", "Permission")
+                    b.HasOne("xyz_university_payment_api.Core.Domain.Entities.Permission", "Permission")
                         .WithMany("RolePermissions")
                         .HasForeignKey("PermissionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("xyz_university_payment_api.Models.Role", "Role")
+                    b.HasOne("xyz_university_payment_api.Core.Domain.Entities.Role", "Role")
                         .WithMany("RolePermissions")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -308,15 +329,15 @@ namespace xyz_university_payment_api.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("xyz_university_payment_api.Models.UserRole", b =>
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.UserRole", b =>
                 {
-                    b.HasOne("xyz_university_payment_api.Models.Role", "Role")
+                    b.HasOne("xyz_university_payment_api.Core.Domain.Entities.Role", "Role")
                         .WithMany("UserRoles")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("xyz_university_payment_api.Models.User", "User")
+                    b.HasOne("xyz_university_payment_api.Core.Domain.Entities.User", "User")
                         .WithMany("UserRoles")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -327,19 +348,19 @@ namespace xyz_university_payment_api.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("xyz_university_payment_api.Models.Permission", b =>
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.Permission", b =>
                 {
                     b.Navigation("RolePermissions");
                 });
 
-            modelBuilder.Entity("xyz_university_payment_api.Models.Role", b =>
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.Role", b =>
                 {
                     b.Navigation("RolePermissions");
 
                     b.Navigation("UserRoles");
                 });
 
-            modelBuilder.Entity("xyz_university_payment_api.Models.User", b =>
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.User", b =>
                 {
                     b.Navigation("UserRoles");
                 });

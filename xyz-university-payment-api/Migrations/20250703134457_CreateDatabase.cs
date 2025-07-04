@@ -5,7 +5,7 @@
 namespace xyz_university_payment_api.Migrations
 {
     /// <inheritdoc />
-    public partial class AddAuthorizationTables : Migration
+    public partial class CreateDatabase : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

@@ -426,7 +426,16 @@ try
                 Log.Information("Seeding default roles and permissions");
                 await authorizationService.SeedDefaultRolesAndPermissionsAsync();
                 Log.Information("Default roles and permissions seeded successfully");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An error occurred while setting up the database");
+                // Don't throw here - let the application start even if seeding fails
+                // The user can manually trigger seeding via API endpoints
+            }
 
+            try
+            {
                 if (!context.Students.Any())
                 {
                     Log.Information("Seeding initial student data");
@@ -468,8 +477,8 @@ try
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "An error occurred while setting up the database");
-                throw;
+                Log.Error(ex, "An error occurred while seeding sample data");
+                // Don't throw here - let the application start even if seeding fails
             }
         }
     }

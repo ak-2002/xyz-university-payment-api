@@ -1,6 +1,7 @@
 // Purpose: Authorization service interface for role-based access control
 using xyz_university_payment_api.Core.Domain.Entities;
 using xyz_university_payment_api.Core.Application.DTOs;
+using xyz_university_payment_api.Infrastructure.Data;
 
 namespace xyz_university_payment_api.Core.Application.Interfaces
 {
@@ -24,6 +25,7 @@ namespace xyz_university_payment_api.Core.Application.Interfaces
         Task<RoleDto> CreateRoleAsync(CreateRoleDto createRoleDto);
         Task<RoleDto> UpdateRoleAsync(int roleId, UpdateRoleDto updateRoleDto);
         Task<RoleDto?> GetRoleByIdAsync(int roleId);
+        Task<RoleDto?> GetRoleByNameAsync(string roleName);
         Task<IEnumerable<RoleDto>> GetAllRolesAsync();
         Task<bool> DeleteRoleAsync(int roleId);
 
@@ -56,5 +58,9 @@ namespace xyz_university_payment_api.Core.Application.Interfaces
 
         // Seed data
         Task SeedDefaultRolesAndPermissionsAsync();
+
+        // Helper methods
+        Task<bool> LogAuthorizationActionAsync(string action, string resource, string resourceId, string performedBy);
+        AppDbContext GetDbContext();
     }
 }

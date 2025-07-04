@@ -45,7 +45,7 @@ namespace xyz_university_payment_api.Core.Application.Services
 
                           // Allow if user has Admin role or payment permissions
                           return roles.Contains("Admin") ||
-                                 permissions.Any(p => p.StartsWith("payments."));
+                                 permissions.Any(p => p.StartsWith("Payments."));
                       }));
         }
 
@@ -65,7 +65,7 @@ namespace xyz_university_payment_api.Core.Application.Services
 
                           // Allow if user has Admin role or student permissions
                           return roles.Contains("Admin") ||
-                                 permissions.Any(p => p.StartsWith("students."));
+                                 permissions.Any(p => p.StartsWith("Students."));
                       }));
         }
 
@@ -96,7 +96,7 @@ namespace xyz_university_payment_api.Core.Application.Services
 
                           // Allow if user has any role or read permissions
                           return roles.Any() ||
-                                 permissions.Any(p => p.EndsWith(".read"));
+                                 permissions.Any(p => p.EndsWith(".Read"));
                       }));
         }
 
@@ -116,7 +116,7 @@ namespace xyz_university_payment_api.Core.Application.Services
 
                           // Allow if user has Admin role or write permissions
                           return roles.Contains("Admin") ||
-                                 permissions.Any(p => p.EndsWith(".write") || p.EndsWith(".create") || p.EndsWith(".update"));
+                                 permissions.Any(p => p.EndsWith(".Write") || p.EndsWith(".Create") || p.EndsWith(".Update"));
                       }));
         }
 
@@ -136,7 +136,7 @@ namespace xyz_university_payment_api.Core.Application.Services
 
                           // Allow if user has Admin role or delete permissions
                           return roles.Contains("Admin") ||
-                                 permissions.Any(p => p.EndsWith(".delete"));
+                                 permissions.Any(p => p.EndsWith(".Delete"));
                       }));
         }
 

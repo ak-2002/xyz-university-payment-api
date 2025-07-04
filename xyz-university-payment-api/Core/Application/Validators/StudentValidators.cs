@@ -185,15 +185,46 @@ namespace xyz_university_payment_api.Validators
         }
     }
 
-    // Custom validator for student number format
-    public class StudentNumberValidator : AbstractValidator<string>
+
+
+    // Validator for StudentFilterDtoV3
+    public class StudentFilterDtoV3Validator : AbstractValidator<StudentFilterDtoV3>
     {
-        public StudentNumberValidator()
+        public StudentFilterDtoV3Validator()
         {
-            RuleFor(x => x)
-                .NotEmpty().WithMessage("Student number is required")
-                .Length(5, 20).WithMessage("Student number must be between 5 and 20 characters")
-                .Matches(@"^[A-Z0-9]+$").WithMessage("Student number must contain only uppercase letters and numbers");
+            RuleFor(x => x.StudentNumber)
+                .MaximumLength(20).WithMessage("Student number cannot exceed 20 characters")
+                .When(x => !string.IsNullOrEmpty(x.StudentNumber));
+
+            RuleFor(x => x.FullName)
+                .MaximumLength(100).WithMessage("Full name cannot exceed 100 characters")
+                .When(x => !string.IsNullOrEmpty(x.FullName));
+
+            RuleFor(x => x.Program)
+                .MaximumLength(100).WithMessage("Program cannot exceed 100 characters")
+                .When(x => !string.IsNullOrEmpty(x.Program));
+
+            RuleFor(x => x.SearchTerm)
+                .MaximumLength(100).WithMessage("Search term cannot exceed 100 characters")
+                .When(x => !string.IsNullOrEmpty(x.SearchTerm));
+
+            RuleFor(x => x.CreatedFrom)
+                .LessThanOrEqualTo(x => x.CreatedTo)
+                .When(x => x.CreatedFrom.HasValue && x.CreatedTo.HasValue)
+                .WithMessage("Created from date must be less than or equal to created to date");
+
+            RuleFor(x => x.MinTotalPayments)
+                .GreaterThanOrEqualTo(0).WithMessage("Minimum total payments must be greater than or equal to 0")
+                .When(x => x.MinTotalPayments.HasValue);
+
+            RuleFor(x => x.MaxTotalPayments)
+                .GreaterThanOrEqualTo(0).WithMessage("Maximum total payments must be greater than or equal to 0")
+                .When(x => x.MaxTotalPayments.HasValue);
+
+            RuleFor(x => x.MaxTotalPayments)
+                .GreaterThanOrEqualTo(x => x.MinTotalPayments)
+                .When(x => x.MaxTotalPayments.HasValue && x.MinTotalPayments.HasValue)
+                .WithMessage("Maximum total payments must be greater than or equal to minimum total payments");
         }
     }
 }

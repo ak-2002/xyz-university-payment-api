@@ -433,6 +433,35 @@ namespace xyz_university_payment_api.Core.Application.Services
             };
         }
 
+        public async Task<RoleDto?> GetRoleByNameAsync(string roleName)
+        {
+            var role = await _context.Roles
+                .Include(r => r.RolePermissions)
+                .ThenInclude(rp => rp.Permission)
+                .FirstOrDefaultAsync(r => r.Name == roleName);
+
+            if (role == null) return null;
+
+            return new RoleDto
+            {
+                Id = role.Id,
+                Name = role.Name,
+                Description = role.Description,
+                IsActive = role.IsActive,
+                CreatedAt = role.CreatedAt,
+                Permissions = role.RolePermissions.Select(rp => new PermissionDto
+                {
+                    Id = rp.Permission.Id,
+                    Name = rp.Permission.Name,
+                    Description = rp.Permission.Description,
+                    Resource = rp.Permission.Resource,
+                    Action = rp.Permission.Action,
+                    IsActive = rp.Permission.IsActive,
+                    CreatedAt = rp.Permission.CreatedAt
+                }).ToList()
+            };
+        }
+
         public async Task<IEnumerable<RoleDto>> GetAllRolesAsync()
         {
             var roles = await _context.Roles
@@ -916,142 +945,262 @@ namespace xyz_university_payment_api.Core.Application.Services
 
         #region Seed Data
 
+        private async Task CleanupInvalidDataAsync()
+        {
+            try
+            {
+                // Remove users with empty or null emails/usernames
+                var invalidUsers = await _context.Users
+                    .Where(u => string.IsNullOrWhiteSpace(u.Email) || string.IsNullOrWhiteSpace(u.Username))
+                    .ToListAsync();
+                
+                if (invalidUsers.Any())
+                {
+                    _logger.LogWarning("Found {Count} users with invalid data, removing them", invalidUsers.Count);
+                    
+                    // Remove related user roles first
+                    var userIds = invalidUsers.Select(u => u.Id).ToList();
+                    var invalidUserRoles = await _context.UserRoles
+                        .Where(ur => userIds.Contains(ur.UserId))
+                        .ToListAsync();
+                    _context.UserRoles.RemoveRange(invalidUserRoles);
+                    
+                    // Remove the invalid users
+                    _context.Users.RemoveRange(invalidUsers);
+                    await _context.SaveChangesAsync();
+                    _logger.LogInformation("Removed {Count} invalid users", invalidUsers.Count);
+                }
+
+                // Remove roles with empty or null names
+                var invalidRoles = await _context.Roles
+                    .Where(r => string.IsNullOrWhiteSpace(r.Name))
+                    .ToListAsync();
+                
+                if (invalidRoles.Any())
+                {
+                    _logger.LogWarning("Found {Count} roles with invalid names, removing them", invalidRoles.Count);
+                    
+                    // Remove related user roles first
+                    var roleIds = invalidRoles.Select(r => r.Id).ToList();
+                    var invalidUserRoles = await _context.UserRoles
+                        .Where(ur => roleIds.Contains(ur.RoleId))
+                        .ToListAsync();
+                    _context.UserRoles.RemoveRange(invalidUserRoles);
+                    
+                    // Remove related role permissions
+                    var invalidRolePermissions = await _context.RolePermissions
+                        .Where(rp => roleIds.Contains(rp.RoleId))
+                        .ToListAsync();
+                    _context.RolePermissions.RemoveRange(invalidRolePermissions);
+                    
+                    // Remove the invalid roles
+                    _context.Roles.RemoveRange(invalidRoles);
+                    await _context.SaveChangesAsync();
+                    _logger.LogInformation("Removed {Count} invalid roles", invalidRoles.Count);
+                }
+
+                // Remove permissions with empty or null resource/action
+                var invalidPermissions = await _context.Permissions
+                    .Where(p => string.IsNullOrWhiteSpace(p.Resource) || string.IsNullOrWhiteSpace(p.Action))
+                    .ToListAsync();
+                
+                if (invalidPermissions.Any())
+                {
+                    _logger.LogWarning("Found {Count} permissions with invalid data, removing them", invalidPermissions.Count);
+                    
+                    // Remove related role permissions first
+                    var permissionIds = invalidPermissions.Select(p => p.Id).ToList();
+                    var invalidRolePermissions = await _context.RolePermissions
+                        .Where(rp => permissionIds.Contains(rp.PermissionId))
+                        .ToListAsync();
+                    _context.RolePermissions.RemoveRange(invalidRolePermissions);
+                    
+                    // Remove the invalid permissions
+                    _context.Permissions.RemoveRange(invalidPermissions);
+                    await _context.SaveChangesAsync();
+                    _logger.LogInformation("Removed {Count} invalid permissions", invalidPermissions.Count);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error cleaning up invalid data");
+                throw;
+            }
+        }
+
         public async Task SeedDefaultRolesAndPermissionsAsync()
         {
-            // Check if data already exists
-            if (await _context.Roles.AnyAsync() || await _context.Permissions.AnyAsync())
+            try
             {
-                return; // Data already seeded
+                // Clean up any invalid data first
+                await CleanupInvalidDataAsync();
+
+                // Check if valid data already exists (roles with proper names)
+                var validRoles = await _context.Roles
+                    .Where(r => !string.IsNullOrWhiteSpace(r.Name))
+                    .ToListAsync();
+                
+                var validPermissions = await _context.Permissions
+                    .Where(p => !string.IsNullOrWhiteSpace(p.Resource) && !string.IsNullOrWhiteSpace(p.Action))
+                    .ToListAsync();
+
+                if (validRoles.Any() && validPermissions.Any())
+                {
+                    _logger.LogInformation("Valid data already seeded, skipping seeding process");
+                    return; // Valid data already seeded
+                }
+
+                _logger.LogInformation("Starting to seed default roles and permissions");
+
+                // Create default permissions
+                var permissions = new List<Permission>
+                {
+                    // Payment permissions
+                    new Permission { Name = "View Payments", Description = "Can view payment records", Resource = "Payments", Action = "Read", IsActive = true, CreatedAt = DateTime.UtcNow },
+                    new Permission { Name = "Create Payments", Description = "Can create new payments", Resource = "Payments", Action = "Create", IsActive = true, CreatedAt = DateTime.UtcNow },
+                    new Permission { Name = "Update Payments", Description = "Can update payment records", Resource = "Payments", Action = "Update", IsActive = true, CreatedAt = DateTime.UtcNow },
+                    new Permission { Name = "Delete Payments", Description = "Can delete payment records", Resource = "Payments", Action = "Delete", IsActive = true, CreatedAt = DateTime.UtcNow },
+                    
+                    // Student permissions
+                    new Permission { Name = "View Students", Description = "Can view student records", Resource = "Students", Action = "Read", IsActive = true, CreatedAt = DateTime.UtcNow },
+                    new Permission { Name = "Create Students", Description = "Can create new students", Resource = "Students", Action = "Create", IsActive = true, CreatedAt = DateTime.UtcNow },
+                    new Permission { Name = "Update Students", Description = "Can update student records", Resource = "Students", Action = "Update", IsActive = true, CreatedAt = DateTime.UtcNow },
+                    new Permission { Name = "Delete Students", Description = "Can delete student records", Resource = "Students", Action = "Delete", IsActive = true, CreatedAt = DateTime.UtcNow },
+                    
+                    // User management permissions
+                    new Permission { Name = "View Users", Description = "Can view user records", Resource = "Users", Action = "Read", IsActive = true, CreatedAt = DateTime.UtcNow },
+                    new Permission { Name = "Create Users", Description = "Can create new users", Resource = "Users", Action = "Create", IsActive = true, CreatedAt = DateTime.UtcNow },
+                    new Permission { Name = "Update Users", Description = "Can update user records", Resource = "Users", Action = "Update", IsActive = true, CreatedAt = DateTime.UtcNow },
+                    new Permission { Name = "Delete Users", Description = "Can delete user records", Resource = "Users", Action = "Delete", IsActive = true, CreatedAt = DateTime.UtcNow },
+                    
+                    // Role management permissions
+                    new Permission { Name = "View Roles", Description = "Can view role records", Resource = "Roles", Action = "Read", IsActive = true, CreatedAt = DateTime.UtcNow },
+                    new Permission { Name = "Create Roles", Description = "Can create new roles", Resource = "Roles", Action = "Create", IsActive = true, CreatedAt = DateTime.UtcNow },
+                    new Permission { Name = "Update Roles", Description = "Can update role records", Resource = "Roles", Action = "Update", IsActive = true, CreatedAt = DateTime.UtcNow },
+                    new Permission { Name = "Delete Roles", Description = "Can delete role records", Resource = "Roles", Action = "Delete", IsActive = true, CreatedAt = DateTime.UtcNow }
+                };
+
+                // Validate permissions before adding
+                foreach (var permission in permissions)
+                {
+                    if (string.IsNullOrWhiteSpace(permission.Resource) || string.IsNullOrWhiteSpace(permission.Action))
+                    {
+                        _logger.LogError("Invalid permission: Resource='{Resource}', Action='{Action}'", permission.Resource, permission.Action);
+                        throw new InvalidOperationException($"Invalid permission: Resource='{permission.Resource}', Action='{permission.Action}'");
+                    }
+                }
+
+                _context.Permissions.AddRange(permissions);
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Added {Count} permissions", permissions.Count);
+
+                // Create default roles
+                var roles = new List<Role>
+                {
+                    new Role { Name = "Admin", Description = "Full system administrator", IsActive = true, CreatedAt = DateTime.UtcNow },
+                    new Role { Name = "Manager", Description = "Department manager with limited admin rights", IsActive = true, CreatedAt = DateTime.UtcNow },
+                    new Role { Name = "Staff", Description = "Regular staff member", IsActive = true, CreatedAt = DateTime.UtcNow },
+                    new Role { Name = "Student", Description = "Student user with limited access", IsActive = true, CreatedAt = DateTime.UtcNow }
+                };
+
+                _context.Roles.AddRange(roles);
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Added {Count} roles", roles.Count);
+
+                // Assign permissions to roles
+                var adminRole = await _context.Roles.FirstAsync(r => r.Name == "Admin");
+                var managerRole = await _context.Roles.FirstAsync(r => r.Name == "Manager");
+                var staffRole = await _context.Roles.FirstAsync(r => r.Name == "Staff");
+                var studentRole = await _context.Roles.FirstAsync(r => r.Name == "Student");
+
+                // Admin gets all permissions
+                var adminRolePermissions = permissions.Select(p => new RolePermission
+                {
+                    RoleId = adminRole.Id,
+                    PermissionId = p.Id,
+                    AssignedAt = DateTime.UtcNow,
+                    AssignedBy = "System"
+                }).ToList();
+
+                // Manager gets most permissions except user/role management
+                var managerPermissions = permissions.Where(p =>
+                    !p.Resource.Equals("Users", StringComparison.OrdinalIgnoreCase) &&
+                    !p.Resource.Equals("Roles", StringComparison.OrdinalIgnoreCase)).ToList();
+                var managerRolePermissions = managerPermissions.Select(p => new RolePermission
+                {
+                    RoleId = managerRole.Id,
+                    PermissionId = p.Id,
+                    AssignedAt = DateTime.UtcNow,
+                    AssignedBy = "System"
+                }).ToList();
+
+                // Staff gets read permissions for payments and students
+                var staffPermissions = permissions.Where(p =>
+                    (p.Resource.Equals("Payments", StringComparison.OrdinalIgnoreCase) ||
+                     p.Resource.Equals("Students", StringComparison.OrdinalIgnoreCase)) &&
+                    p.Action.Equals("Read", StringComparison.OrdinalIgnoreCase)).ToList();
+                var staffRolePermissions = staffPermissions.Select(p => new RolePermission
+                {
+                    RoleId = staffRole.Id,
+                    PermissionId = p.Id,
+                    AssignedAt = DateTime.UtcNow,
+                    AssignedBy = "System"
+                }).ToList();
+
+                // Student gets read permissions for their own data only
+                var studentPermissions = permissions.Where(p =>
+                    p.Resource.Equals("Students", StringComparison.OrdinalIgnoreCase) &&
+                    p.Action.Equals("Read", StringComparison.OrdinalIgnoreCase)).ToList();
+                var studentRolePermissions = studentPermissions.Select(p => new RolePermission
+                {
+                    RoleId = studentRole.Id,
+                    PermissionId = p.Id,
+                    AssignedAt = DateTime.UtcNow,
+                    AssignedBy = "System"
+                }).ToList();
+
+                _context.RolePermissions.AddRange(adminRolePermissions);
+                _context.RolePermissions.AddRange(managerRolePermissions);
+                _context.RolePermissions.AddRange(staffRolePermissions);
+                _context.RolePermissions.AddRange(studentRolePermissions);
+
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Added role permissions");
+
+                // Create default admin user
+                var adminUser = new User
+                {
+                    Username = "admin",
+                    Email = "admin@xyzuniversity.edu",
+                    PasswordHash = HashPassword("Admin123!"), // This is a default password for initial setup only
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                _context.Users.Add(adminUser);
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Created admin user");
+
+                // Assign admin role to admin user
+                var adminUserRole = new UserRole
+                {
+                    UserId = adminUser.Id,
+                    RoleId = adminRole.Id,
+                    AssignedAt = DateTime.UtcNow,
+                    AssignedBy = "System"
+                };
+
+                _context.UserRoles.Add(adminUserRole);
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Assigned admin role to admin user");
+
+                _logger.LogInformation("Default roles and permissions seeded successfully");
             }
-
-            // Create default permissions
-            var permissions = new List<Permission>
+            catch (Exception ex)
             {
-                // Payment permissions
-                new Permission { Name = "View Payments", Description = "Can view payment records", Resource = "Payments", Action = "Read", IsActive = true, CreatedAt = DateTime.UtcNow },
-                new Permission { Name = "Create Payments", Description = "Can create new payments", Resource = "Payments", Action = "Create", IsActive = true, CreatedAt = DateTime.UtcNow },
-                new Permission { Name = "Update Payments", Description = "Can update payment records", Resource = "Payments", Action = "Update", IsActive = true, CreatedAt = DateTime.UtcNow },
-                new Permission { Name = "Delete Payments", Description = "Can delete payment records", Resource = "Payments", Action = "Delete", IsActive = true, CreatedAt = DateTime.UtcNow },
-                
-                // Student permissions
-                new Permission { Name = "View Students", Description = "Can view student records", Resource = "Students", Action = "Read", IsActive = true, CreatedAt = DateTime.UtcNow },
-                new Permission { Name = "Create Students", Description = "Can create new students", Resource = "Students", Action = "Create", IsActive = true, CreatedAt = DateTime.UtcNow },
-                new Permission { Name = "Update Students", Description = "Can update student records", Resource = "Students", Action = "Update", IsActive = true, CreatedAt = DateTime.UtcNow },
-                new Permission { Name = "Delete Students", Description = "Can delete student records", Resource = "Students", Action = "Delete", IsActive = true, CreatedAt = DateTime.UtcNow },
-                
-                // User management permissions
-                new Permission { Name = "View Users", Description = "Can view user records", Resource = "Users", Action = "Read", IsActive = true, CreatedAt = DateTime.UtcNow },
-                new Permission { Name = "Create Users", Description = "Can create new users", Resource = "Users", Action = "Create", IsActive = true, CreatedAt = DateTime.UtcNow },
-                new Permission { Name = "Update Users", Description = "Can update user records", Resource = "Users", Action = "Update", IsActive = true, CreatedAt = DateTime.UtcNow },
-                new Permission { Name = "Delete Users", Description = "Can delete user records", Resource = "Users", Action = "Delete", IsActive = true, CreatedAt = DateTime.UtcNow },
-                
-                // Role management permissions
-                new Permission { Name = "View Roles", Description = "Can view role records", Resource = "Roles", Action = "Read", IsActive = true, CreatedAt = DateTime.UtcNow },
-                new Permission { Name = "Create Roles", Description = "Can create new roles", Resource = "Roles", Action = "Create", IsActive = true, CreatedAt = DateTime.UtcNow },
-                new Permission { Name = "Update Roles", Description = "Can update role records", Resource = "Roles", Action = "Update", IsActive = true, CreatedAt = DateTime.UtcNow },
-                new Permission { Name = "Delete Roles", Description = "Can delete role records", Resource = "Roles", Action = "Delete", IsActive = true, CreatedAt = DateTime.UtcNow }
-            };
-
-            _context.Permissions.AddRange(permissions);
-            await _context.SaveChangesAsync();
-
-            // Create default roles
-            var roles = new List<Role>
-            {
-                new Role { Name = "Admin", Description = "Full system administrator", IsActive = true, CreatedAt = DateTime.UtcNow },
-                new Role { Name = "Manager", Description = "Department manager with limited admin rights", IsActive = true, CreatedAt = DateTime.UtcNow },
-                new Role { Name = "Staff", Description = "Regular staff member", IsActive = true, CreatedAt = DateTime.UtcNow },
-                new Role { Name = "Student", Description = "Student user with limited access", IsActive = true, CreatedAt = DateTime.UtcNow }
-            };
-
-            _context.Roles.AddRange(roles);
-            await _context.SaveChangesAsync();
-
-            // Assign permissions to roles
-            var adminRole = await _context.Roles.FirstAsync(r => r.Name == "Admin");
-            var managerRole = await _context.Roles.FirstAsync(r => r.Name == "Manager");
-            var staffRole = await _context.Roles.FirstAsync(r => r.Name == "Staff");
-            var studentRole = await _context.Roles.FirstAsync(r => r.Name == "Student");
-
-            // Admin gets all permissions
-            var adminRolePermissions = permissions.Select(p => new RolePermission
-            {
-                RoleId = adminRole.Id,
-                PermissionId = p.Id,
-                AssignedAt = DateTime.UtcNow,
-                AssignedBy = "System"
-            }).ToList();
-
-            // Manager gets most permissions except user/role management
-            var managerPermissions = permissions.Where(p =>
-                !p.Resource.Equals("Users", StringComparison.OrdinalIgnoreCase) &&
-                !p.Resource.Equals("Roles", StringComparison.OrdinalIgnoreCase)).ToList();
-            var managerRolePermissions = managerPermissions.Select(p => new RolePermission
-            {
-                RoleId = managerRole.Id,
-                PermissionId = p.Id,
-                AssignedAt = DateTime.UtcNow,
-                AssignedBy = "System"
-            }).ToList();
-
-            // Staff gets read permissions for payments and students
-            var staffPermissions = permissions.Where(p =>
-                (p.Resource.Equals("Payments", StringComparison.OrdinalIgnoreCase) ||
-                 p.Resource.Equals("Students", StringComparison.OrdinalIgnoreCase)) &&
-                p.Action.Equals("Read", StringComparison.OrdinalIgnoreCase)).ToList();
-            var staffRolePermissions = staffPermissions.Select(p => new RolePermission
-            {
-                RoleId = staffRole.Id,
-                PermissionId = p.Id,
-                AssignedAt = DateTime.UtcNow,
-                AssignedBy = "System"
-            }).ToList();
-
-            // Student gets read permissions for their own data only
-            var studentPermissions = permissions.Where(p =>
-                p.Resource.Equals("Students", StringComparison.OrdinalIgnoreCase) &&
-                p.Action.Equals("Read", StringComparison.OrdinalIgnoreCase)).ToList();
-            var studentRolePermissions = studentPermissions.Select(p => new RolePermission
-            {
-                RoleId = studentRole.Id,
-                PermissionId = p.Id,
-                AssignedAt = DateTime.UtcNow,
-                AssignedBy = "System"
-            }).ToList();
-
-            _context.RolePermissions.AddRange(adminRolePermissions);
-            _context.RolePermissions.AddRange(managerRolePermissions);
-            _context.RolePermissions.AddRange(staffRolePermissions);
-            _context.RolePermissions.AddRange(studentRolePermissions);
-
-            await _context.SaveChangesAsync();
-
-            // Create default admin user
-            var adminUser = new User
-            {
-                Username = "admin",
-                Email = "admin@xyzuniversity.edu",
-                PasswordHash = HashPassword("Admin123!"), // This is a default password for initial setup only
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            _context.Users.Add(adminUser);
-            await _context.SaveChangesAsync();
-
-            // Assign admin role to admin user
-            var adminUserRole = new UserRole
-            {
-                UserId = adminUser.Id,
-                RoleId = adminRole.Id,
-                AssignedAt = DateTime.UtcNow,
-                AssignedBy = "System"
-            };
-
-            _context.UserRoles.Add(adminUserRole);
-            await _context.SaveChangesAsync();
-
-            _logger.LogInformation("Default roles and permissions seeded successfully");
+                _logger.LogError(ex, "Error seeding default roles and permissions");
+                throw;
+            }
         }
 
         #endregion
@@ -1069,6 +1218,27 @@ namespace xyz_university_payment_api.Core.Application.Services
         {
             var hashedPassword = HashPassword(password);
             return hashedPassword == hash;
+        }
+
+        public async Task<bool> LogAuthorizationActionAsync(string action, string resource, string resourceId, string performedBy)
+        {
+            try
+            {
+                // For now, just log to console and return true
+                _logger.LogInformation("Authorization action: {Action} on {Resource} {ResourceId} by {PerformedBy}", 
+                    action, resource, resourceId, performedBy);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error logging authorization action");
+                return false;
+            }
+        }
+
+        public AppDbContext GetDbContext()
+        {
+            return _context;
         }
 
         #endregion
