@@ -55,7 +55,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
             try
             {
                 var cacheKey = $"students_v3_{filter.GetHashCode()}_{page}_{pageSize}_{sortBy}_{sortOrder}_{includeAnalytics}";
-
+                
                 // Try to get from cache first
                 var cachedResult = await _cacheService.GetAsync<ApiResponse<PaginatedResponseDto<StudentDtoV3>>>(cacheKey);
                 if (cachedResult != null)
@@ -64,7 +64,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
                 }
 
                 var result = await _studentService.GetStudentsV3Async(filter, page, pageSize, sortBy, sortOrder, includeAnalytics);
-
+                
                 if (result.Success)
                 {
                     // Cache the result for 5 minutes
@@ -91,7 +91,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
             try
             {
                 var cacheKey = $"student_v3_{id}_{includePaymentHistory}";
-
+                
                 var cachedResult = await _cacheService.GetAsync<ApiResponse<StudentDetailDtoV3>>(cacheKey);
                 if (cachedResult != null)
                 {
@@ -99,7 +99,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
                 }
 
                 var result = await _studentService.GetStudentV3Async(id, includePaymentHistory);
-
+                
                 if (result.Success)
                 {
                     await _cacheService.SetAsync(cacheKey, result, TimeSpan.FromMinutes(10));
@@ -125,7 +125,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
             try
             {
                 var result = await _studentService.CreateStudentV3Async(createStudentDto);
-
+                
                 if (result.Success)
                 {
                     // Invalidate related caches
@@ -153,7 +153,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
             try
             {
                 var result = await _studentService.UpdateStudentV3Async(id, updateStudentDto);
-
+                
                 if (result.Success)
                 {
                     // Invalidate related caches
@@ -181,7 +181,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
             try
             {
                 var result = await _studentService.DeleteStudentV3Async(id, permanent);
-
+                
                 if (result.Success)
                 {
                     // Invalidate related caches
@@ -209,7 +209,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
             try
             {
                 var cacheKey = $"student_analytics_v3_{filter.GetHashCode()}";
-
+                
                 var cachedResult = await _cacheService.GetAsync<ApiResponse<StudentAnalyticsDto>>(cacheKey);
                 if (cachedResult != null)
                 {
@@ -217,7 +217,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
                 }
 
                 var result = await _studentService.GetStudentAnalyticsAsync(filter);
-
+                
                 if (result.Success)
                 {
                     await _cacheService.SetAsync(cacheKey, result, TimeSpan.FromMinutes(15));
@@ -243,7 +243,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
             try
             {
                 var result = await _studentService.BulkOperationsAsync(bulkOperation);
-
+                
                 if (result.Success)
                 {
                     // Invalidate all student caches
@@ -274,7 +274,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
             try
             {
                 var result = await _studentService.ExportStudentsAsync(filter, format, includePaymentHistory);
-
+                
                 if (result.Success)
                 {
                     var contentType = format.ToLower() switch
@@ -286,7 +286,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
                     };
 
                     var fileName = $"students_export_{DateTime.UtcNow:yyyyMMdd_HHmmss}.{format}";
-
+                    
                     Response.Headers["Content-Disposition"] = $"attachment; filename={fileName}";
                     return File((result.Data as byte[])!, contentType, fileName);
                 }
@@ -301,4 +301,4 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
             }
         }
     }
-}
+} 

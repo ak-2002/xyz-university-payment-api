@@ -107,7 +107,7 @@ namespace xyz_university_payment_api.Presentation.Attributes
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public class AuthorizePaymentAttribute : AuthorizePermissionAttribute
     {
-        public AuthorizePaymentAttribute(string action) : base("payments", action) { }
+        public AuthorizePaymentAttribute(string action) : base("Payments", action) { }
     }
 
     /// <summary>
@@ -116,7 +116,7 @@ namespace xyz_university_payment_api.Presentation.Attributes
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public class AuthorizeStudentAttribute : AuthorizePermissionAttribute
     {
-        public AuthorizeStudentAttribute(string action) : base("students", action) { }
+        public AuthorizeStudentAttribute(string action) : base("Students", action) { }
     }
 
     /// <summary>
@@ -125,7 +125,7 @@ namespace xyz_university_payment_api.Presentation.Attributes
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public class AuthorizeUserManagementAttribute : AuthorizePermissionAttribute
     {
-        public AuthorizeUserManagementAttribute(string action) : base("users", action) { }
+        public AuthorizeUserManagementAttribute(string action) : base("Users", action) { }
     }
 
     // Attribute for requiring multiple permissions (ALL must be satisfied)

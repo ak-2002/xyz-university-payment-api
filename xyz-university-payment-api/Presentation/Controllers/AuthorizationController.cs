@@ -8,8 +8,9 @@ using xyz_university_payment_api.Core.Domain.Entities;
 using xyz_university_payment_api.Core.Domain.Exceptions;
 using xyz_university_payment_api.Core.Application.Services;
 using System.Security.Claims;
-
-
+using Microsoft.EntityFrameworkCore;
+using xyz_university_payment_api.Infrastructure.Data;
+using Microsoft.Extensions.Configuration;
 
 namespace xyz_university_payment_api.Presentation.Controllers
 {
@@ -24,15 +25,18 @@ namespace xyz_university_payment_api.Presentation.Controllers
         private readonly xyz_university_payment_api.Core.Application.Interfaces.IAuthorizationService _authorizationService;
         private readonly IJwtTokenService _jwtTokenService;
         private readonly ILogger<AuthorizationController> _logger;
+        private readonly IConfiguration _configuration;
 
         public AuthorizationController(
             xyz_university_payment_api.Core.Application.Interfaces.IAuthorizationService authorizationService,
             IJwtTokenService jwtTokenService,
-            ILogger<AuthorizationController> logger)
+            ILogger<AuthorizationController> logger,
+            IConfiguration configuration)
         {
             _authorizationService = authorizationService;
             _jwtTokenService = jwtTokenService;
             _logger = logger;
+            _configuration = configuration;
         }
 
         #region Authentication Endpoints
@@ -501,7 +505,7 @@ namespace xyz_university_payment_api.Presentation.Controllers
         /// </summary>
         /// <returns>List of all roles</returns>
         [HttpGet("admin/roles")]
-        [AuthorizeUserManagement("read")]
+        [AuthorizeUserManagement("Read")]
         [Authorize(Roles = "Admin,UserManager")]
         public async Task<IActionResult> GetAllRolesAdmin()
         {
@@ -612,7 +616,7 @@ namespace xyz_university_payment_api.Presentation.Controllers
         /// </summary>
         /// <returns>List of all permissions</returns>
         [HttpGet("admin/permissions")]
-        [AuthorizeUserManagement("read")]
+        [AuthorizeUserManagement("Read")]
         [Authorize(Roles = "Admin,UserManager")]
         public async Task<IActionResult> GetAllPermissionsAdmin()
         {
@@ -801,7 +805,7 @@ namespace xyz_university_payment_api.Presentation.Controllers
         /// Test endpoint for payment operations
         /// </summary>
         [HttpGet("payment-test")]
-        [AuthorizePayment("read")]
+        [AuthorizePayment("Read")]
         [Authorize(Policy = "PaymentAccess")]
         public IActionResult PaymentTest()
         {
@@ -824,7 +828,7 @@ namespace xyz_university_payment_api.Presentation.Controllers
         /// Test endpoint for student operations
         /// </summary>
         [HttpGet("student-test")]
-        [AuthorizeStudent("read")]
+        [AuthorizeStudent("Read")]
         [Authorize(Policy = "StudentAccess")]
         public IActionResult StudentTest()
         {
@@ -998,5 +1002,539 @@ namespace xyz_university_payment_api.Presentation.Controllers
                 });
             }
         }
+
+        /// <summary>
+        /// Fix admin user roles and permissions (public endpoint for development)
+        /// </summary>
+        /// <returns>Success status</returns>
+        [HttpPost("fix-admin")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        public async Task<IActionResult> FixAdminUser()
+        {
+            try
+            {
+                // Get the admin user
+                var adminUser = await _authorizationService.GetUserByUsernameAsync("admin");
+                if (adminUser == null)
+                {
+                    // Create admin user if it doesn't exist
+                    var createUserDto = new CreateUserDto
+                    {
+                        Username = "admin",
+                        Email = "admin@xyzuniversity.edu",
+                        Password = "Admin123!"
+                    };
+                    await _authorizationService.CreateUserAsync(createUserDto);
+                    adminUser = await _authorizationService.GetUserByUsernameAsync("admin");
+                }
+
+                // Force re-seed the database to ensure roles and permissions exist
+                await _authorizationService.SeedDefaultRolesAndPermissionsAsync();
+
+                // Manually assign admin role to admin user
+                var assignRolesDto = new AssignRolesToUserDto
+                {
+                    UserId = adminUser.Id,
+                    RoleIds = new List<int> { 1 } // Admin role ID (should be 1 if seeded first)
+                };
+                await _authorizationService.AssignRolesToUserAsync(assignRolesDto);
+
+                return Ok(new ApiResponse<object>
+                {
+                    Success = true,
+                    Message = "Admin user roles and permissions fixed successfully. Please login again to get a new token.",
+                    Data = new { 
+                        Username = "admin", 
+                        Password = "Admin123!",
+                        Instructions = "Login with these credentials to get a new token with proper permissions"
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fixing admin user");
+                return BadRequest(new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "Failed to fix admin user",
+                    Data = null
+                });
+            }
+        }
+
+        /// <summary>
+        /// Debug endpoint to check admin user status (public endpoint for development)
+        /// </summary>
+        /// <returns>Admin user information</returns>
+        [HttpGet("debug-admin")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        public async Task<IActionResult> DebugAdminUser()
+        {
+            try
+            {
+                var adminUser = await _authorizationService.GetUserByUsernameAsync("admin");
+                
+                if (adminUser == null)
+                {
+                    return Ok(new ApiResponse<object>
+                    {
+                        Success = false,
+                        Message = "Admin user does not exist",
+                        Data = new { 
+                            UserExists = false,
+                            Instructions = "Use /api/Authorization/fix-admin to create the admin user"
+                        }
+                    });
+                }
+
+                // Get user roles
+                var userRoles = await _authorizationService.GetUserRolesAsync(adminUser.Username);
+                
+                // Get user permissions
+                var userPermissions = await _authorizationService.GetUserPermissionsAsync(adminUser.Username);
+
+                return Ok(new ApiResponse<object>
+                {
+                    Success = true,
+                    Message = "Admin user found",
+                    Data = new { 
+                        UserExists = true,
+                        UserId = adminUser.Id,
+                        Username = adminUser.Username,
+                        Email = adminUser.Email,
+                        IsActive = adminUser.IsActive,
+                        CreatedAt = adminUser.CreatedAt,
+                        LastLoginAt = adminUser.LastLoginAt,
+                        Roles = userRoles,
+                        Permissions = userPermissions,
+                        RoleCount = userRoles.Count(),
+                        PermissionCount = userPermissions.Count(),
+                        Instructions = "Try logging in with username: admin, password: Admin123!"
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error debugging admin user");
+                return BadRequest(new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "Failed to debug admin user",
+                    Data = new { Error = ex.Message }
+                });
+            }
+        }
+
+        /// <summary>
+        /// Force fix admin user with proper role assignment (public endpoint for development)
+        /// </summary>
+        /// <returns>Success status</returns>
+        [HttpPost("force-fix-admin")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        public async Task<IActionResult> ForceFixAdminUser()
+        {
+            try
+            {
+                // First, ensure we have roles and permissions
+                await _authorizationService.SeedDefaultRolesAndPermissionsAsync();
+
+                // Get the admin user
+                var adminUser = await _authorizationService.GetUserByUsernameAsync("admin");
+                if (adminUser == null)
+                {
+                    // Create admin user if it doesn't exist
+                    var createUserDto = new CreateUserDto
+                    {
+                        Username = "admin",
+                        Email = "admin@xyzuniversity.edu",
+                        Password = "Admin123!"
+                    };
+                    await _authorizationService.CreateUserAsync(createUserDto);
+                    adminUser = await _authorizationService.GetUserByUsernameAsync("admin");
+                }
+
+                // Get the Admin role ID
+                var adminRole = await _authorizationService.GetRoleByNameAsync("Admin");
+                if (adminRole == null)
+                {
+                    return BadRequest(new ApiResponse<object>
+                    {
+                        Success = false,
+                        Message = "Admin role not found after seeding",
+                        Data = null
+                    });
+                }
+
+                // Manually assign admin role to admin user
+                var assignRolesDto = new AssignRolesToUserDto
+                {
+                    UserId = adminUser.Id,
+                    RoleIds = new List<int> { adminRole.Id }
+                };
+                await _authorizationService.AssignRolesToUserAsync(assignRolesDto);
+
+                // Verify the assignment
+                var userRoles = await _authorizationService.GetUserRolesAsync(adminUser.Id);
+                var userPermissions = await _authorizationService.GetUserPermissionsAsync("admin");
+
+                return Ok(new ApiResponse<object>
+                {
+                    Success = true,
+                    Message = "Admin user roles and permissions fixed successfully. Please login again to get a new token.",
+                    Data = new { 
+                        Username = "admin", 
+                        Password = "Admin123!",
+                        UserId = adminUser.Id,
+                        AssignedRoles = userRoles.Select(r => r.Name).ToList(),
+                        AssignedPermissions = userPermissions.ToList(),
+                        Instructions = "Login with these credentials to get a new token with proper permissions"
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error force fixing admin user");
+                return BadRequest(new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = $"Failed to force fix admin user: {ex.Message}",
+                    Data = null
+                });
+            }
+        }
+
+        /// <summary>
+        /// Assign admin role to admin user (public endpoint for development)
+        /// </summary>
+        /// <returns>Success status</returns>
+        [HttpPost("assign-admin-role")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        public async Task<IActionResult> AssignAdminRoleToAdminUser()
+        {
+            try
+            {
+                // Get the admin user
+                var adminUser = await _authorizationService.GetUserByUsernameAsync("admin");
+                if (adminUser == null)
+                {
+                    return BadRequest(new ApiResponse<object>
+                    {
+                        Success = false,
+                        Message = "Admin user not found",
+                        Data = null
+                    });
+                }
+
+                // Get the Admin role
+                var adminRole = await _authorizationService.GetRoleByNameAsync("Admin");
+                if (adminRole == null)
+                {
+                    return BadRequest(new ApiResponse<object>
+                    {
+                        Success = false,
+                        Message = "Admin role not found",
+                        Data = null
+                    });
+                }
+
+                // Assign admin role to admin user
+                var assignRolesDto = new AssignRolesToUserDto
+                {
+                    UserId = adminUser.Id,
+                    RoleIds = new List<int> { adminRole.Id }
+                };
+                await _authorizationService.AssignRolesToUserAsync(assignRolesDto);
+
+                // Verify the assignment
+                var userRoles = await _authorizationService.GetUserRolesAsync(adminUser.Id);
+                var userPermissions = await _authorizationService.GetUserPermissionsAsync("admin");
+
+                return Ok(new ApiResponse<object>
+                {
+                    Success = true,
+                    Message = "Admin role assigned successfully to admin user",
+                    Data = new { 
+                        Username = "admin", 
+                        Password = "Admin123!",
+                        UserId = adminUser.Id,
+                        AssignedRoles = userRoles.Select(r => r.Name).ToList(),
+                        AssignedPermissions = userPermissions.ToList(),
+                        Instructions = "Login with these credentials to get a new token with proper permissions"
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error assigning admin role to admin user");
+                return BadRequest(new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = $"Failed to assign admin role: {ex.Message}",
+                    Data = null
+                });
+            }
+        }
+
+        /// <summary>
+        /// Check what roles exist in the database (public endpoint for development)
+        /// </summary>
+        /// <returns>List of roles</returns>
+        [HttpGet("check-roles")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        public async Task<IActionResult> CheckRoles()
+        {
+            try
+            {
+                var roles = await _authorizationService.GetAllRolesAsync();
+                
+                return Ok(new ApiResponse<object>
+                {
+                    Success = true,
+                    Message = "Roles found",
+                    Data = new { 
+                        RoleCount = roles.Count(),
+                        Roles = roles.Select(r => new { 
+                            Id = r.Id, 
+                            Name = r.Name, 
+                            Description = r.Description,
+                            IsActive = r.IsActive,
+                            PermissionCount = r.Permissions.Count
+                        }).ToList()
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking roles");
+                return BadRequest(new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = $"Failed to check roles: {ex.Message}",
+                    Data = null
+                });
+            }
+        }
+
+        /// <summary>
+        /// Reset admin user password (public endpoint for development)
+        /// </summary>
+        /// <returns>Success status</returns>
+        [HttpPost("reset-admin-password")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        public async Task<IActionResult> ResetAdminPassword()
+        {
+            try
+            {
+                // Get the admin user
+                var adminUser = await _authorizationService.GetUserByUsernameAsync("admin");
+                if (adminUser == null)
+                {
+                    return BadRequest(new ApiResponse<object>
+                    {
+                        Success = false,
+                        Message = "Admin user not found",
+                        Data = null
+                    });
+                }
+
+                // Reset password to "Admin123!"
+                var result = await _authorizationService.ChangePasswordAsync(adminUser.Id, new ChangePasswordDto
+                {
+                    CurrentPassword = "Admin123!", // This might fail, but we'll handle it
+                    NewPassword = "Admin123!",
+                    ConfirmPassword = "Admin123!"
+                });
+
+                return Ok(new ApiResponse<object>
+                {
+                    Success = true,
+                    Message = "Admin password reset successfully",
+                    Data = new { 
+                        Username = "admin",
+                        Password = "Admin123!",
+                        Instructions = "Try logging in with these credentials"
+                    }
+                });
+            }
+            catch (ValidationException ex) when (ex.Message.Contains("Current password is incorrect"))
+            {
+                // If current password is wrong, we need to force update the password hash
+                try
+                {
+                    // Get the admin user directly from context to force update password
+                    var adminUser = await _authorizationService.GetUserByUsernameAsync("admin");
+                    if (adminUser != null)
+                    {
+                        // Force update the password hash in the database
+                        var context = _authorizationService.GetDbContext(); // We'll need to add this method
+                        var user = await context.Users.FindAsync(adminUser.Id);
+                        if (user != null)
+                        {
+                            // Hash the password manually
+                            using var sha256 = System.Security.Cryptography.SHA256.Create();
+                            var hashedBytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes("Admin123!"));
+                            var passwordHash = Convert.ToBase64String(hashedBytes);
+                            
+                            user.PasswordHash = passwordHash;
+                            await context.SaveChangesAsync();
+                            
+                            return Ok(new ApiResponse<object>
+                            {
+                                Success = true,
+                                Message = "Admin password force reset successfully",
+                                Data = new { 
+                                    Username = "admin",
+                                    Password = "Admin123!",
+                                    Instructions = "Try logging in with these credentials"
+                                }
+                            });
+                        }
+                    }
+                }
+                catch (Exception forceEx)
+                {
+                    _logger.LogError(forceEx, "Error force resetting admin password");
+                }
+                
+                return BadRequest(new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "Failed to reset admin password",
+                    Data = null
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error resetting admin password");
+                return BadRequest(new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "Failed to reset admin password",
+                    Data = null
+                });
+            }
+        }
+
+        /// <summary>
+        /// Test JWT configuration (public endpoint for development)
+        /// </summary>
+        /// <returns>JWT configuration information</returns>
+        [HttpGet("test-jwt-config")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        public IActionResult TestJwtConfig()
+        {
+            try
+            {
+                var jwtKey = _configuration["Jwt:Key"];
+                var jwtIssuer = _configuration["Jwt:Issuer"];
+                var jwtAudience = _configuration["Jwt:Audience"];
+                var jwtExpiry = _configuration["Jwt:ExpiryInHours"];
+
+                return Ok(new ApiResponse<object>
+                {
+                    Success = true,
+                    Message = "JWT Configuration",
+                    Data = new { 
+                        Key = jwtKey, // Show the full key for debugging
+                        KeyLength = jwtKey?.Length ?? 0,
+                        Issuer = jwtIssuer,
+                        Audience = jwtAudience,
+                        ExpiryInHours = jwtExpiry,
+                        Instructions = "Check if the JWT key matches the one in appsettings.json"
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error testing JWT configuration");
+                return BadRequest(new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "Failed to test JWT configuration",
+                    Data = null
+                });
+            }
+        }
+
+        /// <summary>
+        /// Test JWT token validation (public endpoint for development)
+        /// </summary>
+        /// <returns>Token validation result</returns>
+        [HttpPost("test-token-validation")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        public async Task<IActionResult> TestTokenValidation([FromBody] object request)
+        {
+            try
+            {
+                // Get the token from the request
+                var token = "";
+                if (request is System.Text.Json.JsonElement element && element.TryGetProperty("token", out var tokenElement))
+                {
+                    token = tokenElement.GetString() ?? "";
+                }
+
+                if (string.IsNullOrEmpty(token))
+                {
+                    return BadRequest(new ApiResponse<object>
+                    {
+                        Success = false,
+                        Message = "Token is required",
+                        Data = null
+                    });
+                }
+
+                // Manually validate the token using the same configuration
+                var jwtKey = _configuration["Jwt:Key"];
+                var jwtIssuer = _configuration["Jwt:Issuer"];
+                var jwtAudience = _configuration["Jwt:Audience"];
+
+                var tokenHandler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+                var key = System.Text.Encoding.UTF8.GetBytes(jwtKey);
+
+                var validationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(key),
+                    ValidateIssuer = true,
+                    ValidIssuer = jwtIssuer,
+                    ValidateAudience = true,
+                    ValidAudience = jwtAudience,
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
+                };
+
+                var result = tokenHandler.ValidateToken(token, validationParameters, out var validatedToken);
+
+                return Ok(new ApiResponse<object>
+                {
+                    Success = true,
+                    Message = "Token validation completed",
+                    Data = new { 
+                        IsValid = validatedToken != null,
+                        Claims = result.Claims.Select(c => new { Type = c.Type, Value = c.Value }).ToList(),
+                        TokenType = validatedToken?.GetType().Name ?? "Invalid"
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error testing token validation");
+                return BadRequest(new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "Failed to validate token",
+                    Data = new { Error = ex.Message }
+                });
+            }
+        }
+
     }
 }

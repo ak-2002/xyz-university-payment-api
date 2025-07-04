@@ -240,17 +240,7 @@ namespace xyz_university_payment_api.Validators
         }
     }
 
-    // Custom validator for payment reference format
-    public class PaymentReferenceValidator : AbstractValidator<string>
-    {
-        public PaymentReferenceValidator()
-        {
-            RuleFor(x => x)
-                .NotEmpty().WithMessage("Payment reference is required")
-                .Length(5, 50).WithMessage("Payment reference must be between 5 and 50 characters")
-                .Matches(@"^[A-Z0-9\-_]+$").WithMessage("Payment reference can only contain uppercase letters, numbers, hyphens, and underscores");
-        }
-    }
+
 
     // Custom validator for amount
     public class AmountValidator : AbstractValidator<decimal>
