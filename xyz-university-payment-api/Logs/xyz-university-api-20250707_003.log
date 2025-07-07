@@ -1,19 +1,20 @@
-2025-07-04 11:58:48.980 +03:00 [ERR] Error retrieving from cache for key: students_v3_2361786_1_10_StudentNumber_asc_False
-StackExchange.Redis.RedisConnectionException: The message timed out in the backlog attempting to send because no connection became available (5000ms) - Last Connection Exception: It was not possible to connect to the redis server(s). ConnectTimeout, command=HMGET, timeout: 5000, inst: 0, qu: 0, qs: 0, aw: False, bw: CheckingForTimeout, rs: NotStarted, ws: Initializing, in: 0, last-in: 0, cur-in: 0, sync-ops: 0, async-ops: 1, serverEndpoint: localhost:6379, conn-sec: n/a, aoc: 0, mc: 1/1/0, mgr: 10 of 10 available, clientName: DESKTOP-F3AMJ10(SE.Redis-v2.7.27.49176), IOCP: (Busy=0,Free=1000,Min=1,Max=1000), WORKER: (Busy=1,Free=32766,Min=8,Max=32767), POOL: (Threads=8,QueuedItems=0,CompletedItems=386,Timers=9), v: 2.7.27.49176 (Please take a look at this article for some common client-side issues that can cause timeouts: https://stackexchange.github.io/StackExchange.Redis/Timeouts)
- ---> StackExchange.Redis.RedisConnectionException: It was not possible to connect to the redis server(s). ConnectTimeout
-   --- End of inner exception stack trace ---
-   at Microsoft.Extensions.Caching.StackExchangeRedis.RedisCache.GetAndRefreshAsync(String key, Boolean getData, CancellationToken token)
-   at Microsoft.Extensions.Caching.StackExchangeRedis.RedisCache.GetAsync(String key, CancellationToken token)
-   at Microsoft.Extensions.Caching.Distributed.DistributedCacheExtensions.GetStringAsync(IDistributedCache cache, String key, CancellationToken token)
-   at xyz_university_payment_api.Core.Application.Services.CacheService.GetAsync[T](String key) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\CacheService.cs:line 29
-2025-07-04 11:58:54.974 +03:00 [ERR] Error setting cache for key: students_v3_2361786_1_10_StudentNumber_asc_False
-StackExchange.Redis.RedisConnectionException: The message timed out in the backlog attempting to send because no connection became available (5000ms) - Last Connection Exception: It was not possible to connect to the redis server(s). ConnectTimeout, command=EVAL, timeout: 5000, inst: 0, qu: 0, qs: 0, aw: False, bw: CheckingForTimeout, rs: NotStarted, ws: Initializing, in: 0, last-in: 0, cur-in: 0, sync-ops: 0, async-ops: 2, serverEndpoint: localhost:6379, conn-sec: n/a, aoc: 0, mc: 1/1/0, mgr: 10 of 10 available, clientName: DESKTOP-F3AMJ10(SE.Redis-v2.7.27.49176), IOCP: (Busy=0,Free=1000,Min=1,Max=1000), WORKER: (Busy=1,Free=32766,Min=8,Max=32767), POOL: (Threads=8,QueuedItems=0,CompletedItems=427,Timers=9), v: 2.7.27.49176 (Please take a look at this article for some common client-side issues that can cause timeouts: https://stackexchange.github.io/StackExchange.Redis/Timeouts)
- ---> StackExchange.Redis.RedisConnectionException: It was not possible to connect to the redis server(s). ConnectTimeout
-   --- End of inner exception stack trace ---
-   at StackExchange.Redis.RedisDatabase.ScriptEvaluateAsync(String script, RedisKey[] keys, RedisValue[] values, CommandFlags flags) in /_/src/StackExchange.Redis/RedisDatabase.cs:line 1551
-   at Microsoft.Extensions.Caching.StackExchangeRedis.RedisCache.SetAsync(String key, Byte[] value, DistributedCacheEntryOptions options, CancellationToken token)
-   at xyz_university_payment_api.Core.Application.Services.CacheService.SetAsync[T](String key, T value, TimeSpan expiration) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\CacheService.cs:line 61
-2025-07-04 12:47:26.268 +03:00 [ERR] An exception occurred in the database while saving changes for context type 'xyz_university_payment_api.Infrastructure.Data.AppDbContext'.
+2025-07-07 20:20:00.964 +03:00 [INF] Ensuring database is created {"MachineName":"DESKTOP-F3AMJ10","ThreadId":1,"ProcessId":21544,"Application":"XYZ University Payment API"}
+2025-07-07 20:20:02.588 +03:00 [INF] Database created successfully {"MachineName":"DESKTOP-F3AMJ10","ThreadId":1,"ProcessId":21544,"Application":"XYZ University Payment API"}
+2025-07-07 20:20:02.596 +03:00 [INF] Seeding default roles and permissions {"MachineName":"DESKTOP-F3AMJ10","ThreadId":1,"ProcessId":21544,"Application":"XYZ University Payment API"}
+2025-07-07 20:20:03.466 +03:00 [WRN] Found 1 users with invalid data, removing them {"SourceContext":"xyz_university_payment_api.Core.Application.Services.AuthorizationService","MachineName":"DESKTOP-F3AMJ10","ThreadId":6,"ProcessId":21544,"Application":"XYZ University Payment API"}
+2025-07-07 20:20:04.096 +03:00 [INF] Removed 1 invalid users {"SourceContext":"xyz_university_payment_api.Core.Application.Services.AuthorizationService","MachineName":"DESKTOP-F3AMJ10","ThreadId":6,"ProcessId":21544,"Application":"XYZ University Payment API"}
+2025-07-07 20:20:04.181 +03:00 [WRN] Found 1 roles with invalid names, removing them {"SourceContext":"xyz_university_payment_api.Core.Application.Services.AuthorizationService","MachineName":"DESKTOP-F3AMJ10","ThreadId":6,"ProcessId":21544,"Application":"XYZ University Payment API"}
+2025-07-07 20:20:04.270 +03:00 [INF] Removed 1 invalid roles {"SourceContext":"xyz_university_payment_api.Core.Application.Services.AuthorizationService","MachineName":"DESKTOP-F3AMJ10","ThreadId":6,"ProcessId":21544,"Application":"XYZ University Payment API"}
+2025-07-07 20:20:04.362 +03:00 [INF] Valid data already seeded, skipping seeding process {"SourceContext":"xyz_university_payment_api.Core.Application.Services.AuthorizationService","MachineName":"DESKTOP-F3AMJ10","ThreadId":9,"ProcessId":21544,"Application":"XYZ University Payment API"}
+2025-07-07 20:20:04.374 +03:00 [INF] Default roles and permissions seeded successfully {"MachineName":"DESKTOP-F3AMJ10","ThreadId":9,"ProcessId":21544,"Application":"XYZ University Payment API"}
+2025-07-07 20:20:04.625 +03:00 [INF] XYZ University Payment API started successfully {"MachineName":"DESKTOP-F3AMJ10","ThreadId":9,"ProcessId":21544,"Application":"XYZ University Payment API"}
+2025-07-07 20:20:04.807 +03:00 [INF] Configured endpoint PaymentProcessedMessage, Consumer: xyz_university_payment_api.Core.Application.Services.PaymentProcessedMessageConsumer {"SourceContext":"MassTransit","MachineName":"DESKTOP-F3AMJ10","ThreadId":9,"ProcessId":21544,"Application":"XYZ University Payment API"}
+2025-07-07 20:20:04.835 +03:00 [INF] Configured endpoint PaymentFailedMessage, Consumer: xyz_university_payment_api.Core.Application.Services.PaymentFailedMessageConsumer {"SourceContext":"MassTransit","MachineName":"DESKTOP-F3AMJ10","ThreadId":9,"ProcessId":21544,"Application":"XYZ University Payment API"}
+2025-07-07 20:20:04.855 +03:00 [INF] Configured endpoint PaymentValidationMessage, Consumer: xyz_university_payment_api.Core.Application.Services.PaymentValidationMessageConsumer {"SourceContext":"MassTransit","MachineName":"DESKTOP-F3AMJ10","ThreadId":9,"ProcessId":21544,"Application":"XYZ University Payment API"}
+2025-07-07 20:20:05.523 +03:00 [INF] Bus started: "rabbitmq://localhost/" {"SourceContext":"MassTransit","MachineName":"DESKTOP-F3AMJ10","ThreadId":15,"ProcessId":21544,"Application":"XYZ University Payment API"}
+2025-07-07 20:20:50.907 +03:00 [WRN] Failed to determine the https port for redirect. {"EventId":{"Id":3,"Name":"FailedToDeterminePort"},"SourceContext":"Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware","RequestId":"0HNDTFAAD3JA3:00000001","RequestPath":"/api/Authorization/cleanup-corrupted-data","ConnectionId":"0HNDTFAAD3JA3","MachineName":"DESKTOP-F3AMJ10","ThreadId":8,"ProcessId":21544,"Application":"XYZ University Payment API"}
+2025-07-07 20:21:43.994 +03:00 [INF] Authorization action: RolesAssignedToUser on User 11 by System {"SourceContext":"xyz_university_payment_api.Core.Application.Services.AuthorizationService","ActionId":"731adc03-a97d-431b-a560-b9db3fcb4917","ActionName":"xyz_university_payment_api.Presentation.Controllers.AuthorizationController.AssignRolesToExistingUsers (xyz-university-payment-api)","RequestId":"0HNDTFAAD3JA5:00000001","RequestPath":"/api/Authorization/assign-roles-to-existing-users","ConnectionId":"0HNDTFAAD3JA5","MachineName":"DESKTOP-F3AMJ10","ThreadId":13,"ProcessId":21544,"Application":"XYZ University Payment API"}
+2025-07-07 20:21:44.153 +03:00 [ERR] An exception occurred in the database while saving changes for context type 'xyz_university_payment_api.Infrastructure.Data.AppDbContext'.
 Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
  ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Cannot insert duplicate key row in object 'dbo.Roles' with unique index 'IX_Roles_Name'. The duplicate key value is ().
    at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
@@ -26,7 +27,7 @@ Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving 
    at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
 --- End of stack trace from previous location ---
    at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeResultSetAsync(Int32 startCommandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
-ClientConnectionId:853fef29-09c3-404a-b6e1-e62b00fa214c
+ClientConnectionId:3563c711-148a-4173-b865-d200d6f18a48
 Error Number:2601,State:1,Class:14
    --- End of inner exception stack trace ---
    at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeResultSetAsync(Int32 startCommandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
@@ -40,7 +41,7 @@ Error Number:2601,State:1,Class:14
    at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken) {"EventId":{"Id":10000,"Name":"Microsoft.EntityFrameworkCore.Update.SaveChangesFailed"},"SourceContext":"Microsoft.EntityFrameworkCore.Update","ActionId":"db4a29eb-9eee-462e-a316-b381035b8fd6","ActionName":"xyz_university_payment_api.Presentation.Controllers.AuthorizationController.CreateTestUsers (xyz-university-payment-api)","RequestId":"0HNDQRTIM1GHF:00000001","RequestPath":"/api/Authorization/create-test-users","ConnectionId":"0HNDQRTIM1GHF","MachineName":"DESKTOP-F3AMJ10","ThreadId":13,"ProcessId":18552,"Application":"XYZ University Payment API"}
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken) {"EventId":{"Id":10000,"Name":"Microsoft.EntityFrameworkCore.Update.SaveChangesFailed"},"SourceContext":"Microsoft.EntityFrameworkCore.Update","ActionId":"731adc03-a97d-431b-a560-b9db3fcb4917","ActionName":"xyz_university_payment_api.Presentation.Controllers.AuthorizationController.AssignRolesToExistingUsers (xyz-university-payment-api)","RequestId":"0HNDTFAAD3JA5:00000001","RequestPath":"/api/Authorization/assign-roles-to-existing-users","ConnectionId":"0HNDTFAAD3JA5","MachineName":"DESKTOP-F3AMJ10","ThreadId":14,"ProcessId":21544,"Application":"XYZ University Payment API"}
 Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
  ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Cannot insert duplicate key row in object 'dbo.Roles' with unique index 'IX_Roles_Name'. The duplicate key value is ().
    at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
@@ -53,7 +54,7 @@ Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving 
    at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
 --- End of stack trace from previous location ---
    at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeResultSetAsync(Int32 startCommandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
-ClientConnectionId:853fef29-09c3-404a-b6e1-e62b00fa214c
+ClientConnectionId:3563c711-148a-4173-b865-d200d6f18a48
 Error Number:2601,State:1,Class:14
    --- End of inner exception stack trace ---
    at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeResultSetAsync(Int32 startCommandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
@@ -68,7 +69,7 @@ Error Number:2601,State:1,Class:14
    at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
-2025-07-04 12:47:26.318 +03:00 [ERR] Error creating test users {"SourceContext":"xyz_university_payment_api.Presentation.Controllers.AuthorizationController","ActionId":"db4a29eb-9eee-462e-a316-b381035b8fd6","ActionName":"xyz_university_payment_api.Presentation.Controllers.AuthorizationController.CreateTestUsers (xyz-university-payment-api)","RequestId":"0HNDQRTIM1GHF:00000001","RequestPath":"/api/Authorization/create-test-users","ConnectionId":"0HNDQRTIM1GHF","MachineName":"DESKTOP-F3AMJ10","ThreadId":13,"ProcessId":18552,"Application":"XYZ University Payment API"}
+2025-07-07 20:21:44.332 +03:00 [ERR] Error assigning roles to existing users {"SourceContext":"xyz_university_payment_api.Presentation.Controllers.AuthorizationController","ActionId":"731adc03-a97d-431b-a560-b9db3fcb4917","ActionName":"xyz_university_payment_api.Presentation.Controllers.AuthorizationController.AssignRolesToExistingUsers (xyz-university-payment-api)","RequestId":"0HNDTFAAD3JA5:00000001","RequestPath":"/api/Authorization/assign-roles-to-existing-users","ConnectionId":"0HNDTFAAD3JA5","MachineName":"DESKTOP-F3AMJ10","ThreadId":14,"ProcessId":21544,"Application":"XYZ University Payment API"}
 Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
  ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Cannot insert duplicate key row in object 'dbo.Roles' with unique index 'IX_Roles_Name'. The duplicate key value is ().
    at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
@@ -81,7 +82,7 @@ Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving 
    at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
 --- End of stack trace from previous location ---
    at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeResultSetAsync(Int32 startCommandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
-ClientConnectionId:853fef29-09c3-404a-b6e1-e62b00fa214c
+ClientConnectionId:3563c711-148a-4173-b865-d200d6f18a48
 Error Number:2601,State:1,Class:14
    --- End of inner exception stack trace ---
    at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeResultSetAsync(Int32 startCommandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
@@ -98,4 +99,4 @@ Error Number:2601,State:1,Class:14
    at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
    at xyz_university_payment_api.Core.Application.Services.AuthorizationService.AssignRolesToUserAsync(AssignRolesToUserDto assignRolesDto) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\AuthorizationService.cs:line 678
-   at xyz_university_payment_api.Presentation.Controllers.AuthorizationController.CreateTestUsers() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\AuthorizationController.cs:line 1584
+   at xyz_university_payment_api.Presentation.Controllers.AuthorizationController.AssignRolesToExistingUsers() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\AuthorizationController.cs:line 2015

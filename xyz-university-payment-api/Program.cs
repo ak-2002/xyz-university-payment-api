@@ -71,12 +71,15 @@ try
     builder.Services.AddDbContext<AppDbContext>(options =>
         options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-    // Configure Redis
-    builder.Services.AddStackExchangeRedisCache(options =>
-    {
-        options.Configuration = builder.Configuration.GetConnectionString("Redis");
-        options.InstanceName = builder.Configuration["Redis:InstanceName"] ?? "xyz-university-api:";
-    });
+    // Configure In-Memory Cache (temporary replacement for Redis)
+    builder.Services.AddDistributedMemoryCache();
+    
+    // Uncomment the following lines when Redis is available:
+    // builder.Services.AddStackExchangeRedisCache(options =>
+    // {
+    //     options.Configuration = builder.Configuration.GetConnectionString("Redis");
+    //     options.InstanceName = builder.Configuration["Redis:InstanceName"] ?? "xyz-university-api:";
+    // });
 
     // Configure Redis settings
     builder.Services.Configure<xyz_university_payment_api.Infrastructure.External.Caching.RedisConfig>(builder.Configuration.GetSection("Redis"));

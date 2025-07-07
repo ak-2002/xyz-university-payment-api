@@ -1,20 +1,4 @@
-2025-07-04 08:40:53.282 +03:00 [INF] Ensuring database is created
-2025-07-04 08:40:56.117 +03:00 [INF] Database created successfully
-2025-07-04 08:40:56.522 +03:00 [INF] Seeding default roles and permissions
-2025-07-04 08:40:57.149 +03:00 [INF] Data already seeded, skipping seeding process
-2025-07-04 08:40:57.160 +03:00 [INF] Default roles and permissions seeded successfully
-2025-07-04 08:40:57.199 +03:00 [INF] Seeding initial student data
-2025-07-04 08:40:57.606 +03:00 [INF] Student data seeded successfully
-2025-07-04 08:40:57.638 +03:00 [INF] Seeding initial payment data
-2025-07-04 08:40:57.726 +03:00 [INF] Payment data seeded successfully
-2025-07-04 08:40:57.953 +03:00 [INF] XYZ University Payment API started successfully
-2025-07-04 08:40:58.253 +03:00 [INF] Configured endpoint PaymentProcessedMessage, Consumer: xyz_university_payment_api.Core.Application.Services.PaymentProcessedMessageConsumer
-2025-07-04 08:40:58.277 +03:00 [INF] Configured endpoint PaymentFailedMessage, Consumer: xyz_university_payment_api.Core.Application.Services.PaymentFailedMessageConsumer
-2025-07-04 08:40:58.305 +03:00 [INF] Configured endpoint PaymentValidationMessage, Consumer: xyz_university_payment_api.Core.Application.Services.PaymentValidationMessageConsumer
-2025-07-04 08:40:58.937 +03:00 [INF] Bus started: "rabbitmq://localhost/"
-2025-07-04 08:41:51.262 +03:00 [WRN] Failed to determine the https port for redirect.
-2025-07-04 08:43:01.533 +03:00 [INF] Data already seeded, skipping seeding process
-2025-07-04 08:43:01.920 +03:00 [ERR] An exception occurred in the database while saving changes for context type 'xyz_university_payment_api.Infrastructure.Data.AppDbContext'.
+2025-07-07 20:15:47.857 +03:00 [ERR] An exception occurred in the database while saving changes for context type 'xyz_university_payment_api.Infrastructure.Data.AppDbContext'.
 Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
  ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Cannot insert duplicate key row in object 'dbo.Roles' with unique index 'IX_Roles_Name'. The duplicate key value is ().
    at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
@@ -27,7 +11,7 @@ Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving 
    at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
 --- End of stack trace from previous location ---
    at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeResultSetAsync(Int32 startCommandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
-ClientConnectionId:a79b35a2-5552-4774-b83d-e8de2695cf20
+ClientConnectionId:61e84b48-5ba2-4de2-84a9-c58d6fb0cc41
 Error Number:2601,State:1,Class:14
    --- End of inner exception stack trace ---
    at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeResultSetAsync(Int32 startCommandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
@@ -54,7 +38,7 @@ Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving 
    at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
 --- End of stack trace from previous location ---
    at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeResultSetAsync(Int32 startCommandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
-ClientConnectionId:a79b35a2-5552-4774-b83d-e8de2695cf20
+ClientConnectionId:61e84b48-5ba2-4de2-84a9-c58d6fb0cc41
 Error Number:2601,State:1,Class:14
    --- End of inner exception stack trace ---
    at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeResultSetAsync(Int32 startCommandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
@@ -69,7 +53,7 @@ Error Number:2601,State:1,Class:14
    at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
-2025-07-04 08:43:02.205 +03:00 [ERR] Error fixing admin user
+2025-07-07 20:15:48.010 +03:00 [ERR] Error assigning roles to existing users
 Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
  ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Cannot insert duplicate key row in object 'dbo.Roles' with unique index 'IX_Roles_Name'. The duplicate key value is ().
    at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
@@ -82,7 +66,7 @@ Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving 
    at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
 --- End of stack trace from previous location ---
    at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeResultSetAsync(Int32 startCommandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
-ClientConnectionId:a79b35a2-5552-4774-b83d-e8de2695cf20
+ClientConnectionId:61e84b48-5ba2-4de2-84a9-c58d6fb0cc41
 Error Number:2601,State:1,Class:14
    --- End of inner exception stack trace ---
    at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeResultSetAsync(Int32 startCommandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
@@ -98,11 +82,9 @@ Error Number:2601,State:1,Class:14
    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
-   at xyz_university_payment_api.Core.Application.Services.AuthorizationService.AssignRolesToUserAsync(AssignRolesToUserDto assignRolesDto) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\AuthorizationService.cs:line 649
-   at xyz_university_payment_api.Presentation.Controllers.AuthorizationController.FixAdminUser() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\AuthorizationController.cs:line 1037
-2025-07-04 08:44:05.208 +03:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
-2025-07-04 08:53:41.871 +03:00 [INF] Data already seeded, skipping seeding process
-2025-07-04 08:53:41.922 +03:00 [ERR] An exception occurred in the database while saving changes for context type 'xyz_university_payment_api.Infrastructure.Data.AppDbContext'.
+   at xyz_university_payment_api.Core.Application.Services.AuthorizationService.AssignRolesToUserAsync(AssignRolesToUserDto assignRolesDto) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\AuthorizationService.cs:line 678
+   at xyz_university_payment_api.Presentation.Controllers.AuthorizationController.AssignRolesToExistingUsers() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\AuthorizationController.cs:line 2015
+2025-07-07 20:21:44.153 +03:00 [ERR] An exception occurred in the database while saving changes for context type 'xyz_university_payment_api.Infrastructure.Data.AppDbContext'.
 Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
  ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Cannot insert duplicate key row in object 'dbo.Roles' with unique index 'IX_Roles_Name'. The duplicate key value is ().
    at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
@@ -115,7 +97,7 @@ Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving 
    at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
 --- End of stack trace from previous location ---
    at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeResultSetAsync(Int32 startCommandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
-ClientConnectionId:52d482f2-1b47-4db6-afea-5166337c7e0b
+ClientConnectionId:3563c711-148a-4173-b865-d200d6f18a48
 Error Number:2601,State:1,Class:14
    --- End of inner exception stack trace ---
    at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeResultSetAsync(Int32 startCommandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
@@ -129,7 +111,7 @@ Error Number:2601,State:1,Class:14
    at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken) {"EventId":{"Id":10000,"Name":"Microsoft.EntityFrameworkCore.Update.SaveChangesFailed"},"SourceContext":"Microsoft.EntityFrameworkCore.Update","ActionId":"731adc03-a97d-431b-a560-b9db3fcb4917","ActionName":"xyz_university_payment_api.Presentation.Controllers.AuthorizationController.AssignRolesToExistingUsers (xyz-university-payment-api)","RequestId":"0HNDTFAAD3JA5:00000001","RequestPath":"/api/Authorization/assign-roles-to-existing-users","ConnectionId":"0HNDTFAAD3JA5","MachineName":"DESKTOP-F3AMJ10","ThreadId":14,"ProcessId":21544,"Application":"XYZ University Payment API"}
 Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
  ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Cannot insert duplicate key row in object 'dbo.Roles' with unique index 'IX_Roles_Name'. The duplicate key value is ().
    at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
@@ -142,7 +124,7 @@ Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving 
    at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
 --- End of stack trace from previous location ---
    at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeResultSetAsync(Int32 startCommandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
-ClientConnectionId:52d482f2-1b47-4db6-afea-5166337c7e0b
+ClientConnectionId:3563c711-148a-4173-b865-d200d6f18a48
 Error Number:2601,State:1,Class:14
    --- End of inner exception stack trace ---
    at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeResultSetAsync(Int32 startCommandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
@@ -157,7 +139,7 @@ Error Number:2601,State:1,Class:14
    at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
-2025-07-04 08:53:42.080 +03:00 [ERR] Error fixing admin user
+2025-07-07 20:21:44.332 +03:00 [ERR] Error assigning roles to existing users {"SourceContext":"xyz_university_payment_api.Presentation.Controllers.AuthorizationController","ActionId":"731adc03-a97d-431b-a560-b9db3fcb4917","ActionName":"xyz_university_payment_api.Presentation.Controllers.AuthorizationController.AssignRolesToExistingUsers (xyz-university-payment-api)","RequestId":"0HNDTFAAD3JA5:00000001","RequestPath":"/api/Authorization/assign-roles-to-existing-users","ConnectionId":"0HNDTFAAD3JA5","MachineName":"DESKTOP-F3AMJ10","ThreadId":14,"ProcessId":21544,"Application":"XYZ University Payment API"}
 Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
  ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Cannot insert duplicate key row in object 'dbo.Roles' with unique index 'IX_Roles_Name'. The duplicate key value is ().
    at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
@@ -170,7 +152,7 @@ Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving 
    at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
 --- End of stack trace from previous location ---
    at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeResultSetAsync(Int32 startCommandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
-ClientConnectionId:52d482f2-1b47-4db6-afea-5166337c7e0b
+ClientConnectionId:3563c711-148a-4173-b865-d200d6f18a48
 Error Number:2601,State:1,Class:14
    --- End of inner exception stack trace ---
    at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeResultSetAsync(Int32 startCommandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
@@ -186,7 +168,5 @@ Error Number:2601,State:1,Class:14
    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
-   at xyz_university_payment_api.Core.Application.Services.AuthorizationService.AssignRolesToUserAsync(AssignRolesToUserDto assignRolesDto) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\AuthorizationService.cs:line 649
-   at xyz_university_payment_api.Presentation.Controllers.AuthorizationController.FixAdminUser() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\AuthorizationController.cs:line 1037
-2025-07-04 08:53:57.559 +03:00 [INF] Bus stopped: "rabbitmq://localhost/"
-2025-07-04 08:54:21.443 +03:00 [INF] Starting XYZ University Payment API {"MachineName":"DESKTOP-F3AMJ10","ThreadId":1,"ProcessId":10788,"Application":"XYZ University Payment API"}
+   at xyz_university_payment_api.Core.Application.Services.AuthorizationService.AssignRolesToUserAsync(AssignRolesToUserDto assignRolesDto) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\AuthorizationService.cs:line 678
+   at xyz_university_payment_api.Presentation.Controllers.AuthorizationController.AssignRolesToExistingUsers() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\AuthorizationController.cs:line 2015

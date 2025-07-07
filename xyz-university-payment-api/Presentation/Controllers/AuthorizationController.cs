@@ -1536,5 +1536,539 @@ namespace xyz_university_payment_api.Presentation.Controllers
             }
         }
 
+        /// <summary>
+        /// Create test users with different roles (public endpoint for development)
+        /// </summary>
+        /// <returns>Success status</returns>
+        [HttpPost("create-test-users")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        public async Task<IActionResult> CreateTestUsers()
+        {
+            try
+            {
+                var results = new List<object>();
+                var context = _authorizationService.GetDbContext();
+
+                // Helper function to create or update user
+                async Task<object> CreateOrUpdateUser(string username, string email, string password, string roleName)
+                {
+                    var existingUser = await _authorizationService.GetUserByUsernameAsync(username);
+                    
+                    if (existingUser == null)
+                    {
+                        // Create new user
+                        var createUserDto = new CreateUserDto
+                        {
+                            Username = username,
+                            Email = email,
+                            Password = password
+                        };
+                        await _authorizationService.CreateUserAsync(createUserDto);
+                        existingUser = await _authorizationService.GetUserByUsernameAsync(username);
+                    }
+                    else
+                    {
+                        // Update password for existing user
+                        using var sha256 = System.Security.Cryptography.SHA256.Create();
+                        var hashedBytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+                        var passwordHash = Convert.ToBase64String(hashedBytes);
+                        
+                        var user = await context.Users.FindAsync(existingUser.Id);
+                        if (user != null)
+                        {
+                            user.PasswordHash = passwordHash;
+                            await context.SaveChangesAsync();
+                        }
+                    }
+
+                    // Assign role
+                    var role = await _authorizationService.GetRoleByNameAsync(roleName);
+                    if (existingUser != null && role != null)
+                    {
+                        // Remove existing roles first
+                        var existingRoles = await _authorizationService.GetUserRolesAsync(existingUser.Id);
+                        if (existingRoles.Any())
+                        {
+                            await _authorizationService.RemoveRolesFromUserAsync(new RemoveRolesFromUserDto
+                            {
+                                UserId = existingUser.Id,
+                                RoleIds = existingRoles.Select(r => r.Id).ToList()
+                            });
+                        }
+
+                        // Assign new role
+                        await _authorizationService.AssignRolesToUserAsync(new AssignRolesToUserDto
+                        {
+                            UserId = existingUser.Id,
+                            RoleIds = new List<int> { role.Id }
+                        });
+                    }
+
+                    return new { Username = username, Password = password, Role = roleName, Status = existingUser == null ? "Created" : "Updated" };
+                }
+
+                // Create/Update Manager user
+                var managerResult = await CreateOrUpdateUser("manager", "manager@xyzuniversity.edu", "Manager123!", "Manager");
+                results.Add(managerResult);
+
+                // Create/Update Staff user
+                var staffResult = await CreateOrUpdateUser("staff", "staff@xyzuniversity.edu", "Staff123!", "Staff");
+                results.Add(staffResult);
+
+                // Create/Update Student user
+                var studentResult = await CreateOrUpdateUser("student", "student@xyzuniversity.edu", "Student123!", "Student");
+                results.Add(studentResult);
+
+                return Ok(new ApiResponse<object>
+                {
+                    Success = true,
+                    Message = "Test users created/updated successfully",
+                    Data = new { 
+                        Users = results,
+                        Instructions = "Use these credentials to test different permission levels"
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating test users");
+                return BadRequest(new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = $"Failed to create test users: {ex.Message}",
+                    Data = null
+                });
+            }
+        }
+
+        /// <summary>
+        /// Get user permissions and roles for testing (public endpoint for development)
+        /// </summary>
+        /// <param name="username">Username to check</param>
+        /// <returns>User permissions and roles</returns>
+        [HttpGet("test-user-info/{username}")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        public async Task<IActionResult> GetTestUserInfo(string username)
+        {
+            try
+            {
+                var user = await _authorizationService.GetUserByUsernameAsync(username);
+                if (user == null)
+                {
+                    return BadRequest(new ApiResponse<object>
+                    {
+                        Success = false,
+                        Message = $"User '{username}' not found",
+                        Data = null
+                    });
+                }
+
+                var userRoles = await _authorizationService.GetUserRolesAsync(user.Id);
+                var userPermissions = await _authorizationService.GetUserPermissionsAsync(username);
+
+                return Ok(new ApiResponse<object>
+                {
+                    Success = true,
+                    Message = $"User info for {username}",
+                    Data = new { 
+                        Username = username,
+                        UserId = user.Id,
+                        IsActive = user.IsActive,
+                        Roles = userRoles.Select(r => r.Name).ToList(),
+                        Permissions = userPermissions.ToList(),
+                        PermissionCount = userPermissions.Count()
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting test user info");
+                return BadRequest(new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = $"Failed to get user info: {ex.Message}",
+                    Data = null
+                });
+            }
+        }
+
+        /// <summary>
+        /// Test endpoint for Manager role
+        /// </summary>
+        [HttpGet("manager-test")]
+        [Authorize(Roles = "Manager")]
+        public IActionResult ManagerTest()
+        {
+            var user = User;
+            var roles = user.FindAll(ClaimTypes.Role).Select(c => c.Value);
+            var permissions = user.FindAll("permission").Select(c => c.Value);
+
+            return Ok(new ApiResponse<object>
+            {
+                Success = true,
+                Message = "Manager access granted",
+                Data = new
+                {
+                    Username = user.FindFirst(ClaimTypes.Name)?.Value,
+                    Roles = roles.ToList(),
+                    Permissions = permissions.ToList(),
+                    Timestamp = DateTime.UtcNow
+                }
+            });
+        }
+
+        /// <summary>
+        /// Test endpoint for Staff role
+        /// </summary>
+        [HttpGet("staff-test")]
+        [Authorize(Roles = "Staff")]
+        public IActionResult StaffTest()
+        {
+            var user = User;
+            var roles = user.FindAll(ClaimTypes.Role).Select(c => c.Value);
+            var permissions = user.FindAll("permission").Select(c => c.Value);
+
+            return Ok(new ApiResponse<object>
+            {
+                Success = true,
+                Message = "Staff access granted",
+                Data = new
+                {
+                    Username = user.FindFirst(ClaimTypes.Name)?.Value,
+                    Roles = roles.ToList(),
+                    Permissions = permissions.ToList(),
+                    Timestamp = DateTime.UtcNow
+                }
+            });
+        }
+
+        /// <summary>
+        /// Test endpoint for Student role
+        /// </summary>
+        [HttpGet("student-role-test")]
+        [Authorize(Roles = "Student")]
+        public IActionResult StudentRoleTest()
+        {
+            var user = User;
+            var roles = user.FindAll(ClaimTypes.Role).Select(c => c.Value);
+            var permissions = user.FindAll("permission").Select(c => c.Value);
+
+            return Ok(new ApiResponse<object>
+            {
+                Success = true,
+                Message = "Student role access granted",
+                Data = new
+                {
+                    Username = user.FindFirst(ClaimTypes.Name)?.Value,
+                    Roles = roles.ToList(),
+                    Permissions = permissions.ToList(),
+                    Timestamp = DateTime.UtcNow
+                }
+            });
+        }
+
+        /// <summary>
+        /// Test payment creation permission
+        /// </summary>
+        [HttpGet("test-payment-create")]
+        [AuthorizePayment("Create")]
+        public IActionResult TestPaymentCreate()
+        {
+            var user = User;
+            var roles = user.FindAll(ClaimTypes.Role).Select(c => c.Value);
+            var permissions = user.FindAll("permission").Select(c => c.Value);
+
+            return Ok(new ApiResponse<object>
+            {
+                Success = true,
+                Message = "Payment create permission granted",
+                Data = new
+                {
+                    Username = user.FindFirst(ClaimTypes.Name)?.Value,
+                    Roles = roles.ToList(),
+                    Permissions = permissions.ToList(),
+                    Timestamp = DateTime.UtcNow
+                }
+            });
+        }
+
+        /// <summary>
+        /// Test student update permission
+        /// </summary>
+        [HttpGet("test-student-update")]
+        [AuthorizeStudent("Update")]
+        public IActionResult TestStudentUpdate()
+        {
+            var user = User;
+            var roles = user.FindAll(ClaimTypes.Role).Select(c => c.Value);
+            var permissions = user.FindAll("permission").Select(c => c.Value);
+
+            return Ok(new ApiResponse<object>
+            {
+                Success = true,
+                Message = "Student update permission granted",
+                Data = new
+                {
+                    Username = user.FindFirst(ClaimTypes.Name)?.Value,
+                    Roles = roles.ToList(),
+                    Permissions = permissions.ToList(),
+                    Timestamp = DateTime.UtcNow
+                }
+            });
+        }
+
+        /// <summary>
+        /// Test user management permission
+        /// </summary>
+        [HttpGet("test-user-management")]
+        [AuthorizeUserManagement("Read")]
+        public IActionResult TestUserManagement()
+        {
+            var user = User;
+            var roles = user.FindAll(ClaimTypes.Role).Select(c => c.Value);
+            var permissions = user.FindAll("permission").Select(c => c.Value);
+
+            return Ok(new ApiResponse<object>
+            {
+                Success = true,
+                Message = "User management permission granted",
+                Data = new
+                {
+                    Username = user.FindFirst(ClaimTypes.Name)?.Value,
+                    Roles = roles.ToList(),
+                    Permissions = permissions.ToList(),
+                    Timestamp = DateTime.UtcNow
+                }
+            });
+        }
+
+        /// <summary>
+        /// Clean up corrupted data (public endpoint for development)
+        /// </summary>
+        /// <returns>Success status</returns>
+        [HttpPost("cleanup-corrupted-data")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        public async Task<IActionResult> CleanupCorruptedData()
+        {
+            try
+            {
+                var context = _authorizationService.GetDbContext();
+                var cleanupResults = new List<string>();
+
+                // Clean up roles with empty names
+                var emptyRoles = await context.Roles.Where(r => string.IsNullOrWhiteSpace(r.Name)).ToListAsync();
+                if (emptyRoles.Any())
+                {
+                    context.Roles.RemoveRange(emptyRoles);
+                    cleanupResults.Add($"Removed {emptyRoles.Count} roles with empty names");
+                }
+
+                // Clean up permissions with empty resource or action
+                var emptyPermissions = await context.Permissions.Where(p => 
+                    string.IsNullOrWhiteSpace(p.Resource) || 
+                    string.IsNullOrWhiteSpace(p.Action)).ToListAsync();
+                if (emptyPermissions.Any())
+                {
+                    context.Permissions.RemoveRange(emptyPermissions);
+                    cleanupResults.Add($"Removed {emptyPermissions.Count} permissions with empty resource/action");
+                }
+
+                // Clean up users with empty usernames
+                var emptyUsers = await context.Users.Where(u => string.IsNullOrWhiteSpace(u.Username)).ToListAsync();
+                if (emptyUsers.Any())
+                {
+                    context.Users.RemoveRange(emptyUsers);
+                    cleanupResults.Add($"Removed {emptyUsers.Count} users with empty usernames");
+                }
+
+                // Clean up orphaned UserRoles
+                var orphanedUserRoles = await context.UserRoles
+                    .Where(ur => !context.Users.Any(u => u.Id == ur.UserId) || 
+                                !context.Roles.Any(r => r.Id == ur.RoleId))
+                    .ToListAsync();
+                if (orphanedUserRoles.Any())
+                {
+                    context.UserRoles.RemoveRange(orphanedUserRoles);
+                    cleanupResults.Add($"Removed {orphanedUserRoles.Count} orphaned user roles");
+                }
+
+                // Clean up orphaned RolePermissions
+                var orphanedRolePermissions = await context.RolePermissions
+                    .Where(rp => !context.Roles.Any(r => r.Id == rp.RoleId) || 
+                                !context.Permissions.Any(p => p.Id == rp.PermissionId))
+                    .ToListAsync();
+                if (orphanedRolePermissions.Any())
+                {
+                    context.RolePermissions.RemoveRange(orphanedRolePermissions);
+                    cleanupResults.Add($"Removed {orphanedRolePermissions.Count} orphaned role permissions");
+                }
+
+                await context.SaveChangesAsync();
+
+                return Ok(new ApiResponse<object>
+                {
+                    Success = true,
+                    Message = "Corrupted data cleaned up successfully",
+                    Data = new { 
+                        CleanupResults = cleanupResults,
+                        Instructions = "Now try creating test users again"
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error cleaning up corrupted data");
+                return BadRequest(new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = $"Failed to cleanup corrupted data: {ex.Message}",
+                    Data = null
+                });
+            }
+        }
+
+        /// <summary>
+        /// Check database state (public endpoint for development)
+        /// </summary>
+        /// <returns>Database state</returns>
+        [HttpGet("check-database-state")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        public async Task<IActionResult> CheckDatabaseState()
+        {
+            try
+            {
+                var context = _authorizationService.GetDbContext();
+                
+                var roles = await context.Roles.ToListAsync();
+                var permissions = await context.Permissions.ToListAsync();
+                var users = await context.Users.ToListAsync();
+                var userRoles = await context.UserRoles.ToListAsync();
+                var rolePermissions = await context.RolePermissions.ToListAsync();
+
+                return Ok(new ApiResponse<object>
+                {
+                    Success = true,
+                    Message = "Database state retrieved",
+                    Data = new { 
+                        Roles = roles.Select(r => new { r.Id, r.Name, r.Description, r.IsActive }).ToList(),
+                        Permissions = permissions.Select(p => new { p.Id, p.Resource, p.Action, p.IsActive }).ToList(),
+                        Users = users.Select(u => new { u.Id, u.Username, u.Email, u.IsActive }).ToList(),
+                        UserRoles = userRoles.Select(ur => new { ur.UserId, ur.RoleId }).ToList(),
+                        RolePermissions = rolePermissions.Select(rp => new { rp.RoleId, rp.PermissionId }).ToList(),
+                        Summary = new {
+                            TotalRoles = roles.Count,
+                            TotalPermissions = permissions.Count,
+                            TotalUsers = users.Count,
+                            TotalUserRoles = userRoles.Count,
+                            TotalRolePermissions = rolePermissions.Count
+                        }
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking database state");
+                return BadRequest(new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = $"Failed to check database state: {ex.Message}",
+                    Data = null
+                });
+            }
+        }
+
+        /// <summary>
+        /// Assign roles to existing users (public endpoint for development)
+        /// </summary>
+        /// <returns>Success status</returns>
+        [HttpPost("assign-roles-to-existing-users")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        public async Task<IActionResult> AssignRolesToExistingUsers()
+        {
+            try
+            {
+                var results = new List<object>();
+
+                // Assign Manager role to manager user
+                var managerUser = await _authorizationService.GetUserByUsernameAsync("manager");
+                var managerRole = await _authorizationService.GetRoleByNameAsync("Manager");
+                if (managerUser != null && managerRole != null)
+                {
+                    await _authorizationService.AssignRolesToUserAsync(new AssignRolesToUserDto
+                    {
+                        UserId = managerUser.Id,
+                        RoleIds = new List<int> { managerRole.Id }
+                    });
+                    results.Add(new { Username = "manager", Role = "Manager", Status = "Assigned" });
+                }
+
+                // Assign Staff role to staff user
+                var staffUser = await _authorizationService.GetUserByUsernameAsync("staff");
+                var staffRole = await _authorizationService.GetRoleByNameAsync("Staff");
+                if (staffUser != null && staffRole != null)
+                {
+                    await _authorizationService.AssignRolesToUserAsync(new AssignRolesToUserDto
+                    {
+                        UserId = staffUser.Id,
+                        RoleIds = new List<int> { staffRole.Id }
+                    });
+                    results.Add(new { Username = "staff", Role = "Staff", Status = "Assigned" });
+                }
+
+                // Create and assign Student role to student user
+                var studentUser = await _authorizationService.GetUserByUsernameAsync("student");
+                if (studentUser != null)
+                {
+                    // Create student user if it doesn't exist
+                    if (studentUser == null)
+                    {
+                        var createStudentDto = new CreateUserDto
+                        {
+                            Username = "student",
+                            Email = "student@xyzuniversity.edu",
+                            Password = "Student123!"
+                        };
+                        await _authorizationService.CreateUserAsync(createStudentDto);
+                        studentUser = await _authorizationService.GetUserByUsernameAsync("student");
+                    }
+
+                    var studentRole = await _authorizationService.GetRoleByNameAsync("Student");
+                    if (studentRole != null)
+                    {
+                        await _authorizationService.AssignRolesToUserAsync(new AssignRolesToUserDto
+                        {
+                            UserId = studentUser.Id,
+                            RoleIds = new List<int> { studentRole.Id }
+                        });
+                        results.Add(new { Username = "student", Role = "Student", Status = "Assigned" });
+                    }
+                }
+
+                return Ok(new ApiResponse<object>
+                {
+                    Success = true,
+                    Message = "Roles assigned to existing users successfully",
+                    Data = new { 
+                        Results = results,
+                        Instructions = "Users are now ready for testing"
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error assigning roles to existing users");
+                return BadRequest(new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = $"Failed to assign roles: {ex.Message}",
+                    Data = null
+                });
+            }
+        }
     }
 }

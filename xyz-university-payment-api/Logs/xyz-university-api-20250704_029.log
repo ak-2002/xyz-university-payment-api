@@ -27,3 +27,4 @@ StackExchange.Redis.RedisConnectionException: The message timed out in the backl
    at StackExchange.Redis.RedisDatabase.ScriptEvaluateAsync(String script, RedisKey[] keys, RedisValue[] values, CommandFlags flags) in /_/src/StackExchange.Redis/RedisDatabase.cs:line 1551
    at Microsoft.Extensions.Caching.StackExchangeRedis.RedisCache.SetAsync(String key, Byte[] value, DistributedCacheEntryOptions options, CancellationToken token)
    at xyz_university_payment_api.Core.Application.Services.CacheService.SetAsync[T](String key, T value, TimeSpan expiration) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\CacheService.cs:line 61
+2025-07-04 12:15:42.831 +03:00 [INF] Bus stopped: "rabbitmq://localhost/" {"SourceContext":"MassTransit","MachineName":"DESKTOP-F3AMJ10","ThreadId":49,"ProcessId":7852,"Application":"XYZ University Payment API"}
