@@ -1608,6 +1608,10 @@ namespace xyz_university_payment_api.Presentation.Controllers
                     return new { Username = username, Password = password, Role = roleName, Status = existingUser == null ? "Created" : "Updated" };
                 }
 
+                // Create/Update Admin user
+                var adminResult = await CreateOrUpdateUser("admin", "admin@xyzuniversity.edu", "Admin123!", "Admin");
+                results.Add(adminResult);
+
                 // Create/Update Manager user
                 var managerResult = await CreateOrUpdateUser("manager", "manager@xyzuniversity.edu", "Manager123!", "Manager");
                 results.Add(managerResult);
