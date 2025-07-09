@@ -1,0 +1,18 @@
+2025-07-09 11:18:25.513 +03:00 [INF] Ensuring database is created
+2025-07-09 11:18:26.161 +03:00 [INF] Database created successfully
+2025-07-09 11:18:26.167 +03:00 [INF] Seeding default roles and permissions
+2025-07-09 11:18:26.456 +03:00 [INF] Valid data already seeded, skipping seeding process
+2025-07-09 11:18:26.461 +03:00 [INF] Default roles and permissions seeded successfully
+2025-07-09 11:18:26.570 +03:00 [INF] XYZ University Payment API started successfully
+2025-07-09 11:18:26.672 +03:00 [INF] Configured endpoint PaymentProcessedMessage, Consumer: xyz_university_payment_api.Core.Application.Services.PaymentProcessedMessageConsumer
+2025-07-09 11:18:26.684 +03:00 [INF] Configured endpoint PaymentFailedMessage, Consumer: xyz_university_payment_api.Core.Application.Services.PaymentFailedMessageConsumer
+2025-07-09 11:18:26.692 +03:00 [INF] Configured endpoint PaymentValidationMessage, Consumer: xyz_university_payment_api.Core.Application.Services.PaymentValidationMessageConsumer
+2025-07-09 11:18:26.948 +03:00 [INF] Bus started: "rabbitmq://localhost/"
+2025-07-09 11:18:34.623 +03:00 [INF] V3 GetStudentStats endpoint called
+2025-07-09 11:18:34.632 +03:00 [INF] Current user: student (ID: 26)
+2025-07-09 11:18:34.638 +03:00 [INF] User roles: Student, Student
+2025-07-09 11:18:34.646 +03:00 [INF] User permissions: Payments.Read, Students.Read
+2025-07-09 11:18:34.700 +03:00 [INF] V3 GetStudentStats endpoint called
+2025-07-09 11:18:34.707 +03:00 [INF] Current user: student (ID: 26)
+2025-07-09 11:18:34.714 +03:00 [INF] User roles: Student, Student
+2025-07-09 11:18:34.721 +03:00 [INF] User permissions: Payments.Read, Students.Read

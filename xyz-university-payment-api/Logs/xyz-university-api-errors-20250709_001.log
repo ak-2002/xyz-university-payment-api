@@ -1,0 +1,144 @@
+2025-07-09 10:52:19.039 +03:00 [ERR] Error retrieving student dashboard statistics
+xyz_university_payment_api.Core.Domain.Exceptions.StudentNotFoundException: Student with ID 26 was not found.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.GetStudentByIdAsync(Int32 id) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 72
+   at xyz_university_payment_api.Presentation.Controllers.V3.DashboardController.GetStudentStats() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\DashboardControllerV3.cs:line 229
+2025-07-09 10:52:19.109 +03:00 [ERR] Error retrieving student dashboard statistics
+xyz_university_payment_api.Core.Domain.Exceptions.StudentNotFoundException: Student with ID 26 was not found.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.GetStudentByIdAsync(Int32 id) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 72
+   at xyz_university_payment_api.Presentation.Controllers.V3.DashboardController.GetStudentStats() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\DashboardControllerV3.cs:line 229
+2025-07-09 10:52:22.169 +03:00 [ERR] Error retrieving student dashboard statistics
+xyz_university_payment_api.Core.Domain.Exceptions.StudentNotFoundException: Student with ID 26 was not found.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.GetStudentByIdAsync(Int32 id) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 72
+   at xyz_university_payment_api.Presentation.Controllers.V3.DashboardController.GetStudentStats() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\DashboardControllerV3.cs:line 229
+2025-07-09 10:52:22.202 +03:00 [ERR] Error retrieving student dashboard statistics
+xyz_university_payment_api.Core.Domain.Exceptions.StudentNotFoundException: Student with ID 26 was not found.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.GetStudentByIdAsync(Int32 id) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 72
+   at xyz_university_payment_api.Presentation.Controllers.V3.DashboardController.GetStudentStats() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\DashboardControllerV3.cs:line 229
+2025-07-09 10:52:30.846 +03:00 [ERR] Error retrieving student dashboard statistics
+xyz_university_payment_api.Core.Domain.Exceptions.StudentNotFoundException: Student with ID 26 was not found.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.GetStudentByIdAsync(Int32 id) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 72
+   at xyz_university_payment_api.Presentation.Controllers.V3.DashboardController.GetStudentStats() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\DashboardControllerV3.cs:line 229
+2025-07-09 10:52:30.886 +03:00 [ERR] Error retrieving student dashboard statistics
+xyz_university_payment_api.Core.Domain.Exceptions.StudentNotFoundException: Student with ID 26 was not found.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.GetStudentByIdAsync(Int32 id) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 72
+   at xyz_university_payment_api.Presentation.Controllers.V3.DashboardController.GetStudentStats() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\DashboardControllerV3.cs:line 229
+2025-07-09 10:54:01.335 +03:00 [ERR] Error retrieving student dashboard statistics
+xyz_university_payment_api.Core.Domain.Exceptions.StudentNotFoundException: Student with ID 26 was not found.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.GetStudentByIdAsync(Int32 id) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 72
+   at xyz_university_payment_api.Presentation.Controllers.V3.DashboardController.GetStudentStats() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\DashboardControllerV3.cs:line 229
+2025-07-09 10:54:01.377 +03:00 [ERR] Error retrieving student dashboard statistics
+xyz_university_payment_api.Core.Domain.Exceptions.StudentNotFoundException: Student with ID 26 was not found.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.GetStudentByIdAsync(Int32 id) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 72
+   at xyz_university_payment_api.Presentation.Controllers.V3.DashboardController.GetStudentStats() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\DashboardControllerV3.cs:line 229
+2025-07-09 10:54:14.640 +03:00 [ERR] Error retrieving student dashboard statistics
+xyz_university_payment_api.Core.Domain.Exceptions.StudentNotFoundException: Student with ID 26 was not found.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.GetStudentByIdAsync(Int32 id) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 72
+   at xyz_university_payment_api.Presentation.Controllers.V3.DashboardController.GetStudentStats() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\DashboardControllerV3.cs:line 229
+2025-07-09 10:54:14.677 +03:00 [ERR] Error retrieving student dashboard statistics
+xyz_university_payment_api.Core.Domain.Exceptions.StudentNotFoundException: Student with ID 26 was not found.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.GetStudentByIdAsync(Int32 id) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 72
+   at xyz_university_payment_api.Presentation.Controllers.V3.DashboardController.GetStudentStats() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\DashboardControllerV3.cs:line 229
+2025-07-09 10:56:49.826 +03:00 [ERR] Error retrieving student dashboard statistics
+xyz_university_payment_api.Core.Domain.Exceptions.StudentNotFoundException: Student with ID 26 was not found.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.GetStudentByIdAsync(Int32 id) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 72
+   at xyz_university_payment_api.Presentation.Controllers.V3.DashboardController.GetStudentStats() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\DashboardControllerV3.cs:line 229
+2025-07-09 10:56:49.859 +03:00 [ERR] Error retrieving student dashboard statistics
+xyz_university_payment_api.Core.Domain.Exceptions.StudentNotFoundException: Student with ID 26 was not found.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.GetStudentByIdAsync(Int32 id) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 72
+   at xyz_university_payment_api.Presentation.Controllers.V3.DashboardController.GetStudentStats() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\DashboardControllerV3.cs:line 229
+2025-07-09 10:56:50.881 +03:00 [ERR] Error retrieving student dashboard statistics
+xyz_university_payment_api.Core.Domain.Exceptions.StudentNotFoundException: Student with ID 26 was not found.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.GetStudentByIdAsync(Int32 id) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 72
+   at xyz_university_payment_api.Presentation.Controllers.V3.DashboardController.GetStudentStats() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\DashboardControllerV3.cs:line 229
+2025-07-09 10:56:50.926 +03:00 [ERR] Error retrieving student dashboard statistics
+xyz_university_payment_api.Core.Domain.Exceptions.StudentNotFoundException: Student with ID 26 was not found.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.GetStudentByIdAsync(Int32 id) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 72
+   at xyz_university_payment_api.Presentation.Controllers.V3.DashboardController.GetStudentStats() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\DashboardControllerV3.cs:line 229
+2025-07-09 10:56:51.787 +03:00 [ERR] Error retrieving student dashboard statistics
+xyz_university_payment_api.Core.Domain.Exceptions.StudentNotFoundException: Student with ID 26 was not found.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.GetStudentByIdAsync(Int32 id) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 72
+   at xyz_university_payment_api.Presentation.Controllers.V3.DashboardController.GetStudentStats() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\DashboardControllerV3.cs:line 229
+2025-07-09 10:56:51.821 +03:00 [ERR] Error retrieving student dashboard statistics
+xyz_university_payment_api.Core.Domain.Exceptions.StudentNotFoundException: Student with ID 26 was not found.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.GetStudentByIdAsync(Int32 id) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 72
+   at xyz_university_payment_api.Presentation.Controllers.V3.DashboardController.GetStudentStats() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\DashboardControllerV3.cs:line 229
+2025-07-09 10:56:54.802 +03:00 [ERR] Error retrieving student dashboard statistics
+xyz_university_payment_api.Core.Domain.Exceptions.StudentNotFoundException: Student with ID 26 was not found.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.GetStudentByIdAsync(Int32 id) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 72
+   at xyz_university_payment_api.Presentation.Controllers.V3.DashboardController.GetStudentStats() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\DashboardControllerV3.cs:line 229
+2025-07-09 10:56:54.834 +03:00 [ERR] Error retrieving student dashboard statistics
+xyz_university_payment_api.Core.Domain.Exceptions.StudentNotFoundException: Student with ID 26 was not found.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.GetStudentByIdAsync(Int32 id) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 72
+   at xyz_university_payment_api.Presentation.Controllers.V3.DashboardController.GetStudentStats() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\DashboardControllerV3.cs:line 229
+2025-07-09 11:13:12.938 +03:00 [ERR] Error retrieving student dashboard statistics
+xyz_university_payment_api.Core.Domain.Exceptions.StudentNotFoundException: Student with ID 26 was not found.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.GetStudentByIdAsync(Int32 id) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 72
+   at xyz_university_payment_api.Presentation.Controllers.V3.DashboardController.GetStudentStats() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\DashboardControllerV3.cs:line 229
+2025-07-09 11:13:12.984 +03:00 [ERR] Error retrieving student dashboard statistics
+xyz_university_payment_api.Core.Domain.Exceptions.StudentNotFoundException: Student with ID 26 was not found.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.GetStudentByIdAsync(Int32 id) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 72
+   at xyz_university_payment_api.Presentation.Controllers.V3.DashboardController.GetStudentStats() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\DashboardControllerV3.cs:line 229
+2025-07-09 11:13:14.139 +03:00 [ERR] Error retrieving student dashboard statistics
+xyz_university_payment_api.Core.Domain.Exceptions.StudentNotFoundException: Student with ID 26 was not found.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.GetStudentByIdAsync(Int32 id) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 72
+   at xyz_university_payment_api.Presentation.Controllers.V3.DashboardController.GetStudentStats() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\DashboardControllerV3.cs:line 229
+2025-07-09 11:13:14.168 +03:00 [ERR] Error retrieving student dashboard statistics
+xyz_university_payment_api.Core.Domain.Exceptions.StudentNotFoundException: Student with ID 26 was not found.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.GetStudentByIdAsync(Int32 id) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 72
+   at xyz_university_payment_api.Presentation.Controllers.V3.DashboardController.GetStudentStats() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\DashboardControllerV3.cs:line 229
+2025-07-09 11:13:15.298 +03:00 [ERR] Error retrieving student dashboard statistics
+xyz_university_payment_api.Core.Domain.Exceptions.StudentNotFoundException: Student with ID 26 was not found.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.GetStudentByIdAsync(Int32 id) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 72
+   at xyz_university_payment_api.Presentation.Controllers.V3.DashboardController.GetStudentStats() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\DashboardControllerV3.cs:line 229
+2025-07-09 11:13:15.327 +03:00 [ERR] Error retrieving student dashboard statistics
+xyz_university_payment_api.Core.Domain.Exceptions.StudentNotFoundException: Student with ID 26 was not found.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.GetStudentByIdAsync(Int32 id) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 72
+   at xyz_university_payment_api.Presentation.Controllers.V3.DashboardController.GetStudentStats() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\DashboardControllerV3.cs:line 229
+2025-07-09 11:13:17.420 +03:00 [ERR] Error retrieving student dashboard statistics
+xyz_university_payment_api.Core.Domain.Exceptions.StudentNotFoundException: Student with ID 26 was not found.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.GetStudentByIdAsync(Int32 id) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 72
+   at xyz_university_payment_api.Presentation.Controllers.V3.DashboardController.GetStudentStats() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\DashboardControllerV3.cs:line 229
+2025-07-09 11:13:17.450 +03:00 [ERR] Error retrieving student dashboard statistics
+xyz_university_payment_api.Core.Domain.Exceptions.StudentNotFoundException: Student with ID 26 was not found.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.GetStudentByIdAsync(Int32 id) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 72
+   at xyz_university_payment_api.Presentation.Controllers.V3.DashboardController.GetStudentStats() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\DashboardControllerV3.cs:line 229
+2025-07-09 11:13:18.458 +03:00 [ERR] Error retrieving student dashboard statistics
+xyz_university_payment_api.Core.Domain.Exceptions.StudentNotFoundException: Student with ID 26 was not found.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.GetStudentByIdAsync(Int32 id) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 72
+   at xyz_university_payment_api.Presentation.Controllers.V3.DashboardController.GetStudentStats() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\DashboardControllerV3.cs:line 229
+2025-07-09 11:13:18.489 +03:00 [ERR] Error retrieving student dashboard statistics
+xyz_university_payment_api.Core.Domain.Exceptions.StudentNotFoundException: Student with ID 26 was not found.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.GetStudentByIdAsync(Int32 id) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 72
+   at xyz_university_payment_api.Presentation.Controllers.V3.DashboardController.GetStudentStats() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\DashboardControllerV3.cs:line 229
+2025-07-09 11:13:54.444 +03:00 [ERR] Error retrieving student dashboard statistics
+xyz_university_payment_api.Core.Domain.Exceptions.StudentNotFoundException: Student with ID 26 was not found.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.GetStudentByIdAsync(Int32 id) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 72
+   at xyz_university_payment_api.Presentation.Controllers.V3.DashboardController.GetStudentStats() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\DashboardControllerV3.cs:line 229
+2025-07-09 11:13:54.476 +03:00 [ERR] Error retrieving student dashboard statistics
+xyz_university_payment_api.Core.Domain.Exceptions.StudentNotFoundException: Student with ID 26 was not found.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.GetStudentByIdAsync(Int32 id) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 72
+   at xyz_university_payment_api.Presentation.Controllers.V3.DashboardController.GetStudentStats() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\DashboardControllerV3.cs:line 229
+2025-07-09 11:13:55.421 +03:00 [ERR] Error retrieving student dashboard statistics
+xyz_university_payment_api.Core.Domain.Exceptions.StudentNotFoundException: Student with ID 26 was not found.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.GetStudentByIdAsync(Int32 id) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 72
+   at xyz_university_payment_api.Presentation.Controllers.V3.DashboardController.GetStudentStats() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\DashboardControllerV3.cs:line 229
+2025-07-09 11:13:55.463 +03:00 [ERR] Error retrieving student dashboard statistics
+xyz_university_payment_api.Core.Domain.Exceptions.StudentNotFoundException: Student with ID 26 was not found.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.GetStudentByIdAsync(Int32 id) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 72
+   at xyz_university_payment_api.Presentation.Controllers.V3.DashboardController.GetStudentStats() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\DashboardControllerV3.cs:line 229
+2025-07-09 11:17:05.608 +03:00 [ERR] Error retrieving student dashboard statistics
+xyz_university_payment_api.Core.Domain.Exceptions.StudentNotFoundException: Student with ID 26 was not found.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.GetStudentByIdAsync(Int32 id) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 72
+   at xyz_university_payment_api.Presentation.Controllers.V3.DashboardController.GetStudentStats() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\DashboardControllerV3.cs:line 229
+2025-07-09 11:17:05.657 +03:00 [ERR] Error retrieving student dashboard statistics
+xyz_university_payment_api.Core.Domain.Exceptions.StudentNotFoundException: Student with ID 26 was not found.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.GetStudentByIdAsync(Int32 id) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 72
+   at xyz_university_payment_api.Presentation.Controllers.V3.DashboardController.GetStudentStats() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\DashboardControllerV3.cs:line 229
+2025-07-09 11:17:06.567 +03:00 [ERR] Error retrieving student dashboard statistics
+xyz_university_payment_api.Core.Domain.Exceptions.StudentNotFoundException: Student with ID 26 was not found.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.GetStudentByIdAsync(Int32 id) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 72
+   at xyz_university_payment_api.Presentation.Controllers.V3.DashboardController.GetStudentStats() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\DashboardControllerV3.cs:line 229
+2025-07-09 11:17:06.607 +03:00 [ERR] Error retrieving student dashboard statistics
+xyz_university_payment_api.Core.Domain.Exceptions.StudentNotFoundException: Student with ID 26 was not found.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.GetStudentByIdAsync(Int32 id) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 72
+   at xyz_university_payment_api.Presentation.Controllers.V3.DashboardController.GetStudentStats() in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\DashboardControllerV3.cs:line 229
