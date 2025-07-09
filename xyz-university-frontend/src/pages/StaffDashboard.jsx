@@ -3,32 +3,80 @@ import { useAuth } from '../hooks/useAuth';
 import Card from '../components/common/Card';
 import QuickActionButton from '../components/common/QuickActionButton';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import { dashboardService } from '../services/dashboardService';
 
 const StaffDashboard = () => {
   const { user } = useAuth();
   const [stats, setStats] = useState({
-    processedPayments: 0,
-    pendingPayments: 0,
     totalStudents: 0,
-    dailyRevenue: 0
+    totalPayments: 0,
+    totalRevenue: 0,
+    activeStudents: 0,
+    inactiveStudents: 0,
+    recentPayments: [],
+    pendingTasks: []
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Simulate loading stats
-    setTimeout(() => {
-      setStats({
-        processedPayments: 23,
-        pendingPayments: 8,
-        totalStudents: 156,
-        dailyRevenue: 8500
-      });
-      setLoading(false);
-    }, 1000);
+    const fetchStaffStats = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const response = await dashboardService.getStaffStats();
+        
+        if (response.success && response.data) {
+          setStats({
+            totalStudents: response.data.totalStudents || 0,
+            totalPayments: response.data.totalPayments || 0,
+            totalRevenue: response.data.totalRevenue || 0,
+            activeStudents: response.data.activeStudents || 0,
+            inactiveStudents: response.data.inactiveStudents || 0,
+            recentPayments: response.data.recentPayments || [],
+            pendingTasks: response.data.pendingTasks || []
+          });
+        } else {
+          setError(response.message || 'Failed to load dashboard data');
+        }
+      } catch (error) {
+        console.error('Error fetching staff stats:', error);
+        setError('Failed to load dashboard data. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStaffStats();
   }, []);
 
   if (loading) {
     return <LoadingSpinner size="large" text="Loading staff dashboard..." />;
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-amber-50/30 to-orange-50/30 p-6">
+        <Card variant="elevated" className="p-8">
+          <div className="text-center">
+            <div className="text-red-600 mb-4">
+              <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Dashboard</h2>
+            <p className="text-gray-600 mb-4">{error}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="px-6 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        </Card>
+      </div>
+    );
   }
 
   return (
@@ -55,8 +103,8 @@ const StaffDashboard = () => {
               </svg>
             </div>
             <div className="ml-6">
-              <p className="text-sm font-medium text-gray-600 mb-1">Processed Today</p>
-              <p className="text-3xl font-bold text-gray-900">{stats.processedPayments}</p>
+              <p className="text-sm font-medium text-gray-600 mb-1">Total Payments</p>
+              <p className="text-3xl font-bold text-gray-900">{stats.totalPayments}</p>
             </div>
           </div>
         </Card>
@@ -65,12 +113,12 @@ const StaffDashboard = () => {
           <div className="flex items-center">
             <div className="p-4 rounded-2xl bg-gradient-to-br from-yellow-100 to-yellow-200 text-yellow-600 group-hover:scale-110 transition-transform duration-300">
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
               </svg>
             </div>
             <div className="ml-6">
-              <p className="text-sm font-medium text-gray-600 mb-1">Pending Payments</p>
-              <p className="text-3xl font-bold text-gray-900">{stats.pendingPayments}</p>
+              <p className="text-sm font-medium text-gray-600 mb-1">Active Students</p>
+              <p className="text-3xl font-bold text-gray-900">{stats.activeStudents}</p>
             </div>
           </div>
         </Card>
@@ -97,8 +145,8 @@ const StaffDashboard = () => {
               </svg>
             </div>
             <div className="ml-6">
-              <p className="text-sm font-medium text-gray-600 mb-1">Daily Revenue</p>
-              <p className="text-3xl font-bold text-gray-900">${stats.dailyRevenue.toLocaleString()}</p>
+              <p className="text-sm font-medium text-gray-600 mb-1">Total Revenue</p>
+              <p className="text-3xl font-bold text-gray-900">${stats.totalRevenue.toLocaleString()}</p>
             </div>
           </div>
         </Card>

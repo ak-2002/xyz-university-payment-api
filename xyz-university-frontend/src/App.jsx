@@ -7,22 +7,17 @@ import AdminDashboard from './pages/AdminDashboard';
 import ManagerDashboard from './pages/ManagerDashboard';
 import StaffDashboard from './pages/StaffDashboard';
 import StudentDashboard from './pages/StudentDashboard';
+import StudentManagement from './pages/StudentManagement';
+import PaymentManagement from './pages/PaymentManagement';
+import Reports from './pages/Reports';
+import TestAPI from './pages/TestAPI';
 import LoadingSpinner from './components/common/LoadingSpinner';
 
 // Placeholder components for now - we'll create these in the next steps
-const StudentsPage = () => (
-  <div className="bg-white shadow rounded-lg p-6">
-    <h1 className="text-2xl font-bold text-gray-900 mb-4">Students</h1>
-    <p className="text-gray-600">Student management interface coming soon...</p>
-  </div>
-);
-
-const PaymentsPage = () => (
-  <div className="bg-white shadow rounded-lg p-6">
-    <h1 className="text-2xl font-bold text-gray-900 mb-4">Payments</h1>
-    <p className="text-gray-600">Payment management interface coming soon...</p>
-  </div>
-);
+const StudentsPage = () => <StudentManagement />;
+const PaymentsPage = () => <PaymentManagement />;
+const ReportsPage = () => <Reports />;
+const TestAPIPage = () => <TestAPI />;
 
 // Protected route component
 const ProtectedRoute = ({ children }) => {
@@ -94,6 +89,26 @@ const AppContent = () => {
             <ProtectedRoute>
               <Layout>
                 <PaymentsPage />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/reports"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <ReportsPage />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/test-api"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <TestAPIPage />
               </Layout>
             </ProtectedRoute>
           }

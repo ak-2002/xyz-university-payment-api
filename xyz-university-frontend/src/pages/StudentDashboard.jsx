@@ -4,38 +4,84 @@ import Card from '../components/common/Card';
 import QuickActionButton from '../components/common/QuickActionButton';
 import NotificationCard from '../components/common/NotificationCard';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import { dashboardService } from '../services/dashboardService';
 
 const StudentDashboard = () => {
   const { user } = useAuth();
   const [studentData, setStudentData] = useState({
     studentId: '',
+    studentName: '',
+    program: '',
+    isActive: false,
     balance: 0,
     totalPaid: 0,
     nextPaymentDue: null,
-    recentPayments: []
+    recentPayments: [],
+    academicInfo: {}
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Simulate loading student data
-    setTimeout(() => {
-      setStudentData({
-        studentId: 'STU2024001',
-        balance: 2500,
-        totalPaid: 7500,
-        nextPaymentDue: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15 days from now
-        recentPayments: [
-          { id: 1, amount: 1500, date: '2024-01-15', status: 'Completed', description: 'Tuition Fee - Spring 2024' },
-          { id: 2, amount: 500, date: '2024-01-10', status: 'Completed', description: 'Library Fee' },
-          { id: 3, amount: 200, date: '2024-01-05', status: 'Completed', description: 'Lab Fee' }
-        ]
-      });
-      setLoading(false);
-    }, 1000);
+    const fetchStudentStats = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const response = await dashboardService.getStudentStats();
+        
+        if (response.success && response.data) {
+          setStudentData({
+            studentId: response.data.studentId || '',
+            studentName: response.data.studentName || '',
+            program: response.data.program || '',
+            isActive: response.data.isActive || false,
+            balance: response.data.balance || 0,
+            totalPaid: response.data.totalPaid || 0,
+            nextPaymentDue: response.data.nextPaymentDue ? new Date(response.data.nextPaymentDue) : null,
+            recentPayments: response.data.recentPayments || [],
+            academicInfo: response.data.academicInfo || {}
+          });
+        } else {
+          setError(response.message || 'Failed to load student data');
+        }
+      } catch (error) {
+        console.error('Error fetching student stats:', error);
+        setError('Failed to load student data. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStudentStats();
   }, []);
 
   if (loading) {
     return <LoadingSpinner size="large" text="Loading student dashboard..." />;
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 p-6">
+        <Card variant="elevated" className="p-8">
+          <div className="text-center">
+            <div className="text-red-600 mb-4">
+              <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Dashboard</h2>
+            <p className="text-gray-600 mb-4">{error}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        </Card>
+      </div>
+    );
   }
 
   return (
@@ -47,12 +93,17 @@ const StudentDashboard = () => {
             Student Portal
           </h1>
           <p className="text-lg text-gray-600 mb-6">
-            Welcome back, <span className="font-semibold text-gray-800">{user?.name || 'Student'}</span>. Here's your academic and financial overview.
+            Welcome back, <span className="font-semibold text-gray-800">{studentData.studentName || user?.name || 'Student'}</span>. Here's your academic and financial overview.
           </p>
           <div className="inline-block p-4 bg-gradient-to-r from-blue-100 to-purple-100 rounded-2xl border border-blue-200/50">
             <p className="text-sm text-blue-800 font-medium">
               <span className="text-blue-600 font-bold">Student ID:</span> {studentData.studentId}
             </p>
+            {studentData.program && (
+              <p className="text-sm text-blue-800 font-medium mt-1">
+                <span className="text-blue-600 font-bold">Program:</span> {studentData.program}
+              </p>
+            )}
           </div>
         </div>
       </Card>
@@ -162,19 +213,27 @@ const StudentDashboard = () => {
           <div className="space-y-4">
             <div className="flex justify-between items-center p-3 bg-gradient-to-r from-gray-50 to-gray-100/50 rounded-xl">
               <span className="text-gray-600 font-medium">Current Semester:</span>
-              <span className="font-bold text-gray-900">Spring 2024</span>
+              <span className="font-bold text-gray-900">{studentData.academicInfo?.currentSemester || 'Spring 2024'}</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-gradient-to-r from-gray-50 to-gray-100/50 rounded-xl">
               <span className="text-gray-600 font-medium">Program:</span>
-              <span className="font-bold text-gray-900">Computer Science</span>
+              <span className="font-bold text-gray-900">{studentData.program || 'Not specified'}</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-gradient-to-r from-gray-50 to-gray-100/50 rounded-xl">
               <span className="text-gray-600 font-medium">Enrollment Status:</span>
-              <span className="px-3 py-1 bg-gradient-to-r from-green-100 to-green-200 text-green-800 text-sm font-semibold rounded-full">Active</span>
+              <span className={`px-3 py-1 text-sm font-semibold rounded-full ${
+                studentData.isActive 
+                  ? 'bg-gradient-to-r from-green-100 to-green-200 text-green-800' 
+                  : 'bg-gradient-to-r from-red-100 to-red-200 text-red-800'
+              }`}>
+                {studentData.isActive ? 'Active' : 'Inactive'}
+              </span>
             </div>
             <div className="flex justify-between items-center p-3 bg-gradient-to-r from-gray-50 to-gray-100/50 rounded-xl">
               <span className="text-gray-600 font-medium">Academic Standing:</span>
-              <span className="px-3 py-1 bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 text-sm font-semibold rounded-full">Good Standing</span>
+              <span className="px-3 py-1 bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 text-sm font-semibold rounded-full">
+                {studentData.academicInfo?.academicStanding || 'Good Standing'}
+              </span>
             </div>
           </div>
         </Card>

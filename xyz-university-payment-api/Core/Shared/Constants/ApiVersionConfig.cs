@@ -5,8 +5,8 @@ namespace xyz_university_payment_api.Core.Shared.Constants
     /// </summary>
     public class ApiVersionConfig
     {
-        public string DefaultVersion { get; set; } = "2.0";
-        public string[] SupportedVersions { get; set; } = { "1.0", "2.0" };
+        public string DefaultVersion { get; set; } = "3.0";
+        public string[] SupportedVersions { get; set; } = { "1.0", "2.0", "3.0" };
         public string[] DeprecatedVersions { get; set; } = { "1.0" };
         public bool EnableVersioning { get; set; } = true;
         public bool ShowDeprecationWarnings { get; set; } = true;

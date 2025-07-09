@@ -13,10 +13,23 @@ export const studentService = {
         params.append('searchTerm', searchTerm);
       }
 
-      const response = await api.get(`/api/v3/students?${params}`);
-      return response.data;
+      console.log('Fetching students with params:', params.toString());
+      const response = await api.get(`/api/v3/StudentControllerV?${params}`);
+      console.log('Students API response:', response.data);
+      
+      // Handle the wrapped API response structure for students
+      if (response.data && response.data.success && response.data.data) {
+        // Students API returns: ApiResponse<PaginatedResponseDto<StudentDtoV3>>
+        // The actual data is in response.data.data.data
+        const result = response.data.data.data || [];
+        console.log('Processed students data:', result);
+        return result;
+      }
+      console.log('Returning raw response data:', response.data);
+      return response.data || [];
     } catch (error) {
       console.error('Error fetching students:', error);
+      console.error('Error response:', error.response?.data);
       throw error;
     }
   },
@@ -24,7 +37,7 @@ export const studentService = {
   // Get student by ID
   async getStudentById(id) {
     try {
-      const response = await api.get(`/api/v3/students/${id}`);
+      const response = await api.get(`/api/v3/StudentControllerV/${id}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching student:', error);
@@ -35,7 +48,7 @@ export const studentService = {
   // Get student by student number
   async getStudentByNumber(studentNumber) {
     try {
-      const response = await api.get(`/api/v3/students/number/${studentNumber}`);
+      const response = await api.get(`/api/v3/StudentControllerV/number/${studentNumber}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching student by number:', error);
@@ -46,7 +59,7 @@ export const studentService = {
   // Create new student
   async createStudent(studentData) {
     try {
-      const response = await api.post('/api/v3/students', studentData);
+      const response = await api.post('/api/v3/StudentControllerV', studentData);
       return response.data;
     } catch (error) {
       console.error('Error creating student:', error);
@@ -57,7 +70,7 @@ export const studentService = {
   // Update student
   async updateStudent(id, studentData) {
     try {
-      const response = await api.put(`/api/v3/students/${id}`, studentData);
+      const response = await api.put(`/api/v3/StudentControllerV/${id}`, studentData);
       return response.data;
     } catch (error) {
       console.error('Error updating student:', error);
@@ -68,7 +81,7 @@ export const studentService = {
   // Delete student
   async deleteStudent(id) {
     try {
-      const response = await api.delete(`/api/v3/students/${id}`);
+      const response = await api.delete(`/api/v3/StudentControllerV/${id}`);
       return response.data;
     } catch (error) {
       console.error('Error deleting student:', error);
@@ -84,7 +97,7 @@ export const studentService = {
         pageSize: pageSize.toString(),
       });
 
-      const response = await api.get(`/api/v3/students/active?${params}`);
+      const response = await api.get(`/api/v3/StudentControllerV/active?${params}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching active students:', error);
@@ -100,7 +113,7 @@ export const studentService = {
         pageSize: pageSize.toString(),
       });
 
-      const response = await api.get(`/api/v3/students/program/${program}?${params}`);
+      const response = await api.get(`/api/v3/StudentControllerV/program/${program}?${params}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching students by program:', error);
@@ -117,7 +130,7 @@ export const studentService = {
         pageSize: pageSize.toString(),
       });
 
-      const response = await api.get(`/api/v3/students/search?${params}`);
+      const response = await api.get(`/api/v3/StudentControllerV/search?${params}`);
       return response.data;
     } catch (error) {
       console.error('Error searching students:', error);
@@ -128,7 +141,7 @@ export const studentService = {
   // Update student status
   async updateStudentStatus(id, isActive) {
     try {
-      const response = await api.put(`/api/v3/students/${id}/status`, { isActive });
+      const response = await api.put(`/api/v3/StudentControllerV/${id}/status`, { isActive });
       return response.data;
     } catch (error) {
       console.error('Error updating student status:', error);
@@ -139,7 +152,7 @@ export const studentService = {
   // Validate student data
   async validateStudent(studentData) {
     try {
-      const response = await api.post('/api/v3/students/validate', studentData);
+      const response = await api.post('/api/v3/StudentControllerV/validate', studentData);
       return response.data;
     } catch (error) {
       console.error('Error validating student:', error);

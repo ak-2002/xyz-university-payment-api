@@ -154,6 +154,23 @@ namespace xyz_university_payment_api.Core.Application.Services
                     },
                     BreakingChanges = Array.Empty<string>(),
                     DocumentationUrl = "https://api.xyz-university.com/docs/v2"
+                },
+                ["3.0"] = new ApiVersionInfo
+                {
+                    Version = "3.0",
+                    Status = "Current",
+                    Features = new[] {
+                        "Real-time Processing",
+                        "AI-powered Validation",
+                        "Advanced Analytics",
+                        "Webhook Integration",
+                        "GraphQL Compatibility",
+                        "Microservices Architecture",
+                        "Predictive Insights",
+                        "Enhanced Bulk Operations"
+                    },
+                    BreakingChanges = Array.Empty<string>(),
+                    DocumentationUrl = "https://api.xyz-university.com/docs/v3"
                 }
             };
         }

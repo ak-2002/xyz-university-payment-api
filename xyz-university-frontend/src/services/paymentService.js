@@ -13,10 +13,23 @@ export const paymentService = {
         params.append('searchTerm', searchTerm);
       }
 
-      const response = await api.get(`/api/v3/payments?${params}`);
-      return response.data;
+      console.log('Fetching payments with params:', params.toString());
+      const response = await api.get(`/api/v3/Payment?${params}`);
+      console.log('Payments API response:', response.data);
+      
+      // Handle the wrapped API response structure for payments
+      if (response.data && response.data.success && response.data.data) {
+        // Payments API returns: ApiResponse<PagedResultDto<PaymentDto>>
+        // The actual data is in response.data.data.items
+        const result = response.data.data.items || [];
+        console.log('Processed payments data:', result);
+        return result;
+      }
+      console.log('Returning raw response data:', response.data);
+      return response.data || [];
     } catch (error) {
       console.error('Error fetching payments:', error);
+      console.error('Error response:', error.response?.data);
       throw error;
     }
   },
@@ -24,7 +37,7 @@ export const paymentService = {
   // Get payment by ID
   async getPaymentById(id) {
     try {
-      const response = await api.get(`/api/v3/payments/${id}`);
+      const response = await api.get(`/api/v3/Payment/${id}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching payment:', error);
@@ -35,7 +48,7 @@ export const paymentService = {
   // Create new payment notification
   async createPayment(paymentData) {
     try {
-      const response = await api.post('/api/v3/payments', paymentData);
+      const response = await api.post('/api/v3/Payment', paymentData);
       return response.data;
     } catch (error) {
       console.error('Error creating payment:', error);
@@ -51,7 +64,7 @@ export const paymentService = {
         pageSize: pageSize.toString(),
       });
 
-      const response = await api.get(`/api/v3/payments/student/${studentNumber}?${params}`);
+      const response = await api.get(`/api/v3/Payment/student/${studentNumber}?${params}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching payments by student:', error);
@@ -62,7 +75,7 @@ export const paymentService = {
   // Get payment summary by student
   async getPaymentSummaryByStudent(studentNumber) {
     try {
-      const response = await api.get(`/api/v3/payments/student/${studentNumber}/summary`);
+      const response = await api.get(`/api/v3/Payment/student/${studentNumber}/summary`);
       return response.data;
     } catch (error) {
       console.error('Error fetching payment summary:', error);
@@ -73,7 +86,7 @@ export const paymentService = {
   // Get payment statistics
   async getPaymentStatistics() {
     try {
-      const response = await api.get('/api/v3/payments/statistics');
+      const response = await api.get('/api/v3/Payment/statistics');
       return response.data;
     } catch (error) {
       console.error('Error fetching payment statistics:', error);
@@ -91,7 +104,7 @@ export const paymentService = {
         pageSize: pageSize.toString(),
       });
 
-      const response = await api.get(`/api/v3/payments/date-range?${params}`);
+      const response = await api.get(`/api/v3/Payment/date-range?${params}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching payments by date range:', error);
@@ -102,7 +115,7 @@ export const paymentService = {
   // Validate payment data
   async validatePayment(paymentData) {
     try {
-      const response = await api.post('/api/v3/payments/validate', paymentData);
+      const response = await api.post('/api/v3/Payment/validate', paymentData);
       return response.data;
     } catch (error) {
       console.error('Error validating payment:', error);
@@ -113,7 +126,7 @@ export const paymentService = {
   // Process payment notification (from Family Bank)
   async processPaymentNotification(notificationData) {
     try {
-      const response = await api.post('/api/v3/payments/notify', notificationData);
+      const response = await api.post('/api/v3/Payment/notify', notificationData);
       return response.data;
     } catch (error) {
       console.error('Error processing payment notification:', error);

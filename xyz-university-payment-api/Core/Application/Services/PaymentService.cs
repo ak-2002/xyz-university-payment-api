@@ -4,6 +4,8 @@ using xyz_university_payment_api.Core.Application.Interfaces;
 using xyz_university_payment_api.Core.Domain.Entities;
 using xyz_university_payment_api.Core.Domain.Exceptions;
 using PaymentNotification = xyz_university_payment_api.Core.Domain.Entities.PaymentNotification;
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
 namespace xyz_university_payment_api.Core.Application.Services
 {
@@ -17,13 +19,15 @@ namespace xyz_university_payment_api.Core.Application.Services
         private readonly ILogger<PaymentService> _logger;
         private readonly IMessagePublisher _messagePublisher;
         private readonly ICacheService _cacheService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public PaymentService(IUnitOfWork unitOfWork, ILogger<PaymentService> logger, IMessagePublisher messagePublisher, ICacheService cacheService)
+        public PaymentService(IUnitOfWork unitOfWork, ILogger<PaymentService> logger, IMessagePublisher messagePublisher, ICacheService cacheService, IHttpContextAccessor httpContextAccessor)
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
             _messagePublisher = messagePublisher;
             _cacheService = cacheService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<PaymentProcessingResult> ProcessPaymentAsync(PaymentNotification payment)
@@ -144,7 +148,50 @@ namespace xyz_university_payment_api.Core.Application.Services
             try
             {
                 _logger.LogInformation("Retrieving all payments");
-                return await _unitOfWork.Payments.GetAllAsync();
+
+                // Apply role-based filtering
+                var currentUserRole = GetCurrentUserRole();
+                var currentUserId = GetCurrentUserId();
+
+                _logger.LogInformation("Current user role: {Role}, User ID: {UserId}", currentUserRole, currentUserId);
+
+                // Apply role-based data access rules
+                switch (currentUserRole)
+                {
+                    case "Admin":
+                        // Admin can see all payments
+                        return await _unitOfWork.Payments.GetAllAsync();
+                    case "Manager":
+                        // Manager can see all payments
+                        return await _unitOfWork.Payments.GetAllAsync();
+                    case "Staff":
+                        // Staff can see all payments
+                        return await _unitOfWork.Payments.GetAllAsync();
+                    case "Student":
+                        // Student can only see their own payments
+                        if (currentUserId.HasValue)
+                        {
+                            // Get the student's student number first
+                            var student = await _unitOfWork.Students.GetByIdAsync(currentUserId.Value);
+                            if (student != null)
+                            {
+                                return await _unitOfWork.Payments.FindAsync(p => p.StudentNumber == student.StudentNumber);
+                            }
+                        }
+                        // If we can't determine the student number, return empty result
+                        return new List<PaymentNotification>();
+                    default:
+                        // Default to student access
+                        if (currentUserId.HasValue)
+                        {
+                            var student = await _unitOfWork.Students.GetByIdAsync(currentUserId.Value);
+                            if (student != null)
+                            {
+                                return await _unitOfWork.Payments.FindAsync(p => p.StudentNumber == student.StudentNumber);
+                            }
+                        }
+                        return new List<PaymentNotification>();
+                }
             }
             catch (Exception ex)
             {
@@ -539,6 +586,50 @@ namespace xyz_university_payment_api.Core.Application.Services
             {
                 _logger.LogError(ex, "Error invalidating caches for student: {StudentNumber}", studentNumber);
                 // Don't throw exception for cache invalidation failures
+            }
+        }
+
+        private string GetCurrentUserRole()
+        {
+            try
+            {
+                var user = _httpContextAccessor.HttpContext?.User;
+                if (user?.Identity?.IsAuthenticated == true)
+                {
+                    // Check for role claims in order of priority
+                    if (user.IsInRole("Admin")) return "Admin";
+                    if (user.IsInRole("Manager")) return "Manager";
+                    if (user.IsInRole("Staff")) return "Staff";
+                    if (user.IsInRole("Student")) return "Student";
+                }
+                return "Student"; // Default to student role
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting current user role");
+                return "Student"; // Default to student role on error
+            }
+        }
+
+        private int? GetCurrentUserId()
+        {
+            try
+            {
+                var user = _httpContextAccessor.HttpContext?.User;
+                if (user?.Identity?.IsAuthenticated == true)
+                {
+                    var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                    if (int.TryParse(userIdClaim, out int userId))
+                    {
+                        return userId;
+                    }
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting current user ID");
+                return null;
             }
         }
     }

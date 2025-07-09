@@ -1067,6 +1067,9 @@ namespace xyz_university_payment_api.Core.Application.Services
                     new Permission { Name = "Update Students", Description = "Can update student records", Resource = "Students", Action = "Update", IsActive = true, CreatedAt = DateTime.UtcNow },
                     new Permission { Name = "Delete Students", Description = "Can delete student records", Resource = "Students", Action = "Delete", IsActive = true, CreatedAt = DateTime.UtcNow },
                     
+                    // Dashboard permissions
+                    new Permission { Name = "View Dashboard", Description = "Can view dashboard statistics", Resource = "Dashboard", Action = "Read", IsActive = true, CreatedAt = DateTime.UtcNow },
+                    
                     // User management permissions
                     new Permission { Name = "View Users", Description = "Can view user records", Resource = "Users", Action = "Read", IsActive = true, CreatedAt = DateTime.UtcNow },
                     new Permission { Name = "Create Users", Description = "Can create new users", Resource = "Users", Action = "Create", IsActive = true, CreatedAt = DateTime.UtcNow },
@@ -1134,11 +1137,12 @@ namespace xyz_university_payment_api.Core.Application.Services
                     AssignedBy = "System"
                 }).ToList();
 
-                // Staff gets read permissions for payments and students
+                // Staff gets read permissions for payments, students, and dashboard
                 var staffPermissions = permissions.Where(p =>
-                    (p.Resource.Equals("Payments", StringComparison.OrdinalIgnoreCase) ||
-                     p.Resource.Equals("Students", StringComparison.OrdinalIgnoreCase)) &&
-                    p.Action.Equals("Read", StringComparison.OrdinalIgnoreCase)).ToList();
+                    ((p.Resource.Equals("Payments", StringComparison.OrdinalIgnoreCase) ||
+                      p.Resource.Equals("Students", StringComparison.OrdinalIgnoreCase) ||
+                      p.Resource.Equals("Dashboard", StringComparison.OrdinalIgnoreCase)) &&
+                     p.Action.Equals("Read", StringComparison.OrdinalIgnoreCase))).ToList();
                 var staffRolePermissions = staffPermissions.Select(p => new RolePermission
                 {
                     RoleId = staffRole.Id,
@@ -1147,10 +1151,12 @@ namespace xyz_university_payment_api.Core.Application.Services
                     AssignedBy = "System"
                 }).ToList();
 
-                // Student gets read permissions for their own data only
+                // Student gets read permissions for their own data and dashboard
                 var studentPermissions = permissions.Where(p =>
-                    p.Resource.Equals("Students", StringComparison.OrdinalIgnoreCase) &&
-                    p.Action.Equals("Read", StringComparison.OrdinalIgnoreCase)).ToList();
+                    (p.Resource.Equals("Students", StringComparison.OrdinalIgnoreCase) &&
+                     p.Action.Equals("Read", StringComparison.OrdinalIgnoreCase)) ||
+                    (p.Resource.Equals("Dashboard", StringComparison.OrdinalIgnoreCase) &&
+                     p.Action.Equals("Read", StringComparison.OrdinalIgnoreCase))).ToList();
                 var studentRolePermissions = studentPermissions.Select(p => new RolePermission
                 {
                     RoleId = studentRole.Id,
