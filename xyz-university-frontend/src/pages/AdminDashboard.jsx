@@ -3,6 +3,7 @@ import { useAuth } from '../hooks/useAuth';
 import Card from '../components/common/Card';
 import QuickActionButton from '../components/common/QuickActionButton';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import { dashboardService } from '../services/dashboardService';
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -10,25 +11,74 @@ const AdminDashboard = () => {
     totalUsers: 0,
     totalStudents: 0,
     totalPayments: 0,
-    totalRevenue: 0
+    totalRevenue: 0,
+    activeStudents: 0,
+    inactiveStudents: 0,
+    recentPayments: [],
+    paymentTrends: {}
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Simulate loading stats
-    setTimeout(() => {
-      setStats({
-        totalUsers: 156,
-        totalStudents: 142,
-        totalPayments: 89,
-        totalRevenue: 125000
-      });
-      setLoading(false);
-    }, 1000);
+    const fetchAdminStats = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const response = await dashboardService.getAdminStats();
+        
+        if (response.success && response.data) {
+          setStats({
+            totalUsers: response.data.totalUsers || 0,
+            totalStudents: response.data.totalStudents || 0,
+            totalPayments: response.data.totalPayments || 0,
+            totalRevenue: response.data.totalRevenue || 0,
+            activeStudents: response.data.activeStudents || 0,
+            inactiveStudents: response.data.inactiveStudents || 0,
+            recentPayments: response.data.recentPayments || [],
+            paymentTrends: response.data.paymentTrends || {}
+          });
+        } else {
+          setError(response.message || 'Failed to load dashboard data');
+        }
+      } catch (error) {
+        console.error('Error fetching admin stats:', error);
+        setError('Failed to load dashboard data. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAdminStats();
   }, []);
 
   if (loading) {
     return <LoadingSpinner size="large" text="Loading admin dashboard..." />;
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-indigo-50/30 to-purple-50/30 p-6">
+        <Card variant="elevated" className="p-8">
+          <div className="text-center">
+            <div className="text-red-600 mb-4">
+              <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Dashboard</h2>
+            <p className="text-gray-600 mb-4">{error}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        </Card>
+      </div>
+    );
   }
 
   return (

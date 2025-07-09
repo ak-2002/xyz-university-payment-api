@@ -41,6 +41,18 @@ const Navbar = () => {
                 >
                   Payments
                 </Link>
+                <Link
+                  to="/reports"
+                  className="text-gray-900 hover:text-gray-500 px-3 py-2 rounded-md text-sm font-medium"
+                >
+                  Reports
+                </Link>
+                <Link
+                  to="/test-api"
+                  className="text-gray-900 hover:text-gray-500 px-3 py-2 rounded-md text-sm font-medium"
+                >
+                  Test API
+                </Link>
               </div>
             )}
           </div>
@@ -121,6 +133,20 @@ const Navbar = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Payments
+              </Link>
+              <Link
+                to="/reports"
+                className="text-gray-900 hover:text-gray-500 block px-3 py-2 rounded-md text-base font-medium"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Reports
+              </Link>
+              <Link
+                to="/test-api"
+                className="text-gray-900 hover:text-gray-500 block px-3 py-2 rounded-md text-base font-medium"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Test API
               </Link>
               <button
                 onClick={() => {

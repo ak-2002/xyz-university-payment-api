@@ -10,6 +10,8 @@ using System.Linq;
 using System.Collections.Generic;
 using static System.Math;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
 namespace xyz_university_payment_api.Core.Application.Services
 {
@@ -22,12 +24,14 @@ namespace xyz_university_payment_api.Core.Application.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<StudentService> _logger;
         private readonly ICacheService _cacheService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public StudentService(IUnitOfWork unitOfWork, ILogger<StudentService> logger, ICacheService cacheService)
+        public StudentService(IUnitOfWork unitOfWork, ILogger<StudentService> logger, ICacheService cacheService, IHttpContextAccessor httpContextAccessor)
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
             _cacheService = cacheService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<IEnumerable<Student>> GetAllStudentsAsync()
@@ -436,6 +440,50 @@ namespace xyz_university_payment_api.Core.Application.Services
             }
         }
 
+        private string GetCurrentUserRole()
+        {
+            try
+            {
+                var user = _httpContextAccessor.HttpContext?.User;
+                if (user?.Identity?.IsAuthenticated == true)
+                {
+                    // Check for role claims in order of priority
+                    if (user.IsInRole("Admin")) return "Admin";
+                    if (user.IsInRole("Manager")) return "Manager";
+                    if (user.IsInRole("Staff")) return "Staff";
+                    if (user.IsInRole("Student")) return "Student";
+                }
+                return "Student"; // Default to student role
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting current user role");
+                return "Student"; // Default to student role on error
+            }
+        }
+
+        private int? GetCurrentUserId()
+        {
+            try
+            {
+                var user = _httpContextAccessor.HttpContext?.User;
+                if (user?.Identity?.IsAuthenticated == true)
+                {
+                    var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                    if (int.TryParse(userIdClaim, out int userId))
+                    {
+                        return userId;
+                    }
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting current user ID");
+                return null;
+            }
+        }
+
         // V3 Methods Implementation
         public async Task<ApiResponse<PaginatedResponseDto<StudentDtoV3>>> GetStudentsV3Async(
             StudentFilterDtoV3 filter, int page, int pageSize, string sortBy, string sortOrder, bool includeAnalytics)
@@ -445,6 +493,57 @@ namespace xyz_university_payment_api.Core.Application.Services
                 _logger.LogInformation("Retrieving students V3 with filter: {@Filter}", filter);
 
                 var query = _unitOfWork.Students.Query();
+
+                // Apply role-based filtering
+                var currentUserRole = GetCurrentUserRole();
+                var currentUserId = GetCurrentUserId();
+
+                _logger.LogInformation("Current user role: {Role}, User ID: {UserId}", currentUserRole, currentUserId);
+
+                // Apply role-based data access rules
+                switch (currentUserRole)
+                {
+                    case "Admin":
+                        // Admin can see all students
+                        break;
+                    case "Manager":
+                        // Manager can see all students
+                        break;
+                    case "Staff":
+                        // Staff can see all students
+                        break;
+                    case "Student":
+                        // Student can only see their own data
+                        if (currentUserId.HasValue)
+                        {
+                            query = query.Where(s => s.Id == currentUserId.Value);
+                        }
+                        else
+                        {
+                            // If we can't determine the user ID, return empty result
+                            return new ApiResponse<PaginatedResponseDto<StudentDtoV3>>
+                            {
+                                Success = true,
+                                Data = new PaginatedResponseDto<StudentDtoV3>
+                                {
+                                    Data = new List<StudentDtoV3>(),
+                                    PageNumber = page,
+                                    PageSize = pageSize,
+                                    TotalCount = 0,
+                                    TotalPages = 0
+                                },
+                                Message = "No students found for current user"
+                            };
+                        }
+                        break;
+                    default:
+                        // Default to student access
+                        if (currentUserId.HasValue)
+                        {
+                            query = query.Where(s => s.Id == currentUserId.Value);
+                        }
+                        break;
+                }
 
                 // Apply filters
                 if (!string.IsNullOrEmpty(filter.StudentNumber))
