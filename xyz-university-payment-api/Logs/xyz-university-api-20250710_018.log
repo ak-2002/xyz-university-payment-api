@@ -1,0 +1,124 @@
+2025-07-10 11:52:40.506 +03:00 [INF] Ensuring database is created
+2025-07-10 11:52:41.051 +03:00 [INF] Database created successfully
+2025-07-10 11:52:41.054 +03:00 [INF] Seeding default roles and permissions
+2025-07-10 11:52:41.346 +03:00 [INF] Valid data already seeded, skipping seeding process
+2025-07-10 11:52:41.368 +03:00 [INF] Default roles and permissions seeded successfully
+2025-07-10 11:52:41.526 +03:00 [INF] XYZ University Payment API started successfully
+2025-07-10 11:52:41.641 +03:00 [INF] Configured endpoint PaymentProcessedMessage, Consumer: xyz_university_payment_api.Core.Application.Services.PaymentProcessedMessageConsumer
+2025-07-10 11:52:41.651 +03:00 [INF] Configured endpoint PaymentFailedMessage, Consumer: xyz_university_payment_api.Core.Application.Services.PaymentFailedMessageConsumer
+2025-07-10 11:52:41.658 +03:00 [INF] Configured endpoint PaymentValidationMessage, Consumer: xyz_university_payment_api.Core.Application.Services.PaymentValidationMessageConsumer
+2025-07-10 11:52:41.963 +03:00 [INF] Bus started: "rabbitmq://localhost/"
+2025-07-10 11:52:54.729 +03:00 [INF] Retrieving students V3 with filter: {"StudentNumber":null,"FullName":null,"Program":null,"IsActive":null,"CreatedFrom":null,"CreatedTo":null,"Tags":null,"MinTotalPayments":null,"MaxTotalPayments":null,"SearchTerm":null,"Metadata":null,"$type":"StudentFilterDtoV3"}
+2025-07-10 11:52:54.779 +03:00 [INF] Current user role: Admin, User ID: 1
+2025-07-10 11:52:54.947 +03:00 [INF] Retrieving students V3 with filter: {"StudentNumber":null,"FullName":null,"Program":null,"IsActive":null,"CreatedFrom":null,"CreatedTo":null,"Tags":null,"MinTotalPayments":null,"MaxTotalPayments":null,"SearchTerm":null,"Metadata":null,"$type":"StudentFilterDtoV3"}
+2025-07-10 11:52:55.017 +03:00 [INF] Current user role: Admin, User ID: 1
+2025-07-10 11:53:00.877 +03:00 [INF] GetUsers endpoint called by user: admin
+2025-07-10 11:53:00.878 +03:00 [INF] GetUsers endpoint called by user: admin
+2025-07-10 11:53:00.972 +03:00 [INF] Total users in database: 6
+2025-07-10 11:53:00.983 +03:00 [INF] Total users in database: 6
+2025-07-10 11:53:01.119 +03:00 [INF] Returning 6 users
+2025-07-10 11:53:01.119 +03:00 [INF] Returning 6 users
+2025-07-10 11:53:09.979 +03:00 [INF] Retrieving students V3 with filter: {"StudentNumber":null,"FullName":null,"Program":null,"IsActive":null,"CreatedFrom":null,"CreatedTo":null,"Tags":null,"MinTotalPayments":null,"MaxTotalPayments":null,"SearchTerm":null,"Metadata":null,"$type":"StudentFilterDtoV3"}
+2025-07-10 11:53:10.005 +03:00 [INF] Current user role: Admin, User ID: 1
+2025-07-10 11:53:28.496 +03:00 [INF] Creating user with username: S12345, email: S12345@xyz.edu, defaultRole: Student
+2025-07-10 11:53:28.593 +03:00 [INF] User created with ID: 44
+2025-07-10 11:53:28.600 +03:00 [INF] Looking for role: Student
+2025-07-10 11:53:28.609 +03:00 [INF] Available roles in database: Admin, Manager, Staff, Student
+2025-07-10 11:53:28.619 +03:00 [INF] Found role Student with ID 4
+2025-07-10 11:53:28.678 +03:00 [INF] Role Student assigned to user 44
+2025-07-10 11:53:28.697 +03:00 [INF] Creating user for existing student 1 - John Doe
+2025-07-10 11:53:28.708 +03:00 [WRN] User already exists for student S12345
+2025-07-10 11:53:37.664 +03:00 [INF] Creating user with username: S12345, email: S12345@xyz.edu, defaultRole: Student
+2025-07-10 11:53:37.674 +03:00 [WRN] Username S12345 already exists
+2025-07-10 11:54:53.916 +03:00 [INF] Creating user with username: S66002, email: S66002@xyz.edu, defaultRole: Student
+2025-07-10 11:54:53.936 +03:00 [INF] User created with ID: 46
+2025-07-10 11:54:53.941 +03:00 [INF] Looking for role: Student
+2025-07-10 11:54:53.947 +03:00 [INF] Available roles in database: Admin, Manager, Staff, Student, 
+2025-07-10 11:54:53.953 +03:00 [INF] Found role Student with ID 4
+2025-07-10 11:54:53.986 +03:00 [ERR] An exception occurred in the database while saving changes for context type 'xyz_university_payment_api.Infrastructure.Data.AppDbContext'.
+Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
+ ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Cannot insert duplicate key row in object 'dbo.Roles' with unique index 'IX_Roles_Name'. The duplicate key value is ().
+   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryReadInternal(Boolean setTimeout, Boolean& more)
+   at Microsoft.Data.SqlClient.SqlDataReader.ReadAsyncExecute(Task task, Object state)
+   at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeResultSetAsync(Int32 startCommandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
+ClientConnectionId:f6af4d95-f7f4-490b-bd91-2e4e366b5cfe
+Error Number:2601,State:1,Class:14
+   --- End of inner exception stack trace ---
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeResultSetAsync(Int32 startCommandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
+ ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Cannot insert duplicate key row in object 'dbo.Roles' with unique index 'IX_Roles_Name'. The duplicate key value is ().
+   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryReadInternal(Boolean setTimeout, Boolean& more)
+   at Microsoft.Data.SqlClient.SqlDataReader.ReadAsyncExecute(Task task, Object state)
+   at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeResultSetAsync(Int32 startCommandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
+ClientConnectionId:f6af4d95-f7f4-490b-bd91-2e4e366b5cfe
+Error Number:2601,State:1,Class:14
+   --- End of inner exception stack trace ---
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeResultSetAsync(Int32 startCommandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+2025-07-10 11:54:54.016 +03:00 [ERR] Error creating user
+Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
+ ---> Microsoft.Data.SqlClient.SqlException (0x80131904): Cannot insert duplicate key row in object 'dbo.Roles' with unique index 'IX_Roles_Name'. The duplicate key value is ().
+   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryReadInternal(Boolean setTimeout, Boolean& more)
+   at Microsoft.Data.SqlClient.SqlDataReader.ReadAsyncExecute(Task task, Object state)
+   at Microsoft.Data.SqlClient.SqlDataReader.InvokeAsyncCall[T](SqlDataReaderBaseAsyncCallContext`1 context)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeResultSetAsync(Int32 startCommandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
+ClientConnectionId:f6af4d95-f7f4-490b-bd91-2e4e366b5cfe
+Error Number:2601,State:1,Class:14
+   --- End of inner exception stack trace ---
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeResultSetAsync(Int32 startCommandIndex, RelationalDataReader reader, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.ConsumeAsync(RelationalDataReader reader, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at xyz_university_payment_api.Presentation.Controllers.V3.UserControllerV3.CreateUser(CreateUserDto createUserDto) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\UserControllerV3.cs:line 163
+2025-07-10 11:57:25.691 +03:00 [INF] Bus stopped: "rabbitmq://localhost/"
+2025-07-10 11:57:38.739 +03:00 [INF] Starting XYZ University Payment API {"MachineName":"DESKTOP-F3AMJ10","ThreadId":1,"ProcessId":7184,"Application":"XYZ University Payment API"}

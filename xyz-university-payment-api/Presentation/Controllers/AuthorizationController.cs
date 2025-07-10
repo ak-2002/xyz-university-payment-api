@@ -2074,5 +2074,149 @@ namespace xyz_university_payment_api.Presentation.Controllers
                 });
             }
         }
+
+        /// <summary>
+        /// Assign Student role to alex.student user (for testing)
+        /// </summary>
+        [HttpPost("assign-student-role")]
+        [AllowAnonymous]
+        public async Task<IActionResult> AssignStudentRole()
+        {
+            try
+            {
+                // Find the alex.student user
+                var user = await _authorizationService.GetUserByUsernameAsync("alex.student");
+                if (user == null)
+                {
+                    return BadRequest(new ApiResponse<object>
+                    {
+                        Success = false,
+                        Message = "User 'alex.student' not found",
+                        Data = null
+                    });
+                }
+
+                // Get the Student role
+                var studentRole = await _authorizationService.GetRoleByNameAsync("Student");
+                if (studentRole == null)
+                {
+                    return BadRequest(new ApiResponse<object>
+                    {
+                        Success = false,
+                        Message = "Student role not found",
+                        Data = null
+                    });
+                }
+
+                // Check if user already has the role
+                var existingRoles = await _authorizationService.GetUserRolesAsync(user.Id);
+                if (existingRoles.Any(r => r.Name == "Student"))
+                {
+                    return Ok(new ApiResponse<object>
+                    {
+                        Success = true,
+                        Message = "User already has Student role",
+                        Data = new { UserId = user.Id, Username = user.Username, Role = "Student" }
+                    });
+                }
+
+                // Assign the role
+                await _authorizationService.AssignRolesToUserAsync(new AssignRolesToUserDto
+                {
+                    UserId = user.Id,
+                    RoleIds = new List<int> { studentRole.Id }
+                });
+
+                return Ok(new ApiResponse<object>
+                {
+                    Success = true,
+                    Message = "Student role assigned successfully",
+                    Data = new { UserId = user.Id, Username = user.Username, Role = "Student" }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error assigning student role");
+                return BadRequest(new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = $"Failed to assign student role: {ex.Message}",
+                    Data = null
+                });
+            }
+        }
+
+        [HttpGet("debug/user/{username}/roles")]
+        [AllowAnonymous] // Temporary for debugging
+        public async Task<IActionResult> DebugUserRoles(string username)
+        {
+            try
+            {
+                var user = await _authorizationService.GetUserByUsernameAsync(username);
+                if (user == null)
+                {
+                    return NotFound($"User '{username}' not found");
+                }
+
+                var roles = await _authorizationService.GetUserRolesAsync(user.Id);
+                var permissions = await _authorizationService.GetUserPermissionsAsync(username);
+
+                var result = new
+                {
+                    User = new
+                    {
+                        user.Id,
+                        user.Username,
+                        user.Email,
+                        user.IsActive,
+                        user.CreatedAt,
+                        user.LastLoginAt
+                    },
+                    Roles = roles.Select(r => new { r.Id, r.Name, r.Description, r.IsActive }),
+                    Permissions = permissions,
+                    RoleCount = roles.Count(),
+                    PermissionCount = permissions.Count()
+                };
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting debug info for user {Username}", username);
+                return StatusCode(500, new { error = "Internal server error", details = ex.Message });
+            }
+        }
+
+        [HttpGet("debug/users")]
+        [AllowAnonymous] // Temporary for debugging
+        public async Task<IActionResult> DebugAllUsers()
+        {
+            try
+            {
+                var users = await _authorizationService.GetAllUsersAsync();
+                
+                var result = users.Select(u => new
+                {
+                    u.Id,
+                    u.Username,
+                    u.Email,
+                    u.IsActive,
+                    u.CreatedAt,
+                    u.LastLoginAt,
+                    Roles = u.Roles.Select(r => r.Name).ToList(),
+                    RoleCount = u.Roles.Count
+                });
+
+                return Ok(new { 
+                    TotalUsers = users.Count(),
+                    Users = result 
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting all users");
+                return StatusCode(500, new { error = "Internal server error", details = ex.Message });
+            }
+        }
     }
 }

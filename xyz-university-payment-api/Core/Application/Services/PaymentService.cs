@@ -3,7 +3,10 @@
 using xyz_university_payment_api.Core.Application.Interfaces;
 using xyz_university_payment_api.Core.Domain.Entities;
 using xyz_university_payment_api.Core.Domain.Exceptions;
-using PaymentNotification = xyz_university_payment_api.Core.Domain.Entities.PaymentNotification;
+using xyz_university_payment_api.Core.Application.DTOs;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Caching.Distributed;
+using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 
@@ -149,11 +152,15 @@ namespace xyz_university_payment_api.Core.Application.Services
             {
                 _logger.LogInformation("Retrieving all payments");
 
-                // Apply role-based filtering
-                var currentUserRole = GetCurrentUserRole();
-                var currentUserId = GetCurrentUserId();
+                // Get current user context for role-based filtering
+                var currentUserRole = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Role)?.Value;
+                var currentUserId = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-                _logger.LogInformation("Current user role: {Role}, User ID: {UserId}", currentUserRole, currentUserId);
+                int? userId = null;
+                if (int.TryParse(currentUserId, out var parsedUserId))
+                {
+                    userId = parsedUserId;
+                }
 
                 // Apply role-based data access rules
                 switch (currentUserRole)
@@ -169,25 +176,31 @@ namespace xyz_university_payment_api.Core.Application.Services
                         return await _unitOfWork.Payments.GetAllAsync();
                     case "Student":
                         // Student can only see their own payments
-                        if (currentUserId.HasValue)
+                        if (!string.IsNullOrEmpty(currentUserId))
                         {
-                            // Get the student's student number first
-                            var student = await _unitOfWork.Students.GetByIdAsync(currentUserId.Value);
-                            if (student != null)
+                            if (int.TryParse(currentUserId, out var studentUserId))
                             {
-                                return await _unitOfWork.Payments.FindAsync(p => p.StudentNumber == student.StudentNumber);
+                                // Get the student's student number first
+                                var student = await _unitOfWork.Students.GetByIdAsync(studentUserId);
+                                if (student != null)
+                                {
+                                    return await _unitOfWork.Payments.FindAsync(p => p.StudentNumber == student.StudentNumber);
+                                }
                             }
                         }
                         // If we can't determine the student number, return empty result
                         return new List<PaymentNotification>();
                     default:
                         // Default to student access
-                        if (currentUserId.HasValue)
+                        if (!string.IsNullOrEmpty(currentUserId))
                         {
-                            var student = await _unitOfWork.Students.GetByIdAsync(currentUserId.Value);
-                            if (student != null)
+                            if (int.TryParse(currentUserId, out var studentUserId))
                             {
-                                return await _unitOfWork.Payments.FindAsync(p => p.StudentNumber == student.StudentNumber);
+                                var student = await _unitOfWork.Students.GetByIdAsync(studentUserId);
+                                if (student != null)
+                                {
+                                    return await _unitOfWork.Payments.FindAsync(p => p.StudentNumber == student.StudentNumber);
+                                }
                             }
                         }
                         return new List<PaymentNotification>();
@@ -197,6 +210,135 @@ namespace xyz_university_payment_api.Core.Application.Services
             {
                 _logger.LogError(ex, "Error retrieving all payments");
                 throw new DatabaseException("Failed to retrieve payments", ex);
+            }
+        }
+
+        // New method to get payments with student information
+        public async Task<IEnumerable<PaymentDto>> GetAllPaymentsWithStudentInfoAsync()
+        {
+            try
+            {
+                _logger.LogInformation("Retrieving all payments with student information");
+
+                // Get current user context for role-based filtering
+                var currentUserRole = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Role)?.Value;
+                var currentUserId = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                _logger.LogInformation("Current user role: {Role}, User ID: {UserId}", currentUserRole, currentUserId);
+
+                int? userId = null;
+                if (int.TryParse(currentUserId, out var parsedUserId))
+                {
+                    userId = parsedUserId;
+                }
+
+                // Get all payments based on role
+                IEnumerable<PaymentNotification> payments;
+                switch (currentUserRole)
+                {
+                    case "Admin":
+                    case "Manager":
+                    case "Staff":
+                        // Admin, Manager, Staff can see all payments
+                        payments = await _unitOfWork.Payments.GetAllAsync();
+                        _logger.LogInformation("Retrieved {Count} payments for {Role}", payments.Count(), currentUserRole);
+                        break;
+                    case "Student":
+                        // Student can only see their own payments
+                        if (!string.IsNullOrEmpty(currentUserId))
+                        {
+                            if (int.TryParse(currentUserId, out var studentUserId2))
+                            {
+                                var student = await _unitOfWork.Students.GetByIdAsync(studentUserId2);
+                                if (student != null)
+                                {
+                                    payments = await _unitOfWork.Payments.FindAsync(p => p.StudentNumber == student.StudentNumber);
+                                    _logger.LogInformation("Retrieved {Count} payments for student {StudentNumber}", payments.Count(), student.StudentNumber);
+                                }
+                                else
+                                {
+                                    payments = new List<PaymentNotification>();
+                                    _logger.LogWarning("Student not found for user ID {UserId}", studentUserId2);
+                                }
+                            }
+                            else
+                            {
+                                payments = new List<PaymentNotification>();
+                                _logger.LogWarning("Could not parse user ID: {UserId}", currentUserId);
+                            }
+                        }
+                        else
+                        {
+                            payments = new List<PaymentNotification>();
+                            _logger.LogWarning("No user ID found in context");
+                        }
+                        break;
+                    default:
+                        // Default to student access
+                        if (!string.IsNullOrEmpty(currentUserId))
+                        {
+                            if (int.TryParse(currentUserId, out var studentUserId2))
+                            {
+                                var student = await _unitOfWork.Students.GetByIdAsync(studentUserId2);
+                                if (student != null)
+                                {
+                                    payments = await _unitOfWork.Payments.FindAsync(p => p.StudentNumber == student.StudentNumber);
+                                    _logger.LogInformation("Retrieved {Count} payments for student {StudentNumber}", payments.Count(), student.StudentNumber);
+                                }
+                                else
+                                {
+                                    payments = new List<PaymentNotification>();
+                                    _logger.LogWarning("Student not found for user ID {UserId}", studentUserId2);
+                                }
+                            }
+                            else
+                            {
+                                payments = new List<PaymentNotification>();
+                                _logger.LogWarning("Could not parse user ID: {UserId}", currentUserId);
+                            }
+                        }
+                        else
+                        {
+                            payments = new List<PaymentNotification>();
+                            _logger.LogWarning("No user ID found in context");
+                        }
+                        break;
+                }
+
+                // Get all students for lookup
+                var allStudents = await _unitOfWork.Students.GetAllAsync();
+                var studentLookup = allStudents.ToDictionary(s => s.StudentNumber, s => s);
+                _logger.LogInformation("Retrieved {Count} students for lookup", allStudents.Count());
+
+                // Map payments to DTOs with student information
+                var paymentDtos = new List<PaymentDto>();
+                foreach (var payment in payments)
+                {
+                    var student = studentLookup.GetValueOrDefault(payment.StudentNumber);
+                    _logger.LogInformation("Payment {PaymentId} for student {StudentNumber}, found student: {StudentFound}", 
+                        payment.Id, payment.StudentNumber, student != null ? "Yes" : "No");
+                    
+                    var paymentDto = new PaymentDto
+                    {
+                        Id = payment.Id,
+                        StudentNumber = payment.StudentNumber,
+                        PaymentReference = payment.PaymentReference,
+                        AmountPaid = payment.AmountPaid,
+                        PaymentDate = payment.PaymentDate,
+                        DateReceived = payment.DateReceived,
+                        StudentName = student?.FullName ?? "Unknown Student",
+                        StudentProgram = student?.Program ?? "Unknown Program"
+                    };
+                    paymentDtos.Add(paymentDto);
+                }
+
+                _logger.LogInformation("Returning {Count} payment DTOs", paymentDtos.Count);
+                return paymentDtos;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving all payments with student information");
+                throw new DatabaseException("Failed to retrieve payments with student information", ex);
             }
         }
 

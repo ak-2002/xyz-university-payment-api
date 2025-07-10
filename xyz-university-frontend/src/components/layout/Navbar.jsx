@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 
 const Navbar = () => {
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, logout, isAuthenticated, getPrimaryRole } = useAuth();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -11,6 +11,10 @@ const Navbar = () => {
     logout();
     navigate('/login');
   };
+
+  const userRole = getPrimaryRole();
+  const isStudent = userRole === 'student';
+  const isAdmin = userRole === 'admin';
 
   return (
     <nav className="bg-white shadow-lg">
@@ -33,7 +37,7 @@ const Navbar = () => {
                   to="/students"
                   className="text-gray-900 hover:text-gray-500 px-3 py-2 rounded-md text-sm font-medium"
                 >
-                  Students
+                  {isStudent ? 'Profile' : 'Students'}
                 </Link>
                 <Link
                   to="/payments"
@@ -41,18 +45,30 @@ const Navbar = () => {
                 >
                   Payments
                 </Link>
-                <Link
-                  to="/reports"
-                  className="text-gray-900 hover:text-gray-500 px-3 py-2 rounded-md text-sm font-medium"
-                >
-                  Reports
-                </Link>
-                <Link
-                  to="/test-api"
-                  className="text-gray-900 hover:text-gray-500 px-3 py-2 rounded-md text-sm font-medium"
-                >
-                  Test API
-                </Link>
+                {!isStudent && (
+                  <>
+                    <Link
+                      to="/reports"
+                      className="text-gray-900 hover:text-gray-500 px-3 py-2 rounded-md text-sm font-medium"
+                    >
+                      Reports
+                    </Link>
+                    {isAdmin && (
+                      <Link
+                        to="/role-management"
+                        className="text-gray-900 hover:text-gray-500 px-3 py-2 rounded-md text-sm font-medium"
+                      >
+                        Role Management
+                      </Link>
+                    )}
+                    <Link
+                      to="/test-api"
+                      className="text-gray-900 hover:text-gray-500 px-3 py-2 rounded-md text-sm font-medium"
+                    >
+                      Test API
+                    </Link>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -125,7 +141,7 @@ const Navbar = () => {
                 className="text-gray-900 hover:text-gray-500 block px-3 py-2 rounded-md text-base font-medium"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Students
+                {isStudent ? 'Profile' : 'Students'}
               </Link>
               <Link
                 to="/payments"
@@ -134,20 +150,33 @@ const Navbar = () => {
               >
                 Payments
               </Link>
-              <Link
-                to="/reports"
-                className="text-gray-900 hover:text-gray-500 block px-3 py-2 rounded-md text-base font-medium"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Reports
-              </Link>
-              <Link
-                to="/test-api"
-                className="text-gray-900 hover:text-gray-500 block px-3 py-2 rounded-md text-base font-medium"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Test API
-              </Link>
+              {!isStudent && (
+                <>
+                  <Link
+                    to="/reports"
+                    className="text-gray-900 hover:text-gray-500 block px-3 py-2 rounded-md text-base font-medium"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Reports
+                  </Link>
+                  {isAdmin && (
+                    <Link
+                      to="/role-management"
+                      className="text-gray-900 hover:text-gray-500 block px-3 py-2 rounded-md text-base font-medium"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Role Management
+                    </Link>
+                  )}
+                  <Link
+                    to="/test-api"
+                    className="text-gray-900 hover:text-gray-500 block px-3 py-2 rounded-md text-base font-medium"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Test API
+                  </Link>
+                </>
+              )}
               <button
                 onClick={() => {
                   handleLogout();

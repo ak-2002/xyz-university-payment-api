@@ -9,62 +9,55 @@ using xyz_university_payment_api.Core.Application.Interfaces;
 using xyz_university_payment_api.Core.Domain.Entities;
 using xyz_university_payment_api.Core.Application.Services;
 using Xunit;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.AspNetCore.Http;
 
 namespace xyz_university_payment_api.Tests.Services
 {
     public class StudentServiceTests
     {
         [Fact]
-        public async Task GetAllStudentsAsync_ShouldReturnAllStudents()
+        public async Task GetStudentsAsync_ShouldReturnAllStudents()
         {
             // Arrange
-            var unitOfWorkMock = new Mock<IUnitOfWork>();
-            var studentRepositoryMock = new Mock<IGenericRepository<Student>>();
-            var loggerMock = new Mock<ILogger<StudentService>>();
-            var cacheServiceMock = new Mock<ICacheService>();
+            var mockUnitOfWork = new Mock<IUnitOfWork>();
+            var mockLogger = new Mock<ILogger<StudentService>>();
+            var mockCacheService = new Mock<ICacheService>();
+            var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
 
             var students = new List<Student>
             {
-                new Student { Id = 1, FullName = "John Doe", StudentNumber = "S12345", Program = "CS", IsActive = true }
+                new Student { Id = 1, StudentNumber = "S12345", FullName = "John Doe", Program = "CS", IsActive = true },
+                new Student { Id = 2, StudentNumber = "S67890", FullName = "Jane Smith", Program = "EE", IsActive = true }
             };
 
-            unitOfWorkMock.Setup(uow => uow.Students).Returns(studentRepositoryMock.Object);
-            studentRepositoryMock.Setup(repo => repo.GetAllAsync()).ReturnsAsync(students);
+            mockUnitOfWork.Setup(uow => uow.Students.GetAllAsync()).ReturnsAsync(students);
 
-            var studentService = new StudentService(unitOfWorkMock.Object, loggerMock.Object, cacheServiceMock.Object);
+            var studentService = new StudentService(mockUnitOfWork.Object, mockLogger.Object, mockCacheService.Object, mockHttpContextAccessor.Object);
 
             // Act
             var result = await studentService.GetAllStudentsAsync();
 
             // Assert
             result.Should().NotBeNull();
-            result.Should().HaveCount(1);
+            result.Should().HaveCount(2);
             result.First().FullName.Should().Be("John Doe");
         }
 
         [Fact]
-        public async Task GetStudentByNumberAsync_ShouldReturnStudent_WhenStudentExists()
+        public async Task GetStudentByIdAsync_ShouldReturnStudent()
         {
             // Arrange
-            var unitOfWorkMock = new Mock<IUnitOfWork>();
-            var studentRepositoryMock = new Mock<IGenericRepository<Student>>();
-            var loggerMock = new Mock<ILogger<StudentService>>();
-            var cacheServiceMock = new Mock<ICacheService>();
+            var mockUnitOfWork = new Mock<IUnitOfWork>();
+            var mockLogger = new Mock<ILogger<StudentService>>();
+            var mockCacheService = new Mock<ICacheService>();
+            var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
 
-            var student = new Student
-            {
-                Id = 1,
-                FullName = "Jane Doe",
-                StudentNumber = "S54321",
-                Program = "IT",
-                IsActive = true
-            };
+            var student = new Student { Id = 1, StudentNumber = "S12345", FullName = "John Doe", Program = "CS", IsActive = true };
 
-            unitOfWorkMock.Setup(uow => uow.Students).Returns(studentRepositoryMock.Object);
-            studentRepositoryMock.Setup(repo => repo.FirstOrDefaultAsync(It.IsAny<Expression<Func<Student, bool>>>()))
-                .ReturnsAsync(student);
+            mockUnitOfWork.Setup(uow => uow.Students.GetByIdAsync(1)).ReturnsAsync(student);
 
-            var studentService = new StudentService(unitOfWorkMock.Object, loggerMock.Object, cacheServiceMock.Object);
+            var studentService = new StudentService(mockUnitOfWork.Object, mockLogger.Object, mockCacheService.Object, mockHttpContextAccessor.Object);
 
             // Act
             var result = await studentService.GetStudentByNumberAsync("S54321");
@@ -79,16 +72,14 @@ namespace xyz_university_payment_api.Tests.Services
         public async Task GetStudentByNumberAsync_ShouldReturnNull_WhenStudentDoesNotExist()
         {
             // Arrange
-            var unitOfWorkMock = new Mock<IUnitOfWork>();
-            var studentRepositoryMock = new Mock<IGenericRepository<Student>>();
-            var loggerMock = new Mock<ILogger<StudentService>>();
-            var cacheServiceMock = new Mock<ICacheService>();
+            var mockUnitOfWork = new Mock<IUnitOfWork>();
+            var mockLogger = new Mock<ILogger<StudentService>>();
+            var mockCacheService = new Mock<ICacheService>();
+            var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
 
-            unitOfWorkMock.Setup(uow => uow.Students).Returns(studentRepositoryMock.Object);
-            studentRepositoryMock.Setup(repo => repo.FirstOrDefaultAsync(It.IsAny<Expression<Func<Student, bool>>>()))
-                .ReturnsAsync((Student?)null);
+            mockUnitOfWork.Setup(uow => uow.Students.GetAllAsync()).ReturnsAsync(new List<Student>());
 
-            var studentService = new StudentService(unitOfWorkMock.Object, loggerMock.Object, cacheServiceMock.Object);
+            var studentService = new StudentService(mockUnitOfWork.Object, mockLogger.Object, mockCacheService.Object, mockHttpContextAccessor.Object);
 
             // Act
             var result = await studentService.GetStudentByNumberAsync("S00000");
@@ -101,10 +92,10 @@ namespace xyz_university_payment_api.Tests.Services
         public async Task GetStudentByNumberAsync_ShouldReturnInactiveStudent_WhenStudentIsInactive()
         {
             // Arrange
-            var unitOfWorkMock = new Mock<IUnitOfWork>();
-            var studentRepositoryMock = new Mock<IGenericRepository<Student>>();
-            var loggerMock = new Mock<ILogger<StudentService>>();
-            var cacheServiceMock = new Mock<ICacheService>();
+            var mockUnitOfWork = new Mock<IUnitOfWork>();
+            var mockLogger = new Mock<ILogger<StudentService>>();
+            var mockCacheService = new Mock<ICacheService>();
+            var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
 
             var student = new Student
             {
@@ -115,11 +106,9 @@ namespace xyz_university_payment_api.Tests.Services
                 IsActive = false
             };
 
-            unitOfWorkMock.Setup(uow => uow.Students).Returns(studentRepositoryMock.Object);
-            studentRepositoryMock.Setup(repo => repo.FirstOrDefaultAsync(It.IsAny<Expression<Func<Student, bool>>>()))
-                .ReturnsAsync(student);
+            mockUnitOfWork.Setup(uow => uow.Students.GetAllAsync()).ReturnsAsync(new List<Student> { student });
 
-            var studentService = new StudentService(unitOfWorkMock.Object, loggerMock.Object, cacheServiceMock.Object);
+            var studentService = new StudentService(mockUnitOfWork.Object, mockLogger.Object, mockCacheService.Object, mockHttpContextAccessor.Object);
 
             // Act
             var result = await studentService.GetStudentByNumberAsync("S99999");

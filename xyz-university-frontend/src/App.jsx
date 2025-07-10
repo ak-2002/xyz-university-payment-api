@@ -8,14 +8,37 @@ import ManagerDashboard from './pages/ManagerDashboard';
 import StaffDashboard from './pages/StaffDashboard';
 import StudentDashboard from './pages/StudentDashboard';
 import StudentManagement from './pages/StudentManagement';
+import StudentProfile from './pages/StudentProfile';
 import PaymentManagement from './pages/PaymentManagement';
+import StudentPayments from './pages/StudentPayments';
+import RoleManagement from './pages/RoleManagement';
 import Reports from './pages/Reports';
 import TestAPI from './pages/TestAPI';
 import LoadingSpinner from './components/common/LoadingSpinner';
 
 // Placeholder components for now - we'll create these in the next steps
-const StudentsPage = () => <StudentManagement />;
-const PaymentsPage = () => <PaymentManagement />;
+const StudentsPage = () => {
+  const { getPrimaryRole } = useAuth();
+  const userRole = getPrimaryRole();
+  
+  // Show StudentProfile for students, StudentManagement for admin/staff
+  if (userRole === 'student') {
+    return <StudentProfile />;
+  }
+  return <StudentManagement />;
+};
+
+const PaymentsPage = () => {
+  const { getPrimaryRole } = useAuth();
+  const userRole = getPrimaryRole();
+  
+  // Show StudentPayments for students, PaymentManagement for admin/staff
+  if (userRole === 'student') {
+    return <StudentPayments />;
+  }
+  return <PaymentManagement />;
+};
+
 const ReportsPage = () => <Reports />;
 const TestAPIPage = () => <TestAPI />;
 
@@ -99,6 +122,16 @@ const AppContent = () => {
             <ProtectedRoute>
               <Layout>
                 <ReportsPage />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/role-management"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <RoleManagement />
               </Layout>
             </ProtectedRoute>
           }

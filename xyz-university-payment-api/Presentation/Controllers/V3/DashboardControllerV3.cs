@@ -9,6 +9,10 @@ using Microsoft.AspNetCore.Authorization;
 using AutoMapper;
 using xyz_university_payment_api.Presentation.Attributes;
 using System.Security.Claims;
+using xyz_university_payment_api.Core.Domain.Entities; // Added for Student model
+using System; // Added for DateTime
+using System.Linq; // Added for Count, Sum, OrderByDescending, Take, Select, GroupBy
+using System.Collections.Generic; // Added for Dictionary
 
 namespace xyz_university_payment_api.Presentation.Controllers.V3
 {
@@ -215,17 +219,6 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
                 _logger.LogInformation("User roles: {Roles}", string.Join(", ", userRoles));
                 _logger.LogInformation("User permissions: {Permissions}", string.Join(", ", userPermissions));
 
-                // Get current user's student data
-                var currentUserId = GetCurrentUserId();
-                if (!currentUserId.HasValue)
-                {
-                    return BadRequest(new ApiResponseDto<object>
-                    {
-                        Success = false,
-                        Message = "Unable to identify current student"
-                    });
-                }
-
                 // For admin users, show general statistics instead of individual student data
                 if (userRoles.Contains("Admin") || userRoles.Contains("Manager") || userRoles.Contains("Staff"))
                 {
@@ -244,7 +237,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
                         {
                             Id = p.Id,
                             Amount = p.AmountPaid,
-                            Date = p.PaymentDate,
+                            Date = p.PaymentDate.ToString("yyyy-MM-dd"),
                             Status = "Completed",
                             Description = $"Payment - {p.PaymentReference}"
                         }).ToList(),
@@ -271,26 +264,111 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
                     });
                 }
 
-                // For student users, show a generic student dashboard with user info
+                // For student users, show individual student data
+                // Try to find student by username (assuming username matches student number or email)
+                Student? student = null;
+                var studentsList = await _studentService.GetAllStudentsAsync();
+                
+                // Try to find student by username (could be student number or email)
+                student = studentsList.FirstOrDefault(s => 
+                    s.StudentNumber.Equals(username, StringComparison.OrdinalIgnoreCase) ||
+                    s.Email.Equals(username, StringComparison.OrdinalIgnoreCase) ||
+                    s.FullName.ToLower().Contains(username.ToLower()));
+
+                // If no direct match, try to find by user ID mapping (for now, use a simple mapping)
+                if (student == null)
+                {
+                    // For demo purposes, map specific users to students
+                    var userStudentMapping = new Dictionary<string, string>
+                    {
+                        { "alex.student", "S66001" }, // Alex Mutahi
+                        { "student", "S66001" }, // Default student user
+                        { "john.student", "S66004" }, // John Doe (Computer Science)
+                        { "sarah.student", "S66005" }, // Sarah Johnson (Business Administration)
+                        { "mike.student", "S66006" }, // Mike Wilson (Engineering)
+                        { "andrew.student", "S66007" }, // Andrew Smith (Computer Science)
+                        { "andrew", "S66007" }, // Andrew (without .student suffix)
+                        { "john", "S66004" }, // John (without .student suffix)
+                        { "sarah", "S66005" }, // Sarah (without .student suffix)
+                        { "mike", "S66006" }, // Mike (without .student suffix)
+                        // Add mappings for actual student number usernames
+                        { "S12345", "S12345" }, // John Doe
+                        { "S67890", "S67890" }, // Jane Smith
+                        { "S66001", "S66001" }, // Alex Mutahi
+                        { "S66002", "S66002" }, // Janet Mwangi
+                        { "S66003", "S66003" }, // Jane Smith (inactive)
+                        { "S66004", "S66004" }, // John Doe (Computer Science)
+                        { "S66005", "S66005" }, // Sarah Johnson (Business Administration)
+                        { "S66006", "S66006" }, // Mike Wilson (Engineering)
+                        { "S66007", "S66007" } // Andrew Smith (Computer Science)
+                    };
+
+                    if (userStudentMapping.ContainsKey(username))
+                    {
+                        student = studentsList.FirstOrDefault(s => s.StudentNumber == userStudentMapping[username]);
+                        _logger.LogInformation("Found student mapping for {Username} -> {StudentNumber}", username, userStudentMapping[username]);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("No student mapping found for username: {Username}", username);
+                    }
+                }
+
+                // Get student payments
+                var studentPayments = new List<object>();
+                var totalPaid = 0.0m;
+                var balance = 5000.0m; // Default balance for demo
+
+                if (student != null)
+                {
+                    try
+                    {
+                        var payments = await _paymentService.GetPaymentsByStudentAsync(student.StudentNumber);
+                        studentPayments = payments.OrderByDescending(p => p.PaymentDate).Take(5).Select(p => new
+                        {
+                            Id = p.Id,
+                            Amount = p.AmountPaid,
+                            Date = p.PaymentDate.ToString("yyyy-MM-dd"),
+                            Status = "Completed",
+                            Description = $"Payment - {p.PaymentReference}"
+                        }).ToList<object>();
+                        
+                        totalPaid = payments.Sum(p => p.AmountPaid);
+                        balance = 5000.0m - totalPaid; // Assuming total tuition is 5000
+                        
+                        _logger.LogInformation("Found {PaymentCount} payments for student {StudentNumber}, total paid: {TotalPaid}", 
+                            payments.Count(), student.StudentNumber, totalPaid);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Could not retrieve payments for student {StudentNumber}", student.StudentNumber);
+                    }
+                }
+                else
+                {
+                    _logger.LogWarning("No student found for username: {Username}, showing generic data", username);
+                }
+
                 var studentStats = new
                 {
                     UserRole = userRoles.FirstOrDefault() ?? "Student",
-                    CurrentUser = username,
+                    CurrentUser = student?.FullName ?? username,
                     UserId = userId,
                     UserRoles = userRoles,
-                    Message = "Student dashboard - showing user information",
+                    Message = student != null ? "Student dashboard - showing individual data" : "Student dashboard - showing generic data",
                     AcademicInfo = new
                     {
                         CurrentSemester = "Spring 2024",
-                        EnrollmentStatus = "Active",
+                        EnrollmentStatus = student?.IsActive == true ? "Active" : "Inactive",
                         AcademicStanding = "Good Standing"
                     },
                     FinancialInfo = new
                     {
-                        Balance = 5000.00m,
-                        TotalPaid = 5000.00m,
+                        Balance = balance,
+                        TotalPaid = totalPaid,
                         NextPaymentDue = DateTime.UtcNow.AddDays(30),
-                        RecentPayments = new List<object>()
+                        NextPaymentDueAmount = balance > 0 ? balance : 0,
+                        RecentPayments = studentPayments
                     },
                     SystemInfo = new
                     {

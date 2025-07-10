@@ -163,6 +163,10 @@ try
     // Configure Swagger with API versioning
     builder.Services.AddSwaggerGen(c =>
     {
+        c.SwaggerDoc("v1", new OpenApiInfo { Title = "XYZ University Payment API v1", Version = "v1" });
+        c.SwaggerDoc("v2", new OpenApiInfo { Title = "XYZ University Payment API v2", Version = "v2" });
+        c.SwaggerDoc("v3", new OpenApiInfo { Title = "XYZ University Payment API v3", Version = "v3" });
+        
         c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
         {
             Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
@@ -260,8 +264,7 @@ try
         options.SubstituteApiVersionInUrl = true;
     });
 
-    // Configure Swagger to use versioned API explorer
-    builder.Services.ConfigureOptions<ConfigureSwaggerOptions>();
+    // Swagger configuration is now inline
 
     var app = builder.Build();
 
@@ -306,7 +309,12 @@ try
                         new Student { StudentNumber = "S67890", FullName = "Jane Smith", Program = "IT", IsActive = true },
                         new Student { StudentNumber = "S66001", FullName = "Alex Mutahi", Program = "ACC", IsActive = true },
                         new Student { StudentNumber = "S66002", FullName = "Janet Mwangi", Program = "SOCIOLOGY", IsActive = true },
-                        new Student { StudentNumber = "S66003", FullName = "Jane Smith", Program = "IT", IsActive = false }
+                        new Student { StudentNumber = "S66003", FullName = "Jane Smith", Program = "IT", IsActive = false },
+                        // Add more students to match the dashboard controller mappings
+                        new Student { StudentNumber = "S66004", FullName = "John Doe", Program = "Computer Science", Email = "john.student@xyzuniversity.edu", IsActive = true },
+                        new Student { StudentNumber = "S66005", FullName = "Sarah Johnson", Program = "Business Administration", Email = "sarah.student@xyzuniversity.edu", IsActive = true },
+                        new Student { StudentNumber = "S66006", FullName = "Mike Wilson", Program = "Engineering", Email = "mike.student@xyzuniversity.edu", IsActive = true },
+                        new Student { StudentNumber = "S66007", FullName = "Andrew Smith", Program = "Computer Science", Email = "andrew.student@xyzuniversity.edu", IsActive = true }
                     );
                     context.SaveChanges();
                     Log.Information("Student data seeded successfully");
@@ -331,10 +339,56 @@ try
                             AmountPaid = 3500m,
                             PaymentDate = DateTime.UtcNow.AddDays(-1),
                             DateReceived = DateTime.UtcNow
+                        },
+                        new PaymentNotification
+                        {
+                            StudentNumber = "S66001",
+                            PaymentReference = "REF003",
+                            AmountPaid = 4200m,
+                            PaymentDate = DateTime.UtcNow.AddDays(-5),
+                            DateReceived = DateTime.UtcNow.AddDays(-4)
                         }
                     );
                     context.SaveChanges();
                     Log.Information("Payment data seeded successfully");
+                }
+
+                // Create student user account for testing
+                if (!context.Users.Any(u => u.Username == "alex.student"))
+                {
+                    Log.Information("Creating student user account for Alex Mutahi");
+                    
+                    // Create the user
+                    var studentUser = new User
+                    {
+                        Username = "alex.student",
+                        Email = "alex.mutahi@student.xyzuniversity.edu",
+                        PasswordHash = Convert.ToBase64String(System.Security.Cryptography.SHA256.Create().ComputeHash(System.Text.Encoding.UTF8.GetBytes("Student123!"))),
+                        IsActive = true,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    
+                    context.Users.Add(studentUser);
+                    await context.SaveChangesAsync();
+                    
+                    // Get the created user and assign Student role
+                    var createdUser = await context.Users.FirstAsync(u => u.Username == "alex.student");
+                    var studentRole = await context.Roles.FirstAsync(r => r.Name == "Student");
+                    
+                    // Assign role to user
+                    var userRole = new UserRole
+                    {
+                        UserId = createdUser.Id,
+                        RoleId = studentRole.Id,
+                        AssignedAt = DateTime.UtcNow,
+                        AssignedBy = "System"
+                    };
+                    
+                    context.UserRoles.Add(userRole);
+                    await context.SaveChangesAsync();
+                    
+                    Log.Information("Created student user account: {Username} (Password: {Password}) linked to Alex Mutahi (S66001)", 
+                        studentUser.Username, "Student123!");
                 }
             }
             catch (Exception ex)
@@ -353,21 +407,9 @@ try
 
         app.UseSwaggerUI(c =>
         {
-            // Configure Swagger UI to use versioned API explorer
-            var provider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
-            
-            foreach (var description in provider.ApiVersionDescriptions)
-            {
-                var title = description.ApiVersion.MajorVersion switch
-                {
-                    1 => "XYZ University Payment API v1 (Deprecated)",
-                    2 => "XYZ University Payment API v2",
-                    3 => "XYZ University Payment API v3",
-                    _ => $"XYZ University Payment API v{description.ApiVersion}"
-                };
-                
-                c.SwaggerEndpoint($"/swagger/{description.GroupName}/swagger.json", title);
-            }
+            c.SwaggerEndpoint("/swagger/v1/swagger.json", "XYZ University Payment API v1");
+            c.SwaggerEndpoint("/swagger/v2/swagger.json", "XYZ University Payment API v2");
+            c.SwaggerEndpoint("/swagger/v3/swagger.json", "XYZ University Payment API v3");
             
             c.RoutePrefix = string.Empty; // Serve Swagger UI at the app's root
             c.DocumentTitle = "XYZ University Payment API Documentation";

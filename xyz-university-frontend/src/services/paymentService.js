@@ -64,10 +64,29 @@ export const paymentService = {
         pageSize: pageSize.toString(),
       });
 
+      console.log('Fetching payments for student:', studentNumber);
       const response = await api.get(`/api/v3/Payment/student/${studentNumber}?${params}`);
-      return response.data;
+      console.log('Student payments API response:', response.data);
+      
+      // Handle the wrapped API response structure
+      if (response.data && response.data.success && response.data.data) {
+        // The actual data is in response.data.data.items
+        const result = response.data.data.items || [];
+        console.log('Processed student payments data:', result);
+        return {
+          data: result,
+          page: response.data.data.pageNumber || page,
+          pageSize: response.data.data.pageSize || pageSize,
+          totalCount: response.data.data.totalCount || 0,
+          totalPages: response.data.data.totalPages || 0,
+        };
+      }
+      
+      console.log('Returning raw response data:', response.data);
+      return response.data || { data: [] };
     } catch (error) {
       console.error('Error fetching payments by student:', error);
+      console.error('Error response:', error.response?.data);
       throw error;
     }
   },
@@ -75,10 +94,22 @@ export const paymentService = {
   // Get payment summary by student
   async getPaymentSummaryByStudent(studentNumber) {
     try {
+      console.log('Fetching payment summary for student:', studentNumber);
       const response = await api.get(`/api/v3/Payment/student/${studentNumber}/summary`);
-      return response.data;
+      console.log('Payment summary API response:', response.data);
+      
+      // Handle the wrapped API response structure
+      if (response.data && response.data.success && response.data.data) {
+        const result = response.data.data;
+        console.log('Processed payment summary data:', result);
+        return result;
+      }
+      
+      console.log('Returning raw response data:', response.data);
+      return response.data || {};
     } catch (error) {
       console.error('Error fetching payment summary:', error);
+      console.error('Error response:', error.response?.data);
       throw error;
     }
   },

@@ -34,9 +34,9 @@ export const authService = {
           roles: roleNames
         };
         
-        // Store tokens
-        localStorage.setItem('access_token', data.data.token);
-        localStorage.setItem('refresh_token', data.data.refreshToken);
+        // Store tokens with consistent keys
+        localStorage.setItem('authToken', data.data.token);
+        localStorage.setItem('refreshToken', data.data.refreshToken);
         localStorage.setItem('user', JSON.stringify(userWithRoles));
         localStorage.setItem('expires_in', data.data.expiresAt);
         localStorage.setItem('token_type', 'Bearer');
@@ -60,8 +60,8 @@ export const authService = {
 
   // Logout user
   logout() {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
     localStorage.removeItem('expires_in');
     localStorage.removeItem('token_type');
@@ -70,7 +70,7 @@ export const authService = {
 
   // Check if user is authenticated
   isAuthenticated() {
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem('authToken');
     return !!token;
   },
 
@@ -107,7 +107,7 @@ export const authService = {
   // Refresh token
   async refreshToken() {
     try {
-      const refreshToken = localStorage.getItem('refresh_token');
+      const refreshToken = localStorage.getItem('refreshToken');
       if (!refreshToken) {
         throw new Error('No refresh token available');
       }
@@ -138,9 +138,9 @@ export const authService = {
           roles: roleNames
         };
         
-        // Update tokens
-        localStorage.setItem('access_token', data.data.token);
-        localStorage.setItem('refresh_token', data.data.refreshToken);
+        // Update tokens with consistent keys
+        localStorage.setItem('authToken', data.data.token);
+        localStorage.setItem('refreshToken', data.data.refreshToken);
         localStorage.setItem('user', JSON.stringify(userWithRoles));
         localStorage.setItem('expires_in', data.data.expiresAt);
         

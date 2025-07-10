@@ -1,0 +1,28 @@
+2025-07-10 15:01:22.241 +03:00 [INF] Ensuring database is created
+2025-07-10 15:01:23.123 +03:00 [INF] Database created successfully
+2025-07-10 15:01:23.127 +03:00 [INF] Seeding default roles and permissions
+2025-07-10 15:01:23.529 +03:00 [WRN] Found 1 users with invalid data, removing them
+2025-07-10 15:01:23.808 +03:00 [INF] Removed 1 invalid users
+2025-07-10 15:01:23.839 +03:00 [WRN] Found 1 roles with invalid names, removing them
+2025-07-10 15:01:23.897 +03:00 [INF] Removed 1 invalid roles
+2025-07-10 15:01:23.949 +03:00 [INF] Valid data already seeded, skipping seeding process
+2025-07-10 15:01:23.955 +03:00 [INF] Default roles and permissions seeded successfully
+2025-07-10 15:01:24.160 +03:00 [INF] XYZ University Payment API started successfully
+2025-07-10 15:01:24.348 +03:00 [INF] Configured endpoint PaymentProcessedMessage, Consumer: xyz_university_payment_api.Core.Application.Services.PaymentProcessedMessageConsumer
+2025-07-10 15:01:24.360 +03:00 [INF] Configured endpoint PaymentFailedMessage, Consumer: xyz_university_payment_api.Core.Application.Services.PaymentFailedMessageConsumer
+2025-07-10 15:01:24.371 +03:00 [INF] Configured endpoint PaymentValidationMessage, Consumer: xyz_university_payment_api.Core.Application.Services.PaymentValidationMessageConsumer
+2025-07-10 15:01:24.720 +03:00 [INF] Bus started: "rabbitmq://localhost/"
+2025-07-10 15:01:36.049 +03:00 [INF] V3 GetAllPayments endpoint called with page 1
+2025-07-10 15:01:36.060 +03:00 [INF] Retrieving all payments with student information
+2025-07-10 15:01:36.068 +03:00 [INF] Current user role: Student, User ID: 50
+2025-07-10 15:01:36.121 +03:00 [WRN] Student not found for user ID 50
+2025-07-10 15:01:36.151 +03:00 [INF] Retrieved 8 students for lookup
+2025-07-10 15:01:36.156 +03:00 [INF] Returning 0 payment DTOs
+2025-07-10 15:01:36.230 +03:00 [INF] V3 GetAllPayments endpoint called with page 1
+2025-07-10 15:01:36.238 +03:00 [INF] Retrieving all payments with student information
+2025-07-10 15:01:36.244 +03:00 [INF] Current user role: Student, User ID: 50
+2025-07-10 15:01:36.301 +03:00 [WRN] Student not found for user ID 50
+2025-07-10 15:01:36.310 +03:00 [INF] Retrieved 8 students for lookup
+2025-07-10 15:01:36.318 +03:00 [INF] Returning 0 payment DTOs
+2025-07-10 15:09:15.748 +03:00 [INF] Bus stopped: "rabbitmq://localhost/"
+2025-07-10 15:09:28.161 +03:00 [INF] Starting XYZ University Payment API {"MachineName":"DESKTOP-F3AMJ10","ThreadId":1,"ProcessId":17108,"Application":"XYZ University Payment API"}

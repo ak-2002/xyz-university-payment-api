@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { studentService } from '../services/studentService';
+import NotificationModal from '../components/common/NotificationModal';
 
 const StudentManagement = () => {
   const [students, setStudents] = useState([]);
@@ -8,6 +9,13 @@ const StudentManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
+  const [notification, setNotification] = useState({
+    isOpen: false,
+    type: 'info',
+    title: '',
+    message: '',
+    details: ''
+  });
   const [formData, setFormData] = useState({
     studentNumber: '',
     fullName: '',
@@ -40,17 +48,35 @@ const StudentManagement = () => {
     try {
       if (editingStudent) {
         await studentService.updateStudent(editingStudent.id, formData);
+        showNotification('success', 'Student Updated', 'Student information has been successfully updated.');
       } else {
         await studentService.createStudent(formData);
+        showNotification('success', 'Student Created', 'New student has been successfully created and added to the system.');
       }
       setShowAddModal(false);
       setEditingStudent(null);
       resetForm();
       loadStudents();
     } catch (err) {
-      setError('Failed to save student');
       console.error(err);
+      const errorMessage = err.response?.data?.message || 'Failed to save student';
+      const errorDetails = err.response?.data?.errors?.join(', ') || err.message;
+      showNotification('error', 'Student Operation Failed', errorMessage, errorDetails);
     }
+  };
+
+  const showNotification = (type, title, message, details = '') => {
+    setNotification({
+      isOpen: true,
+      type,
+      title,
+      message,
+      details
+    });
+  };
+
+  const closeNotification = () => {
+    setNotification(prev => ({ ...prev, isOpen: false }));
   };
 
   const handleEdit = (student) => {
@@ -72,9 +98,11 @@ const StudentManagement = () => {
       try {
         await studentService.deleteStudent(id);
         loadStudents();
+        showNotification('success', 'Student Deleted', 'Student has been successfully removed from the system.');
       } catch (err) {
-        setError('Failed to delete student');
         console.error(err);
+        const errorMessage = err.response?.data?.message || 'Failed to delete student';
+        showNotification('error', 'Delete Failed', errorMessage);
       }
     }
   };
@@ -211,7 +239,7 @@ const StudentManagement = () => {
           </div>
         </div>
 
-        {/* Add/Edit Modal */}
+        {/* Add/Edit Student Modal */}
         {showAddModal && (
           <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
             <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
@@ -269,7 +297,6 @@ const StudentManagement = () => {
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
-
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Date of Birth</label>
                     <input
@@ -284,8 +311,8 @@ const StudentManagement = () => {
                     <textarea
                       value={formData.address}
                       onChange={(e) => setFormData({...formData, address: e.target.value})}
-                      rows="3"
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      rows="2"
                     />
                   </div>
                   <div className="flex justify-end space-x-3 pt-4">
@@ -304,7 +331,7 @@ const StudentManagement = () => {
                       type="submit"
                       className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700"
                     >
-                      {editingStudent ? 'Update' : 'Create'}
+                      {editingStudent ? 'Update Student' : 'Create Student'}
                     </button>
                   </div>
                 </form>
@@ -312,6 +339,16 @@ const StudentManagement = () => {
             </div>
           </div>
         )}
+
+        {/* Notification Modal */}
+        <NotificationModal
+          isOpen={notification.isOpen}
+          onClose={closeNotification}
+          type={notification.type}
+          title={notification.title}
+          message={notification.message}
+          details={notification.details}
+        />
       </div>
     </div>
   );
