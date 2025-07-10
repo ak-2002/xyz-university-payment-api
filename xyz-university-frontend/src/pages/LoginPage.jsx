@@ -65,18 +65,6 @@ const LoginPage = () => {
     }
   };
 
-  const testUsers = [
-    { username: 'admin', password: 'Admin123!', role: 'Admin', description: 'Full system access with all permissions' },
-    { username: 'manager', password: 'Manager123!', role: 'Manager', description: 'Management level access' },
-    { username: 'staff', password: 'Staff123!', role: 'Staff', description: 'Staff level access' },
-    { username: 'student', password: 'Student123!', role: 'Student', description: 'Student portal access' }
-  ];
-
-  const fillTestUser = (username, password) => {
-    setFormData({ username, password });
-    setErrors({});
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -153,34 +141,6 @@ const LoginPage = () => {
             </Button>
           </div>
         </form>
-
-        {/* Test Users Section */}
-        <div className="mt-8">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Test Users</h3>
-          <div className="space-y-3">
-            {testUsers.map((user, index) => (
-              <div key={index} className="bg-white border border-gray-200 rounded-lg p-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h4 className="font-medium text-gray-900">{user.role}</h4>
-                    <p className="text-sm text-gray-600">{user.description}</p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Username: <span className="font-mono">{user.username}</span>
-                    </p>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="small"
-                    onClick={() => fillTestUser(user.username, user.password)}
-                    className="ml-2"
-                  >
-                    Use
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   );

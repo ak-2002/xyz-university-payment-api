@@ -30,31 +30,41 @@ const Reports = () => {
     }
   };
 
-  // Calculate statistics
+  // Calculate statistics based on actual payment structure
   const totalStudents = students.length;
   const totalPayments = payments.length;
-  const totalAmount = payments.reduce((sum, payment) => sum + (payment.amount || 0), 0);
-  const paidPayments = payments.filter(p => p.status?.toLowerCase() === 'paid');
-  const pendingPayments = payments.filter(p => p.status?.toLowerCase() === 'pending');
-  const overduePayments = payments.filter(p => p.status?.toLowerCase() === 'overdue');
+  const totalAmount = payments.reduce((sum, payment) => sum + (payment.amountPaid || 0), 0);
+  
+  // Since all payments in our system are completed, we'll categorize them differently
+  const completedPayments = payments.filter(p => p.amountPaid > 0);
+  const completedAmount = completedPayments.reduce((sum, payment) => sum + (payment.amountPaid || 0), 0);
 
-  const paidAmount = paidPayments.reduce((sum, payment) => sum + (payment.amount || 0), 0);
-  const pendingAmount = pendingPayments.reduce((sum, payment) => sum + (payment.amount || 0), 0);
-  const overdueAmount = overduePayments.reduce((sum, payment) => sum + (payment.amount || 0), 0);
-
-  // Payment type breakdown
-  const paymentTypeStats = payments.reduce((acc, payment) => {
-    const type = payment.paymentType || 'other';
-    acc[type] = (acc[type] || 0) + 1;
+  // Payment method breakdown
+  const paymentMethodStats = payments.reduce((acc, payment) => {
+    const method = payment.paymentMethod || 'M-Pesa';
+    acc[method] = (acc[method] || 0) + 1;
     return acc;
   }, {});
 
-  // Monthly payment trends (simplified)
+  // Monthly payment trends
   const monthlyTrends = payments.reduce((acc, payment) => {
-    const month = new Date(payment.dueDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-    acc[month] = (acc[month] || 0) + (payment.amount || 0);
+    const month = new Date(payment.paymentDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    acc[month] = (acc[month] || 0) + (payment.amountPaid || 0);
     return acc;
   }, {});
+
+  // Student program breakdown
+  const programStats = students.reduce((acc, student) => {
+    const program = student.program || 'Unknown';
+    acc[program] = (acc[program] || 0) + 1;
+    return acc;
+  }, {});
+
+  // Calculate average payment amount
+  const averagePayment = totalPayments > 0 ? totalAmount / totalPayments : 0;
+
+  // Calculate payment success rate (all payments are successful in our system)
+  const paymentSuccessRate = 100; // Since all payments are completed
 
   if (loading) {
     return (
@@ -133,7 +143,7 @@ const Reports = () => {
                 </svg>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Amount</p>
+                <p className="text-sm font-medium text-gray-600">Total Revenue</p>
                 <p className="text-2xl font-semibold text-gray-900">${totalAmount.toFixed(2)}</p>
               </div>
             </div>
@@ -147,61 +157,28 @@ const Reports = () => {
                 </svg>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Collection Rate</p>
-                <p className="text-2xl font-semibold text-gray-900">
-                  {totalAmount > 0 ? ((paidAmount / totalAmount) * 100).toFixed(1) : 0}%
-                </p>
+                <p className="text-sm font-medium text-gray-600">Avg Payment</p>
+                <p className="text-2xl font-semibold text-gray-900">${averagePayment.toFixed(2)}</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Payment Status Overview */}
+        {/* Payment Method Overview */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Payment Status Overview</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Payment Method Distribution</h3>
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
-                  <span className="text-sm font-medium text-gray-700">Paid</span>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm font-semibold text-gray-900">{paidPayments.length}</div>
-                  <div className="text-xs text-gray-500">${paidAmount.toFixed(2)}</div>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 bg-yellow-500 rounded-full mr-3"></div>
-                  <span className="text-sm font-medium text-gray-700">Pending</span>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm font-semibold text-gray-900">{pendingPayments.length}</div>
-                  <div className="text-xs text-gray-500">${pendingAmount.toFixed(2)}</div>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 bg-red-500 rounded-full mr-3"></div>
-                  <span className="text-sm font-medium text-gray-700">Overdue</span>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm font-semibold text-gray-900">{overduePayments.length}</div>
-                  <div className="text-xs text-gray-500">${overdueAmount.toFixed(2)}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Payment Type Distribution</h3>
-            <div className="space-y-4">
-              {Object.entries(paymentTypeStats).map(([type, count]) => (
-                <div key={type} className="flex items-center justify-between">
+              {Object.entries(paymentMethodStats).map(([method, count]) => (
+                <div key={method} className="flex items-center justify-between">
                   <div className="flex items-center">
-                    <div className="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
-                    <span className="text-sm font-medium text-gray-700 capitalize">{type}</span>
+                    <div className={`w-3 h-3 rounded-full mr-3 ${
+                      method === 'M-Pesa' ? 'bg-green-500' :
+                      method === 'Cash' ? 'bg-blue-500' :
+                      method === 'Cheque' ? 'bg-purple-500' :
+                      'bg-gray-500'
+                    }`}></div>
+                    <span className="text-sm font-medium text-gray-700">{method}</span>
                   </div>
                   <div className="text-right">
                     <div className="text-sm font-semibold text-gray-900">{count}</div>
@@ -213,53 +190,44 @@ const Reports = () => {
               ))}
             </div>
           </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Student Program Distribution</h3>
+            <div className="space-y-4">
+              {Object.entries(programStats).map(([program, count]) => (
+                <div key={program} className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
+                    <span className="text-sm font-medium text-gray-700">{program}</span>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-semibold text-gray-900">{count}</div>
+                    <div className="text-xs text-gray-500">
+                      {((count / totalStudents) * 100).toFixed(1)}%
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Monthly Trends */}
         <div className="bg-white rounded-lg shadow p-6 mb-8">
           <h3 className="text-lg font-medium text-gray-900 mb-4">Monthly Payment Trends</h3>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Month
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Total Amount
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Payment Count
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {Object.entries(monthlyTrends).map(([month, amount]) => {
-                  const monthPayments = payments.filter(p => 
-                    new Date(p.dueDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) === month
-                  );
-                  return (
-                    <tr key={month}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {month}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        ${amount.toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {monthPayments.length}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {Object.entries(monthlyTrends).slice(-6).map(([month, amount]) => (
+              <div key={month} className="text-center">
+                <div className="text-sm font-medium text-gray-900">{month}</div>
+                <div className="text-lg font-semibold text-blue-600">${amount.toFixed(2)}</div>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Recent Activity */}
+        {/* Recent Payments */}
         <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Payment Activity</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Payments</h3>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
@@ -268,13 +236,10 @@ const Reports = () => {
                     Student
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Payment Type
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Amount
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
+                    Method
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Date
@@ -286,29 +251,24 @@ const Reports = () => {
                   <tr key={payment.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
-                        {payment.studentName || `Student ${payment.studentId}`}
+                        {payment.studentName || payment.studentNumber}
                       </div>
-                      <div className="text-sm text-gray-500">{payment.studentId}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 capitalize">
-                        {payment.paymentType}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      ${payment.amount?.toFixed(2)}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      ${payment.amountPaid?.toFixed(2)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        payment.status?.toLowerCase() === 'paid' ? 'bg-green-100 text-green-800' :
-                        payment.status?.toLowerCase() === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
+                        payment.paymentMethod === 'M-Pesa' ? 'bg-green-100 text-green-800' :
+                        payment.paymentMethod === 'Cash' ? 'bg-blue-100 text-blue-800' :
+                        payment.paymentMethod === 'Cheque' ? 'bg-purple-100 text-purple-800' :
+                        'bg-gray-100 text-gray-800'
                       }`}>
-                        {payment.status}
+                        {payment.paymentMethod || 'M-Pesa'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(payment.dueDate).toLocaleDateString()}
+                      {new Date(payment.paymentDate).toLocaleDateString()}
                     </td>
                   </tr>
                 ))}

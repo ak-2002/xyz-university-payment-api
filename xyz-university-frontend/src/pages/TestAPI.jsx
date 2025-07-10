@@ -84,6 +84,20 @@ const TestAPI = () => {
     }
   };
 
+  const testStudentRole = async () => {
+    const result = await testEndpoint('Student Role Test', `${baseUrl}/api/Authorization/student-role-test`, {
+      headers: { 'Authorization': `Bearer ${authToken}` }
+    });
+    setResults(prev => ({ ...prev, studentRole: result }));
+  };
+
+  const assignStudentRole = async () => {
+    const result = await testEndpoint('Assign Student Role', `${baseUrl}/api/Authorization/assign-student-role`, {
+      method: 'POST'
+    });
+    setResults(prev => ({ ...prev, assignStudentRole: result }));
+  };
+
   const runAllTests = async () => {
     setLoading(true);
     const newResults = {};
@@ -233,6 +247,15 @@ const TestAPI = () => {
             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
           >
             Login
+          </button>
+          <button onClick={testLogin} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+            Test Login
+          </button>
+          <button onClick={testStudentRole} className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+            Test Student Role
+          </button>
+          <button onClick={assignStudentRole} className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">
+            Assign Student Role
           </button>
         </div>
         {authToken && (
@@ -417,6 +440,22 @@ const TestAPI = () => {
               </div>
             ))}
           </div>
+        </div>
+      )}
+      {results.studentRole && (
+        <div className="mt-4 p-4 border rounded">
+          <h3 className="font-bold">Student Role Test:</h3>
+          <pre className="text-sm bg-gray-100 p-2 rounded mt-2 overflow-auto">
+            {JSON.stringify(results.studentRole, null, 2)}
+          </pre>
+        </div>
+      )}
+      {results.assignStudentRole && (
+        <div className="mt-4 p-4 border rounded">
+          <h3 className="font-bold">Assign Student Role:</h3>
+          <pre className="text-sm bg-gray-100 p-2 rounded mt-2 overflow-auto">
+            {JSON.stringify(results.assignStudentRole, null, 2)}
+          </pre>
         </div>
       )}
     </div>

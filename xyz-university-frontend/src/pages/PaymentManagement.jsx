@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { paymentService } from '../services/paymentService';
 import { studentService } from '../services/studentService';
+import NotificationModal from '../components/common/NotificationModal';
 
 const PaymentManagement = () => {
   const [payments, setPayments] = useState([]);
@@ -10,11 +11,22 @@ const PaymentManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [notification, setNotification] = useState({
+    isOpen: false,
+    type: 'info',
+    title: '',
+    message: '',
+    details: ''
+  });
   const [formData, setFormData] = useState({
     studentNumber: '',
     amountPaid: '',
     paymentReference: '',
-    paymentDate: ''
+    paymentDate: '',
+    paymentMethod: 'M-Pesa',
+    transactionId: '',
+    receiptNumber: '',
+    notes: ''
   });
 
   useEffect(() => {
@@ -45,10 +57,27 @@ const PaymentManagement = () => {
       setShowAddModal(false);
       resetForm();
       loadData();
+      showNotification('success', 'Payment Created', 'Payment has been successfully created and recorded in the system.');
     } catch (err) {
-      setError('Failed to create payment');
       console.error(err);
+      const errorMessage = err.response?.data?.message || 'Failed to create payment';
+      const errorDetails = err.response?.data?.errors?.join(', ') || err.message;
+      showNotification('error', 'Payment Creation Failed', errorMessage, errorDetails);
     }
+  };
+
+  const showNotification = (type, title, message, details = '') => {
+    setNotification({
+      isOpen: true,
+      type,
+      title,
+      message,
+      details
+    });
+  };
+
+  const closeNotification = () => {
+    setNotification(prev => ({ ...prev, isOpen: false }));
   };
 
   const resetForm = () => {
@@ -56,7 +85,11 @@ const PaymentManagement = () => {
       studentNumber: '',
       amountPaid: '',
       paymentReference: '',
-      paymentDate: ''
+      paymentDate: '',
+      paymentMethod: 'M-Pesa',
+      transactionId: '',
+      receiptNumber: '',
+      notes: ''
     });
   };
 
@@ -73,13 +106,15 @@ const PaymentManagement = () => {
     }
   };
 
-  const getPaymentTypeColor = (type) => {
-    switch (type?.toLowerCase()) {
-      case 'tuition':
+  const getPaymentMethodColor = (method) => {
+    switch (method?.toLowerCase()) {
+      case 'm-pesa':
+        return 'bg-green-100 text-green-800';
+      case 'cash':
         return 'bg-blue-100 text-blue-800';
-      case 'library':
+      case 'cheque':
         return 'bg-purple-100 text-purple-800';
-      case 'laboratory':
+      case 'bank transfer':
         return 'bg-orange-100 text-orange-800';
       default:
         return 'bg-gray-100 text-gray-800';
@@ -235,6 +270,9 @@ const PaymentManagement = () => {
                     Amount
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Method
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -256,22 +294,27 @@ const PaymentManagement = () => {
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">
-                            {payment.studentName || getStudentName(payment.studentId)}
+                            {payment.studentName || getStudentName(payment.studentNumber)}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {payment.studentId}
+                            {payment.studentNumber}
                           </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{payment.paymentReference}</div>
-                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                        Payment
-                      </span>
+                      {payment.transactionId && (
+                        <div className="text-xs text-gray-500">ID: {payment.transactionId}</div>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       ${payment.amountPaid?.toFixed(2)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPaymentMethodColor(payment.paymentMethod)}`}>
+                        {payment.paymentMethod || 'M-Pesa'}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(payment.status)}`}>
@@ -323,6 +366,20 @@ const PaymentManagement = () => {
                     />
                   </div>
                   <div>
+                    <label className="block text-sm font-medium text-gray-700">Payment Method</label>
+                    <select
+                      value={formData.paymentMethod}
+                      onChange={(e) => setFormData({...formData, paymentMethod: e.target.value})}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      required
+                    >
+                      <option value="M-Pesa">M-Pesa</option>
+                      <option value="Cash">Cash</option>
+                      <option value="Cheque">Cheque</option>
+                      <option value="Bank Transfer">Bank Transfer</option>
+                    </select>
+                  </div>
+                  <div>
                     <label className="block text-sm font-medium text-gray-700">Payment Reference</label>
                     <input
                       type="text"
@@ -333,6 +390,16 @@ const PaymentManagement = () => {
                     />
                   </div>
                   <div>
+                    <label className="block text-sm font-medium text-gray-700">Transaction ID / Receipt Number</label>
+                    <input
+                      type="text"
+                      value={formData.transactionId}
+                      onChange={(e) => setFormData({...formData, transactionId: e.target.value})}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      placeholder={formData.paymentMethod === 'M-Pesa' ? 'Transaction ID' : 'Receipt Number'}
+                    />
+                  </div>
+                  <div>
                     <label className="block text-sm font-medium text-gray-700">Payment Date</label>
                     <input
                       type="date"
@@ -340,6 +407,16 @@ const PaymentManagement = () => {
                       onChange={(e) => setFormData({...formData, paymentDate: e.target.value})}
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                       required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Notes</label>
+                    <textarea
+                      value={formData.notes}
+                      onChange={(e) => setFormData({...formData, notes: e.target.value})}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      rows="2"
+                      placeholder="Additional notes about the payment..."
                     />
                   </div>
                   <div className="flex justify-end space-x-3 pt-4">
@@ -365,6 +442,16 @@ const PaymentManagement = () => {
             </div>
           </div>
         )}
+
+        {/* Notification Modal */}
+        <NotificationModal
+          isOpen={notification.isOpen}
+          onClose={closeNotification}
+          type={notification.type}
+          title={notification.title}
+          message={notification.message}
+          details={notification.details}
+        />
       </div>
     </div>
   );

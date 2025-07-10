@@ -12,27 +12,43 @@ const api = axios.create({
 // Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('access_token');
+    console.log('API Request:', config.method?.toUpperCase(), config.url);
+    const token = localStorage.getItem('authToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      console.log('Auth token added to request');
+    } else {
+      console.log('No auth token found');
     }
     return config;
   },
   (error) => {
+    console.error('Request interceptor error:', error);
     return Promise.reject(error);
   }
 );
 
 // Response interceptor for error handling
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log('API Response:', response.status, response.config.url);
+    return response;
+  },
   (error) => {
+    console.error('API Error:', error.response?.status, error.config?.url, error.message);
+    
+    // Handle 401 Unauthorized - redirect to login
     if (error.response?.status === 401) {
-      // Token expired or invalid
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
       window.location.href = '/login';
     }
+    
+    // Handle 403 Forbidden
+    if (error.response?.status === 403) {
+      console.error('Access forbidden:', error.response.data);
+    }
+    
     return Promise.reject(error);
   }
 );

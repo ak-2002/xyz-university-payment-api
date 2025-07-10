@@ -1,4 +1,5 @@
 using xyz_university_payment_api.Core.Domain.Entities;
+using xyz_university_payment_api.Core.Application.DTOs;
 
 namespace xyz_university_payment_api.Core.Application.Interfaces
 {
@@ -10,6 +11,8 @@ namespace xyz_university_payment_api.Core.Application.Interfaces
 
 
         Task<IEnumerable<PaymentNotification>> GetAllPaymentsAsync();
+
+        Task<IEnumerable<PaymentDto>> GetAllPaymentsWithStudentInfoAsync();
 
         Task<PaymentNotification?> GetPaymentByIdAsync(int id);
 

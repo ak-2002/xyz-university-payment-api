@@ -1,0 +1,32 @@
+2025-07-10 12:21:33.117 +03:00 [INF] Ensuring database is created
+2025-07-10 12:21:34.158 +03:00 [INF] Database created successfully
+2025-07-10 12:21:34.163 +03:00 [INF] Seeding default roles and permissions
+2025-07-10 12:21:34.599 +03:00 [INF] Valid data already seeded, skipping seeding process
+2025-07-10 12:21:34.606 +03:00 [INF] Default roles and permissions seeded successfully
+2025-07-10 12:21:34.779 +03:00 [INF] XYZ University Payment API started successfully
+2025-07-10 12:21:34.920 +03:00 [INF] Configured endpoint PaymentProcessedMessage, Consumer: xyz_university_payment_api.Core.Application.Services.PaymentProcessedMessageConsumer
+2025-07-10 12:21:34.930 +03:00 [INF] Configured endpoint PaymentFailedMessage, Consumer: xyz_university_payment_api.Core.Application.Services.PaymentFailedMessageConsumer
+2025-07-10 12:21:34.938 +03:00 [INF] Configured endpoint PaymentValidationMessage, Consumer: xyz_university_payment_api.Core.Application.Services.PaymentValidationMessageConsumer
+2025-07-10 12:21:35.264 +03:00 [INF] Bus started: "rabbitmq://localhost/"
+2025-07-10 12:22:03.834 +03:00 [INF] Starting database cleanup...
+2025-07-10 12:22:13.402 +03:00 [INF] Starting database cleanup...
+2025-07-10 12:22:24.503 +03:00 [INF] Starting database cleanup...
+2025-07-10 12:24:32.006 +03:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-07-10 12:24:32.042 +03:00 [INF] Generated access token for user S67890 with 0 roles and 0 permissions
+2025-07-10 12:24:40.414 +03:00 [INF] Generated access token for user admin with 1 roles and 16 permissions
+2025-07-10 12:24:40.605 +03:00 [INF] V3 GetAdminStats endpoint called
+2025-07-10 12:24:40.611 +03:00 [INF] Retrieving all students
+2025-07-10 12:24:40.643 +03:00 [INF] Retrieving all payments
+2025-07-10 12:24:40.698 +03:00 [INF] V3 GetAdminStats endpoint called
+2025-07-10 12:24:40.706 +03:00 [INF] Retrieving all students
+2025-07-10 12:24:40.714 +03:00 [INF] Retrieving all payments
+2025-07-10 12:24:43.604 +03:00 [INF] GetUsers endpoint called by user: admin
+2025-07-10 12:24:43.631 +03:00 [INF] Total users in database: 10
+2025-07-10 12:24:43.676 +03:00 [INF] Returning 10 users
+2025-07-10 12:24:43.694 +03:00 [INF] GetUsers endpoint called by user: admin
+2025-07-10 12:24:43.704 +03:00 [INF] Total users in database: 10
+2025-07-10 12:24:43.714 +03:00 [INF] Returning 10 users
+2025-07-10 12:26:33.757 +03:00 [INF] Generated access token for user S67890 with 0 roles and 0 permissions
+2025-07-10 13:02:36.310 +03:00 [INF] Generated access token for user S67890 with 0 roles and 0 permissions
+2025-07-10 13:05:06.942 +03:00 [INF] Bus stopped: "rabbitmq://localhost/"
+2025-07-10 13:05:22.038 +03:00 [INF] Starting XYZ University Payment API {"MachineName":"DESKTOP-F3AMJ10","ThreadId":1,"ProcessId":19652,"Application":"XYZ University Payment API"}

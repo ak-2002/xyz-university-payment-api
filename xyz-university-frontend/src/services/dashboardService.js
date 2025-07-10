@@ -37,10 +37,15 @@ export const dashboardService = {
   // Get student dashboard statistics
   async getStudentStats() {
     try {
+      console.log('DashboardService: Calling student-stats endpoint...');
       const response = await api.get('/api/v3/Dashboard/student-stats');
+      console.log('DashboardService: Raw response:', response);
+      console.log('DashboardService: Response data:', response.data);
       return response.data;
     } catch (error) {
-      console.error('Error fetching student stats:', error);
+      console.error('DashboardService: Error fetching student stats:', error);
+      console.error('DashboardService: Error response:', error.response?.data);
+      console.error('DashboardService: Error status:', error.response?.status);
       throw error;
     }
   },
