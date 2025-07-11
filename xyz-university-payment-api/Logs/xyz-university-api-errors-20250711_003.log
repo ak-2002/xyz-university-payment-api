@@ -1,0 +1,96 @@
+2025-07-11 09:55:30.760 +03:00 [ERR] Error deleting student with ID: 8
+System.InvalidOperationException: Cannot delete active student S660066. Use force=true to override.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.DeleteStudentAsync(Int32 id, Boolean force) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 227
+2025-07-11 09:55:30.782 +03:00 [ERR] Error deleting student V3 with ID: 8
+xyz_university_payment_api.Core.Domain.Exceptions.DatabaseException: Database operation failed: Failed to delete student with ID 8
+ ---> System.InvalidOperationException: Cannot delete active student S660066. Use force=true to override.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.DeleteStudentAsync(Int32 id, Boolean force) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 227
+   --- End of inner exception stack trace ---
+   at xyz_university_payment_api.Core.Application.Services.StudentService.DeleteStudentAsync(Int32 id, Boolean force) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 237
+   at xyz_university_payment_api.Core.Application.Services.StudentService.DeleteStudentV3Async(Int32 id, Boolean permanent) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 839
+2025-07-11 09:58:48.232 +03:00 [ERR] Error creating student V3: S660099
+xyz_university_payment_api.Core.Domain.Exceptions.ValidationException: Validation failed. Please check the provided data.
+   at xyz_university_payment_api.Core.Application.Services.StudentService.CreateStudentAsync(Student student) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 144
+   at xyz_university_payment_api.Core.Application.Services.StudentService.CreateStudentV3Async(CreateStudentDtoV3 createStudentDto) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\StudentService.cs:line 726
+2025-07-11 09:58:48.256 +03:00 [ERR] An unhandled exception has occurred while executing the request.
+System.InvalidOperationException: No route matches the supplied values.
+   at Microsoft.AspNetCore.Mvc.CreatedAtActionResult.OnFormatting(ActionContext context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor.ExecuteAsyncCore(ActionContext context, ObjectResult result, Type objectType, Object value)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor.ExecuteAsync(ActionContext context, ObjectResult result)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.ResultNext[TFilter,TFilterAsync](State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.InvokeNextResultFilterAsync[TFilter,TFilterAsync]()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.Rethrow(ResultExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.ResultNext[TFilter,TFilterAsync](State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.InvokeResultFilters()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddlewareImpl.Invoke(HttpContext context)
+2025-07-11 12:30:09.387 +03:00 [ERR] Failed executing DbCommand (8ms) [Parameters=[p0='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SELECT TOP(1) [x].[Id], [x].[CreatedAt], [x].[Description], [x].[IsActive], [x].[Name]
+FROM (
+    SELECT Id FROM Roles WHERE Name = @p0
+) AS [x] {"EventId":{"Id":20102,"Name":"Microsoft.EntityFrameworkCore.Database.Command.CommandError"},"SourceContext":"Microsoft.EntityFrameworkCore.Database.Command","ActionId":"f6026700-125f-4688-91fa-b6b41624db6b","ActionName":"xyz_university_payment_api.Presentation.Controllers.V3.UserControllerV3.AssignRole (xyz-university-payment-api)","RequestId":"0HNE0BI5354IH:00000004","RequestPath":"/api/v3/user/users/48/roles","ConnectionId":"0HNE0BI5354IH","MachineName":"DESKTOP-F3AMJ10","ThreadId":30,"ProcessId":21404,"Application":"XYZ University Payment API"}
+2025-07-11 12:30:09.421 +03:00 [ERR] An exception occurred while iterating over the results of a query for context type 'xyz_university_payment_api.Infrastructure.Data.AppDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'CreatedAt'.
+Invalid column name 'Description'.
+Invalid column name 'IsActive'.
+Invalid column name 'Name'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:60436e23-0eb7-4aa4-a84d-6fa4b3ab75a4
+Error Number:207,State:1,Class:16 {"EventId":{"Id":10100,"Name":"Microsoft.EntityFrameworkCore.Query.QueryIterationFailed"},"SourceContext":"Microsoft.EntityFrameworkCore.Query","ActionId":"f6026700-125f-4688-91fa-b6b41624db6b","ActionName":"xyz_university_payment_api.Presentation.Controllers.V3.UserControllerV3.AssignRole (xyz-university-payment-api)","RequestId":"0HNE0BI5354IH:00000004","RequestPath":"/api/v3/user/users/48/roles","ConnectionId":"0HNE0BI5354IH","MachineName":"DESKTOP-F3AMJ10","ThreadId":30,"ProcessId":21404,"Application":"XYZ University Payment API"}
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'CreatedAt'.
+Invalid column name 'Description'.
+Invalid column name 'IsActive'.
+Invalid column name 'Name'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:60436e23-0eb7-4aa4-a84d-6fa4b3ab75a4
+Error Number:207,State:1,Class:16
+2025-07-11 12:30:09.444 +03:00 [ERR] Error assigning role to user 48 {"SourceContext":"xyz_university_payment_api.Presentation.Controllers.V3.UserControllerV3","ActionId":"f6026700-125f-4688-91fa-b6b41624db6b","ActionName":"xyz_university_payment_api.Presentation.Controllers.V3.UserControllerV3.AssignRole (xyz-university-payment-api)","RequestId":"0HNE0BI5354IH:00000004","RequestPath":"/api/v3/user/users/48/roles","ConnectionId":"0HNE0BI5354IH","MachineName":"DESKTOP-F3AMJ10","ThreadId":30,"ProcessId":21404,"Application":"XYZ University Payment API"}
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'CreatedAt'.
+Invalid column name 'Description'.
+Invalid column name 'IsActive'.
+Invalid column name 'Name'.
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at xyz_university_payment_api.Presentation.Controllers.V3.UserControllerV3.AssignRole(Int32 id, AssignRoleDto assignRoleDto) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\UserControllerV3.cs:line 240
+   at xyz_university_payment_api.Presentation.Controllers.V3.UserControllerV3.AssignRole(Int32 id, AssignRoleDto assignRoleDto) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Presentation\Controllers\V3\UserControllerV3.cs:line 261
+ClientConnectionId:60436e23-0eb7-4aa4-a84d-6fa4b3ab75a4
+Error Number:207,State:1,Class:16

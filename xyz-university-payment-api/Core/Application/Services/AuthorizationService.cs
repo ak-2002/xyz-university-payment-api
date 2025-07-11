@@ -1248,5 +1248,113 @@ namespace xyz_university_payment_api.Core.Application.Services
         }
 
         #endregion
+
+        public async Task<ApiResponse<UserDto>> CreateFullAccessUserAsync(CreateFullAccessUserDto createUserDto)
+        {
+            try
+            {
+                _logger.LogInformation("Creating full access user: {Username}", createUserDto.Username);
+
+                // Check if user already exists
+                var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Username == createUserDto.Username || u.Email == createUserDto.Email);
+                if (existingUser != null)
+                {
+                    return new ApiResponse<UserDto>
+                    {
+                        Success = false,
+                        Message = "User with this username or email already exists",
+                        Errors = new List<string> { "Username or email already exists" }
+                    };
+                }
+
+                // Create new user
+                var newUser = new User
+                {
+                    Username = createUserDto.Username,
+                    Email = createUserDto.Email,
+                    PasswordHash = HashPassword(createUserDto.Password),
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                _context.Users.Add(newUser);
+                await _context.SaveChangesAsync();
+
+                // Get the FullAccess role (create if it doesn't exist)
+                var fullAccessRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "FullAccess");
+                if (fullAccessRole == null)
+                {
+                    fullAccessRole = new Role
+                    {
+                        Name = "FullAccess",
+                        Description = "Full access to students and payments with CRUD operations",
+                        IsActive = true,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    _context.Roles.Add(fullAccessRole);
+                    await _context.SaveChangesAsync();
+
+                    // Get all permissions for students and payments
+                    var permissions = await _context.Permissions
+                        .Where(p => (p.Resource == "Students" || p.Resource == "Payments") && p.IsActive)
+                        .ToListAsync();
+
+                    // Assign all permissions to FullAccess role
+                    foreach (var permission in permissions)
+                    {
+                        var rolePermission = new RolePermission
+                        {
+                            RoleId = fullAccessRole.Id,
+                            PermissionId = permission.Id,
+                            AssignedAt = DateTime.UtcNow,
+                            AssignedBy = "System"
+                        };
+                        _context.RolePermissions.Add(rolePermission);
+                    }
+                    await _context.SaveChangesAsync();
+                }
+
+                // Assign FullAccess role to user
+                var userRole = new UserRole
+                {
+                    UserId = newUser.Id,
+                    RoleId = fullAccessRole.Id,
+                    AssignedAt = DateTime.UtcNow,
+                    AssignedBy = "System"
+                };
+
+                _context.UserRoles.Add(userRole);
+                await _context.SaveChangesAsync();
+
+                var userDto = new UserDto
+                {
+                    Id = newUser.Id,
+                    Username = newUser.Username,
+                    Email = newUser.Email,
+                    IsActive = newUser.IsActive,
+                    CreatedAt = newUser.CreatedAt,
+                    Roles = new List<RoleDto> { new RoleDto { Name = "FullAccess", Description = "Full access to students and payments" } }
+                };
+
+                _logger.LogInformation("Full access user created successfully: {Username}", createUserDto.Username);
+
+                return new ApiResponse<UserDto>
+                {
+                    Success = true,
+                    Data = userDto,
+                    Message = "Full access user created successfully"
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating full access user: {Username}", createUserDto.Username);
+                return new ApiResponse<UserDto>
+                {
+                    Success = false,
+                    Message = "Failed to create full access user",
+                    Errors = new List<string> { ex.Message }
+                };
+            }
+        }
     }
 }

@@ -32,4 +32,9 @@ APIVERSIONING__SHOWDEPRECATIONWARNINGS=true
 APIVERSIONING__DEPRECATIONWARNINGDAYS=30
 
 # Identity Server
-IDENTITYSERVER__AUTHORITY=http://localhost:5153 
+IDENTITYSERVER__AUTHORITY=http://localhost:5153
+
+# SendGrid Email Configuration
+SENDGRID__APIKEY=your-sendgrid-api-key-here
+SENDGRID__FROMEMAIL=noreply@xyzuniversity.edu
+SENDGRID__FROMNAME=XYZ University Finance Department 

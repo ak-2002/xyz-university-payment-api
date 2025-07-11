@@ -1,0 +1,46 @@
+2025-07-11 14:47:44.393 +03:00 [ERR] Error sending email to awkiiru@usiu.ac.ke
+System.Net.Http.HttpRequestException: No such host is known. (api.sendgrid.com:443)
+ ---> System.Net.Sockets.SocketException (11001): No such host is known.
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.ThrowException(SocketError error, CancellationToken cancellationToken)
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.System.Threading.Tasks.Sources.IValueTaskSource.GetResult(Int16 token)
+   at System.Net.Sockets.Socket.<ConnectAsync>g__WaitForConnectWithCancellation|285_0(AwaitableSocketAsyncEventArgs saea, ValueTask connectTask, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at SendGrid.Helpers.Reliability.RetryDelegatingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at SendGrid.BaseClient.MakeRequest(HttpRequestMessage request, CancellationToken cancellationToken)
+   at SendGrid.BaseClient.RequestAsync(Method method, String requestBody, String queryParams, String urlPath, CancellationToken cancellationToken)
+   at SendGrid.BaseClient.SendEmailAsync(SendGridMessage msg, CancellationToken cancellationToken)
+   at xyz_university_payment_api.Core.Application.Services.EmailService.SendEmailAsync(String toEmail, String subject, String content) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\EmailService.cs:line 132
+2025-07-11 14:47:44.430 +03:00 [ERR] Error sending email to awkiiru@usiu.ac.ke
+System.Net.Http.HttpRequestException: No such host is known. (api.sendgrid.com:443)
+ ---> System.Net.Sockets.SocketException (11001): No such host is known.
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.ThrowException(SocketError error, CancellationToken cancellationToken)
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.System.Threading.Tasks.Sources.IValueTaskSource.GetResult(Int16 token)
+   at System.Net.Sockets.Socket.<ConnectAsync>g__WaitForConnectWithCancellation|285_0(AwaitableSocketAsyncEventArgs saea, ValueTask connectTask, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at SendGrid.Helpers.Reliability.RetryDelegatingHandler.SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at SendGrid.BaseClient.MakeRequest(HttpRequestMessage request, CancellationToken cancellationToken)
+   at SendGrid.BaseClient.RequestAsync(Method method, String requestBody, String queryParams, String urlPath, CancellationToken cancellationToken)
+   at SendGrid.BaseClient.SendEmailAsync(SendGridMessage msg, CancellationToken cancellationToken)
+   at xyz_university_payment_api.Core.Application.Services.EmailService.SendEmailAsync(String toEmail, String subject, String content) in C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\Core\Application\Services\EmailService.cs:line 132
+2025-07-11 15:26:12.562 +03:00 [ERR] Failed to send email to awkiiru@usiu.ac.ke. Status: "Unauthorized"
+2025-07-11 15:26:12.873 +03:00 [ERR] Failed to send email to awkiiru@usiu.ac.ke. Status: "Unauthorized"
+2025-07-11 15:32:52.105 +03:00 [ERR] Failed to send email to awkiiru@usiu.ac.ke. Status: "Forbidden" {"SourceContext":"xyz_university_payment_api.Core.Application.Services.EmailService","MachineName":"DESKTOP-F3AMJ10","ThreadId":22,"ProcessId":3976,"Application":"XYZ University Payment API"}
+2025-07-11 15:32:52.399 +03:00 [ERR] Failed to send email to awkiiru@usiu.ac.ke. Status: "Forbidden" {"SourceContext":"xyz_university_payment_api.Core.Application.Services.EmailService","MachineName":"DESKTOP-F3AMJ10","ThreadId":22,"ProcessId":3976,"Application":"XYZ University Payment API"}

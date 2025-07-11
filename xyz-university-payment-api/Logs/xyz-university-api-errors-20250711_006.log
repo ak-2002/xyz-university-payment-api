@@ -1,0 +1,6 @@
+2025-07-11 15:32:52.105 +03:00 [ERR] Failed to send email to awkiiru@usiu.ac.ke. Status: "Forbidden"
+2025-07-11 15:32:52.399 +03:00 [ERR] Failed to send email to awkiiru@usiu.ac.ke. Status: "Forbidden"
+2025-07-11 15:45:32.569 +03:00 [ERR] Failed to send email to awkiiru@usiu.ac.ke. Status: "Forbidden" {"SourceContext":"xyz_university_payment_api.Core.Application.Services.EmailService","MachineName":"DESKTOP-F3AMJ10","ThreadId":22,"ProcessId":20136,"Application":"XYZ University Payment API"}
+2025-07-11 15:47:56.545 +03:00 [ERR] Failed to send email to awkiiru@usiu.ac.ke. Status: "Forbidden" {"SourceContext":"xyz_university_payment_api.Core.Application.Services.EmailService","MachineName":"DESKTOP-F3AMJ10","ThreadId":13,"ProcessId":20136,"Application":"XYZ University Payment API"}
+2025-07-11 15:48:58.724 +03:00 [ERR] Failed to send email to awkiiru@usiu.ac.ke. Status: "Forbidden" {"SourceContext":"xyz_university_payment_api.Core.Application.Services.EmailService","MachineName":"DESKTOP-F3AMJ10","ThreadId":23,"ProcessId":20136,"Application":"XYZ University Payment API"}
+2025-07-11 15:48:59.012 +03:00 [ERR] Failed to send email to awkiiru@usiu.ac.ke. Status: "Forbidden" {"SourceContext":"xyz_university_payment_api.Core.Application.Services.EmailService","MachineName":"DESKTOP-F3AMJ10","ThreadId":23,"ProcessId":20136,"Application":"XYZ University Payment API"}

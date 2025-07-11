@@ -21,7 +21,7 @@ namespace xyz_university_payment_api.Migrations
                 table: "PaymentNotifications",
                 type: "nvarchar(max)",
                 nullable: false,
-                defaultValue: "");
+                defaultValue: "M-Pesa");
 
             migrationBuilder.AddColumn<string>(
                 name: "ReceiptNumber",

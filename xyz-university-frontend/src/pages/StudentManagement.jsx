@@ -94,15 +94,56 @@ const StudentManagement = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this student?')) {
+    const action = window.confirm(
+      'Choose delete action:\n\n' +
+      'Click OK to permanently delete the student (cannot be undone)\n' +
+      'Click Cancel to deactivate the student (can be reactivated later)'
+    );
+    
+    if (action !== null) { // User clicked OK or Cancel
       try {
-        await studentService.deleteStudent(id);
+        if (action) {
+          // Permanent delete
+          await studentService.deleteStudent(id, true);
+          showNotification('success', 'Student Permanently Deleted', 'Student has been permanently removed from the system.');
+        } else {
+          // Deactivate (soft delete)
+          await studentService.deleteStudent(id, false);
+          showNotification('success', 'Student Deactivated', 'Student has been deactivated and can be reactivated later.');
+        }
         loadStudents();
-        showNotification('success', 'Student Deleted', 'Student has been successfully removed from the system.');
       } catch (err) {
         console.error(err);
         const errorMessage = err.response?.data?.message || 'Failed to delete student';
         showNotification('error', 'Delete Failed', errorMessage);
+      }
+    }
+  };
+
+  const handleDeactivate = async (id) => {
+    if (window.confirm('Are you sure you want to deactivate this student? They can be reactivated later.')) {
+      try {
+        await studentService.deleteStudent(id, false);
+        loadStudents();
+        showNotification('success', 'Student Deactivated', 'Student has been deactivated and can be reactivated later.');
+      } catch (err) {
+        console.error(err);
+        const errorMessage = err.response?.data?.message || 'Failed to deactivate student';
+        showNotification('error', 'Deactivate Failed', errorMessage);
+      }
+    }
+  };
+
+  const handleReactivate = async (id) => {
+    if (window.confirm('Are you sure you want to reactivate this student?')) {
+      try {
+        await studentService.updateStudentStatus(id, true);
+        loadStudents();
+        showNotification('success', 'Student Reactivated', 'Student has been reactivated successfully.');
+      } catch (err) {
+        console.error(err);
+        const errorMessage = err.response?.data?.message || 'Failed to reactivate student';
+        showNotification('error', 'Reactivate Failed', errorMessage);
       }
     }
   };
@@ -185,6 +226,9 @@ const StudentManagement = () => {
                     Contact
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -218,19 +262,45 @@ const StudentManagement = () => {
                       <div className="text-sm text-gray-900">{student.email}</div>
                       <div className="text-sm text-gray-500">{student.phoneNumber}</div>
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        student.isActive 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {student.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <button
                         onClick={() => handleEdit(student)}
-                        className="text-blue-600 hover:text-blue-900 mr-4"
+                        className="text-blue-600 hover:text-blue-900 mr-2"
                       >
                         Edit
                       </button>
-                      <button
-                        onClick={() => handleDelete(student.id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        Delete
-                      </button>
+                      {student.isActive ? (
+                        <button
+                          onClick={() => handleDeactivate(student.id)}
+                          className="text-yellow-600 hover:text-yellow-900 mr-2"
+                        >
+                          Deactivate
+                        </button>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => handleReactivate(student.id)}
+                            className="text-green-600 hover:text-green-900 mr-2"
+                          >
+                            Reactivate
+                          </button>
+                          <button
+                            onClick={() => handleDelete(student.id)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            Delete
+                          </button>
+                        </>
+                      )}
                     </td>
                   </tr>
                 ))}

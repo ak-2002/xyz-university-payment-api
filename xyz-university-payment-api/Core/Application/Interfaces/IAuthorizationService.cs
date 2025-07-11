@@ -62,5 +62,6 @@ namespace xyz_university_payment_api.Core.Application.Interfaces
         // Helper methods
         Task<bool> LogAuthorizationActionAsync(string action, string resource, string resourceId, string performedBy);
         AppDbContext GetDbContext();
+        Task<ApiResponse<UserDto>> CreateFullAccessUserAsync(CreateFullAccessUserDto createUserDto);
     }
 }

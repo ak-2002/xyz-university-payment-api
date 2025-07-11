@@ -26,7 +26,8 @@ const RoleManagement = () => {
     { id: 1, name: 'Admin', description: 'Full system access and management' },
     { id: 2, name: 'Manager', description: 'Department management and oversight' },
     { id: 3, name: 'Staff', description: 'Basic operational access' },
-    { id: 4, name: 'Student', description: 'Student portal access only' }
+    { id: 4, name: 'Student', description: 'Student portal access only' },
+    { id: 5, name: 'FullAccess', description: 'Full access to students and payments with CRUD operations' }
   ]);
   const [newUserForm, setNewUserForm] = useState({
     username: '',
@@ -34,12 +35,18 @@ const RoleManagement = () => {
     fullName: '',
     password: '',
     defaultRole: 'Student',
-    selectedStudentId: null
+    selectedStudentId: ''
   });
 
   useEffect(() => {
     loadUsers();
   }, []);
+
+  useEffect(() => {
+    if (users.length > 0 && showCreateUserModal) {
+      loadStudents();
+    }
+  }, [users, showCreateUserModal]);
 
   const loadUsers = async () => {
     try {
@@ -61,6 +68,16 @@ const RoleManagement = () => {
       console.log('Loading students for user creation...');
       const students = await studentService.getStudents(1, 100); // Get all students
       console.log('Students loaded:', students);
+      console.log('First student object:', students[0]);
+      console.log('All student emails:', students.map(s => ({ id: s.id, studentNumber: s.studentNumber, email: s.email, emailType: typeof s.email })));
+      console.log('Students with emails:', students.filter(s => s.email && s.email.trim() !== ''));
+      console.log('Students without emails:', students.filter(s => !s.email || s.email.trim() === ''));
+      console.log('Users loaded:', users);
+      console.log('Students that already have user accounts:', students.filter(s => users.some(u => u.username === s.studentNumber)));
+      console.log('Available students for user creation:', students.filter(student => 
+        !users.some(user => user.username === student.studentNumber) &&
+        student.email && student.email.trim() !== ''
+      ));
       setStudents(students);
     } catch (err) {
       console.error('Error loading students:', err);
@@ -70,17 +87,23 @@ const RoleManagement = () => {
 
   const handleCreateUserModalOpen = () => {
     setShowCreateUserModal(true);
-    loadStudents(); // Load students when modal opens
+    // loadStudents() will be called by useEffect when modal opens and users are loaded
   };
 
   const handleStudentSelection = (studentId) => {
     const selectedStudent = students.find(s => s.id === parseInt(studentId));
     if (selectedStudent) {
+      // Only use the student's actual email - no fallback generation
+      if (!selectedStudent.email || selectedStudent.email.trim() === '') {
+        showNotification('error', 'Student Email Required', 'This student does not have a valid email address. Please update the student record first.');
+        return;
+      }
+      
       setNewUserForm({
         ...newUserForm,
         selectedStudentId: studentId,
         username: selectedStudent.studentNumber || '', // Use student number as username
-        email: selectedStudent.email || `${selectedStudent.studentNumber}@xyz.edu` || '',
+        email: selectedStudent.email,
         fullName: selectedStudent.fullName || selectedStudent.name || '',
         password: 'Password123!' // Default password
       });
@@ -91,7 +114,7 @@ const RoleManagement = () => {
     setNewUserForm({
       ...newUserForm,
       defaultRole: role,
-      selectedStudentId: role === 'Student' ? newUserForm.selectedStudentId : null
+      selectedStudentId: role === 'Student' ? newUserForm.selectedStudentId : ''
     });
   };
 
@@ -149,9 +172,13 @@ const RoleManagement = () => {
     }
     
     try {
-      await userService.createUser(newUserForm);
+      if (newUserForm.defaultRole === 'FullAccess') {
+        await userService.createFullAccessUser(newUserForm);
+      } else {
+        await userService.createUser(newUserForm);
+      }
       setShowCreateUserModal(false);
-      setNewUserForm({ username: '', email: '', fullName: '', password: '', defaultRole: 'Student', selectedStudentId: null });
+      setNewUserForm({ username: '', email: '', fullName: '', password: '', defaultRole: 'Student', selectedStudentId: '' });
       loadUsers(); // Reload the users list
       showNotification('success', 'User Created', 'New user has been created successfully.');
     } catch (err) {
@@ -281,16 +308,31 @@ const RoleManagement = () => {
       {/* Users Table */}
       <Card variant="elevated" className="p-6">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-xl font-bold text-gray-900 flex items-center">
-            <span className="w-2 h-8 bg-gradient-to-b from-purple-500 to-pink-500 rounded-full mr-3"></span>
-            User Management
-          </h3>
-          <button
-            onClick={handleCreateUserModalOpen}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-          >
-            Create New User
-          </button>
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">User Management</h2>
+            <p className="text-gray-600">Manage system users and their roles</p>
+          </div>
+          <div className="flex space-x-3">
+            <button
+              onClick={() => {
+                // Debug: Clear cache and reload
+                console.log('Debug: Clearing cache and reloading data...');
+                loadUsers();
+                if (showCreateUserModal) {
+                  loadStudents();
+                }
+              }}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
+            >
+              Debug: Reload
+            </button>
+            <button
+              onClick={handleCreateUserModalOpen}
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700"
+            >
+              Create New User
+            </button>
+          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -460,6 +502,9 @@ const RoleManagement = () => {
                     placeholder="Enter email"
                     readOnly={newUserForm.defaultRole === 'Student' && newUserForm.selectedStudentId}
                   />
+                  {newUserForm.defaultRole === 'Student' && newUserForm.selectedStudentId !== '' && (
+                    <p className="mt-1 text-xs text-gray-500">Using student's actual email</p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Full Name</label>
@@ -493,7 +538,7 @@ const RoleManagement = () => {
                   )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Default Role</label>
+                  <label className="block text-sm font-medium text-gray-700">Role</label>
                   <select
                     value={newUserForm.defaultRole}
                     onChange={(e) => handleRoleChange(e.target.value)}
@@ -504,7 +549,13 @@ const RoleManagement = () => {
                     <option value="Staff">Staff</option>
                     <option value="Manager">Manager</option>
                     <option value="Admin">Admin</option>
+                    <option value="FullAccess">Full Access</option>
                   </select>
+                  {newUserForm.defaultRole === 'FullAccess' && (
+                    <p className="mt-1 text-xs text-blue-600">
+                      ⚠️ Full Access users have complete CRUD permissions for students and payments
+                    </p>
+                  )}
                 </div>
                 {newUserForm.defaultRole === 'Student' && (
                   <div>
@@ -516,23 +567,42 @@ const RoleManagement = () => {
                       required
                     >
                       <option value="">Select a student</option>
-                      {students
-                        .filter(student => !users.some(user => user.username === student.studentNumber))
-                        .map(student => (
+                      {(() => {
+                        const availableStudents = students.filter(student => 
+                          !users.some(user => user.username === student.studentNumber) &&
+                          student.email && student.email.trim() !== ''
+                        );
+                        console.log('Available students in dropdown:', availableStudents);
+                        return availableStudents.map(student => (
                           <option key={student.id} value={student.id}>
-                            {student.studentNumber} - {student.fullName || student.name}
+                            {student.studentNumber} - {student.fullName || student.name} ({student.email})
                           </option>
-                        ))}
+                        ));
+                      })()}
                     </select>
-                    {students.filter(student => !users.some(user => user.username === student.studentNumber)).length === 0 && (
+                    {students.filter(student => 
+                      !users.some(user => user.username === student.studentNumber) &&
+                      student.email && student.email.trim() !== ''
+                    ).length === 0 && (
                       <p className="mt-1 text-xs text-orange-600">
-                        All students already have user accounts
+                        All students already have user accounts or don't have valid email addresses
+                      </p>
+                    )}
+                    {students.filter(student => 
+                      !users.some(user => user.username === student.studentNumber) &&
+                      (!student.email || student.email.trim() === '')
+                    ).length > 0 && (
+                      <p className="mt-1 text-xs text-red-600">
+                        ⚠️ Some students don't have email addresses and cannot be selected
                       </p>
                     )}
                     {newUserForm.selectedStudentId && (
                       <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-md">
                         <p className="text-xs text-green-700">
                           ✓ Student selected - Form fields will be auto-filled with student data
+                        </p>
+                        <p className="text-xs text-green-700 mt-1">
+                          📧 Student's actual email will be used for the user account
                         </p>
                       </div>
                     )}
@@ -543,7 +613,7 @@ const RoleManagement = () => {
                     type="button"
                     onClick={() => {
                       setShowCreateUserModal(false);
-                      setNewUserForm({ username: '', email: '', fullName: '', password: '', defaultRole: 'Student', selectedStudentId: null });
+                      setNewUserForm({ username: '', email: '', fullName: '', password: '', defaultRole: 'Student', selectedStudentId: '' });
                     }}
                     className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
                   >

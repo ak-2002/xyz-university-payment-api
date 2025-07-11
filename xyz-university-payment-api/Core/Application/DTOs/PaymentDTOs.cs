@@ -82,6 +82,15 @@ namespace xyz_university_payment_api.Core.Application.DTOs
         public string Status { get; set; } = string.Empty;
     }
 
+    // DTO for testing email functionality
+    public class TestEmailDto
+    {
+        public string StudentEmail { get; set; } = string.Empty;
+        public string StudentName { get; set; } = string.Empty;
+        public string StudentNumber { get; set; } = string.Empty;
+        public decimal Amount { get; set; }
+    }
+
     // DTO for reconciliation results
     public class ReconciliationResultDto
     {

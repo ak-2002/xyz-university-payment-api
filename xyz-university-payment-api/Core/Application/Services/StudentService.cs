@@ -194,6 +194,11 @@ namespace xyz_university_payment_api.Core.Application.Services
 
                 var updatedStudent = await _unitOfWork.Students.UpdateAsync(student);
                 _logger.LogInformation("Student updated successfully: {StudentNumber}", student.StudentNumber);
+                
+                // Clear all student-related cache
+                await _cacheService.RemoveByPatternAsync("student");
+                await _cacheService.RemoveByPatternAsync("students_v3");
+                
                 return updatedStudent;
             }
             catch (ApiException)
@@ -207,11 +212,11 @@ namespace xyz_university_payment_api.Core.Application.Services
             }
         }
 
-        public async Task<bool> DeleteStudentAsync(int id)
+        public async Task<bool> DeleteStudentAsync(int id, bool force = false)
         {
             try
             {
-                _logger.LogInformation("Deleting student with ID: {StudentId}", id);
+                _logger.LogInformation("Deleting student with ID: {StudentId}, Force: {Force}", id, force);
 
                 var student = await _unitOfWork.Students.GetByIdAsync(id);
                 if (student == null)
@@ -221,10 +226,10 @@ namespace xyz_university_payment_api.Core.Application.Services
                 }
 
                 // Business rule: Check if student can be deleted
-                if (student.IsActive)
+                if (student.IsActive && !force)
                 {
-                    _logger.LogWarning("Cannot delete active student: {StudentNumber}", student.StudentNumber);
-                    throw new InvalidOperationException($"Cannot delete active student {student.StudentNumber}");
+                    _logger.LogWarning("Cannot delete active student: {StudentNumber}. Use force=true to override.", student.StudentNumber);
+                    throw new InvalidOperationException($"Cannot delete active student {student.StudentNumber}. Use force=true to override.");
                 }
 
                 await _unitOfWork.Students.DeleteAsync(student);
@@ -602,6 +607,8 @@ namespace xyz_university_payment_api.Core.Application.Services
                     StudentNumber = s.StudentNumber,
                     FullName = s.FullName,
                     Program = s.Program,
+                    Email = s.Email,
+                    PhoneNumber = s.PhoneNumber,
                     IsActive = s.IsActive,
                     CreatedAt = s.CreatedAt,
                     UpdatedAt = s.UpdatedAt,
@@ -731,6 +738,8 @@ namespace xyz_university_payment_api.Core.Application.Services
                     StudentNumber = createdStudent.StudentNumber,
                     FullName = createdStudent.FullName,
                     Program = createdStudent.Program,
+                    Email = createdStudent.Email,
+                    PhoneNumber = createdStudent.PhoneNumber,
                     IsActive = createdStudent.IsActive,
                     CreatedAt = createdStudent.CreatedAt,
                     UpdatedAt = createdStudent.UpdatedAt,
@@ -797,12 +806,17 @@ namespace xyz_university_payment_api.Core.Application.Services
 
                 var updatedStudent = await UpdateStudentAsync(existingStudent);
 
+                // Clear all cache to ensure fresh data
+                await _cacheService.ClearAllCacheAsync();
+
                 var studentDto = new StudentDtoV3
                 {
                     Id = updatedStudent.Id,
                     StudentNumber = updatedStudent.StudentNumber,
                     FullName = updatedStudent.FullName,
                     Program = updatedStudent.Program,
+                    Email = updatedStudent.Email,
+                    PhoneNumber = updatedStudent.PhoneNumber,
                     IsActive = updatedStudent.IsActive,
                     CreatedAt = updatedStudent.CreatedAt,
                     UpdatedAt = updatedStudent.UpdatedAt,
@@ -836,7 +850,7 @@ namespace xyz_university_payment_api.Core.Application.Services
             {
                 _logger.LogInformation("Deleting student V3 with ID: {StudentId}, Permanent: {Permanent}", id, permanent);
 
-                var result = await DeleteStudentAsync(id);
+                var result = await DeleteStudentAsync(id, permanent);
 
                 return new ApiResponse<bool>
                 {

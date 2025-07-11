@@ -3,6 +3,7 @@ using xyz_university_payment_api.Core.Application.Interfaces;
 using xyz_university_payment_api.Core.Application.DTOs;
 using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.Authorization;
 
 namespace xyz_university_payment_api.Presentation.Controllers
 {
@@ -163,6 +164,42 @@ namespace xyz_university_payment_api.Presentation.Controllers
                     Message = "Error getting cache statistics",
                     Errors = new List<string> { ex.Message }
                 });
+            }
+        }
+
+        [HttpPost("clear-all")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ClearAllCache()
+        {
+            try
+            {
+                await _cacheService.ClearAllCacheAsync();
+                return Ok(new { message = "All cache cleared successfully" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error clearing all cache");
+                return StatusCode(500, new { message = "Error clearing cache" });
+            }
+        }
+
+        [HttpGet("tracked-keys")]
+        [Authorize(Roles = "Admin")]
+        public IActionResult GetTrackedKeys()
+        {
+            try
+            {
+                var keys = _cacheService.GetAllTrackedKeys();
+                return Ok(new { 
+                    message = "Tracked cache keys retrieved successfully",
+                    count = keys.Count,
+                    keys = keys
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting tracked keys");
+                return StatusCode(500, new { message = "Error getting tracked keys" });
             }
         }
     }

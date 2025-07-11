@@ -36,6 +36,16 @@ namespace xyz_university_payment_api.Core.Application.Interfaces
         Task<bool> ExistsAsync(string key);
 
         /// <summary>
+        /// Clear all cache
+        /// </summary>
+        Task ClearAllCacheAsync();
+
+        /// <summary>
+        /// Get all tracked keys
+        /// </summary>
+        List<string> GetAllTrackedKeys();
+
+        /// <summary>
         /// Get cache key with prefix
         /// </summary>
         string GetCacheKey(string prefix, string identifier);

@@ -12,6 +12,7 @@ using xyz_university_payment_api.Presentation.Attributes;
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace xyz_university_payment_api.Presentation.Controllers.V3
 {
@@ -43,33 +44,91 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
             var payment = _mapper.Map<PaymentNotification>(createPaymentDto);
             var result = await _paymentService.ProcessPaymentAsync(payment);
 
-            var paymentResponseDto = _mapper.Map<PaymentResponseDto>(result.ProcessedPayment);
-            paymentResponseDto.Success = true;
-            paymentResponseDto.Message = result.Message;
-            paymentResponseDto.StudentExists = result.StudentExists;
-            paymentResponseDto.StudentIsActive = result.StudentIsActive;
-
-            // V3: Enhanced response with real-time processing information
-            return Ok(new ApiResponseDto<PaymentResponseDto>
+            if (result.Success)
             {
-                Success = true,
-                Message = "Payment created successfully (V3)",
-                Data = paymentResponseDto,
-                Metadata = new Dictionary<string, object>
+                var paymentDto = _mapper.Map<PaymentResponseDto>(result.ProcessedPayment);
+                paymentDto.Success = true;
+                paymentDto.Message = result.Message;
+                paymentDto.StudentExists = result.StudentExists;
+                paymentDto.StudentIsActive = result.StudentIsActive;
+
+                return Ok(new ApiResponse<PaymentResponseDto>
                 {
-                    ["ApiVersion"] = "3.0",
-                    ["ProcessingTime"] = DateTime.UtcNow,
-                    ["Features"] = new[] {
-                        "RealTimeProcessing",
-                        "AdvancedAnalytics",
-                        "WebhookSupport",
-                        "GraphQLCompatible",
-                        "MicroservicesReady"
-                    },
-                    ["ProcessingId"] = Guid.NewGuid().ToString(),
-                    ["EstimatedCompletionTime"] = DateTime.UtcNow.AddSeconds(5)
+                    Success = true,
+                    Data = paymentDto,
+                    Message = "Payment processed successfully"
+                });
+            }
+            else
+            {
+                return BadRequest(new ApiResponse<PaymentResponseDto>
+                {
+                    Success = false,
+                    Message = result.Message,
+                    Errors = result.Warnings
+                });
+            }
+        }
+
+        // POST api/v3/payment/test-email - Test email functionality
+        [HttpPost("test-email")]
+        [AuthorizePermission("Payments", "Read")]
+        public async Task<IActionResult> TestEmail([FromBody] TestEmailDto testEmailDto)
+        {
+            try
+            {
+                _logger.LogInformation("Testing email functionality for student: {StudentEmail}", testEmailDto.StudentEmail);
+
+                var testPayment = new PaymentNotification
+                {
+                    PaymentReference = "TEST-" + DateTime.UtcNow.ToString("yyyyMMddHHmmss"),
+                    StudentNumber = testEmailDto.StudentNumber,
+                    AmountPaid = testEmailDto.Amount,
+                    PaymentDate = DateTime.UtcNow,
+                    PaymentMethod = "Test Payment",
+                    TransactionId = "TEST-TXN-001",
+                    ReceiptNumber = "TEST-RCP-001",
+                    Notes = "This is a test payment for email verification"
+                };
+
+                var emailService = HttpContext.RequestServices.GetRequiredService<IEmailService>();
+                var success = await emailService.SendPaymentReceiptAsync(
+                    testPayment, 
+                    testEmailDto.StudentEmail, 
+                    testEmailDto.StudentName
+                );
+
+                if (success)
+                {
+                    return Ok(new ApiResponse<object>
+                    {
+                        Success = true,
+                        Message = "Test email sent successfully",
+                        Data = new { 
+                            PaymentReference = testPayment.PaymentReference,
+                            SentTo = testEmailDto.StudentEmail,
+                            SentAt = DateTime.UtcNow
+                        }
+                    });
                 }
-            });
+                else
+                {
+                    return BadRequest(new ApiResponse<object>
+                    {
+                        Success = false,
+                        Message = "Failed to send test email"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error testing email functionality");
+                return StatusCode(500, new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "Internal server error during email test"
+                });
+            }
         }
 
         // POST api/v3/payments/notify

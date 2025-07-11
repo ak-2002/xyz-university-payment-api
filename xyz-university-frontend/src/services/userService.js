@@ -42,6 +42,20 @@ class UserService {
     }
   }
 
+  async createFullAccessUser(userData) {
+    try {
+      const response = await api.post(`/api/v3/authorization/create-full-access-user?t=${Date.now()}`, {
+        username: userData.username,
+        email: userData.email,
+        password: userData.password
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error creating full access user:', error);
+      throw error;
+    }
+  }
+
   async assignRole(userId, roleName) {
     try {
       const response = await api.put(`/api/v3/user/users/${userId}/roles?t=${Date.now()}`, {

@@ -1,105 +1,149 @@
 using MassTransit;
 using xyz_university_payment_api.Core.Domain.Entities;
+using xyz_university_payment_api.Core.Application.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace xyz_university_payment_api.Core.Application.Services
 {
-    /// <summary>
-    /// Consumer for payment processed messages
-    /// </summary>
-    public class PaymentProcessedMessageConsumer : IConsumer<PaymentProcessedMessage>
+    public class PaymentMessageConsumer : IConsumer<PaymentProcessedMessage>
     {
-        private readonly ILogger<PaymentProcessedMessageConsumer> _logger;
+        private readonly IEmailService _emailService;
+        private readonly ILogger<PaymentMessageConsumer> _logger;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public PaymentProcessedMessageConsumer(ILogger<PaymentProcessedMessageConsumer> logger)
+        public PaymentMessageConsumer(IEmailService emailService, ILogger<PaymentMessageConsumer> logger, IUnitOfWork unitOfWork)
         {
+            _emailService = emailService;
             _logger = logger;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task Consume(ConsumeContext<PaymentProcessedMessage> context)
         {
             var message = context.Message;
-            _logger.LogInformation("Received payment processed message: {PaymentReference} for student {StudentNumber}",
+            _logger.LogInformation("Processing payment message: {PaymentReference} for student: {StudentNumber}", 
                 message.PaymentReference, message.StudentNumber);
 
-            // Here you would typically:
-            // 1. Send email confirmation to student
-            // 2. Update student account balance
-            // 3. Send notification to finance department
-            // 4. Log to audit trail
+            try
+            {
+                // Get student information
+                var students = await _unitOfWork.Students.FindAsync(s => s.StudentNumber == message.StudentNumber);
+                var student = students.FirstOrDefault();
+                if (student == null)
+                {
+                    _logger.LogWarning("Student not found for payment message: {StudentNumber}", message.StudentNumber);
+                    return;
+                }
 
-            _logger.LogInformation("Payment processed successfully: Amount {Amount}, Student Active: {StudentIsActive}",
-                message.Amount, message.StudentIsActive);
+                var studentEmail = !string.IsNullOrEmpty(student.Email) ? student.Email : $"{student.StudentNumber}@student.xyzuniversity.edu";
 
-            await Task.CompletedTask;
+                // Send payment receipt email
+                var emailSent = await _emailService.SendPaymentReceiptAsync(
+                    new PaymentNotification
+                    {
+                        PaymentReference = message.PaymentReference,
+                        StudentNumber = message.StudentNumber,
+                        AmountPaid = message.Amount,
+                        PaymentDate = message.PaymentDate,
+                        PaymentMethod = "M-Pesa" // Default, will be updated from database
+                    },
+                    studentEmail,
+                    student.FullName
+                );
+
+                if (emailSent)
+                {
+                    _logger.LogInformation("Payment receipt email sent successfully for payment: {PaymentReference}", message.PaymentReference);
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to send payment receipt email for payment: {PaymentReference}", message.PaymentReference);
+                }
+
+                // Send payment confirmation email
+                var confirmationSent = await _emailService.SendPaymentConfirmationAsync(
+                    new PaymentNotification
+                    {
+                        PaymentReference = message.PaymentReference,
+                        StudentNumber = message.StudentNumber,
+                        AmountPaid = message.Amount,
+                        PaymentDate = message.PaymentDate,
+                        PaymentMethod = "M-Pesa"
+                    },
+                    studentEmail,
+                    student.FullName
+                );
+
+                if (confirmationSent)
+                {
+                    _logger.LogInformation("Payment confirmation email sent successfully for payment: {PaymentReference}", message.PaymentReference);
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to send payment confirmation email for payment: {PaymentReference}", message.PaymentReference);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing payment message: {PaymentReference}", message.PaymentReference);
+                throw;
+            }
         }
     }
 
-    /// <summary>
-    /// Consumer for payment failed messages
-    /// </summary>
     public class PaymentFailedMessageConsumer : IConsumer<PaymentFailedMessage>
     {
+        private readonly IEmailService _emailService;
         private readonly ILogger<PaymentFailedMessageConsumer> _logger;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public PaymentFailedMessageConsumer(ILogger<PaymentFailedMessageConsumer> logger)
+        public PaymentFailedMessageConsumer(IEmailService emailService, ILogger<PaymentFailedMessageConsumer> logger, IUnitOfWork unitOfWork)
         {
+            _emailService = emailService;
             _logger = logger;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task Consume(ConsumeContext<PaymentFailedMessage> context)
         {
             var message = context.Message;
-            _logger.LogWarning("Received payment failed message: {PaymentReference} for student {StudentNumber}, Reason: {ErrorReason}",
-                message.PaymentReference, message.StudentNumber, message.ErrorReason);
-
-            // Here you would typically:
-            // 1. Send failure notification to student
-            // 2. Alert finance department
-            // 3. Log to error tracking system
-            // 4. Create support ticket if needed
-
-            _logger.LogWarning("Payment failed: Amount {Amount}, Error: {ErrorReason}",
-                message.Amount, message.ErrorReason);
-
-            await Task.CompletedTask;
-        }
-    }
-
-    /// <summary>
-    /// Consumer for payment validation messages
-    /// </summary>
-    public class PaymentValidationMessageConsumer : IConsumer<PaymentValidationMessage>
-    {
-        private readonly ILogger<PaymentValidationMessageConsumer> _logger;
-
-        public PaymentValidationMessageConsumer(ILogger<PaymentValidationMessageConsumer> logger)
-        {
-            _logger = logger;
-        }
-
-        public async Task Consume(ConsumeContext<PaymentValidationMessage> context)
-        {
-            var message = context.Message;
-            _logger.LogInformation("Received payment validation message: {PaymentReference} for student {StudentNumber}",
+            _logger.LogInformation("Processing payment failure message: {PaymentReference} for student: {StudentNumber}", 
                 message.PaymentReference, message.StudentNumber);
 
-            if (message.ValidationErrors.Any())
+            try
             {
-                _logger.LogWarning("Payment validation failed with {ErrorCount} errors: {Errors}",
-                    message.ValidationErrors.Count, string.Join(", ", message.ValidationErrors));
+                // Get student information
+                var students = await _unitOfWork.Students.FindAsync(s => s.StudentNumber == message.StudentNumber);
+                var student = students.FirstOrDefault();
+                if (student == null)
+                {
+                    _logger.LogWarning("Student not found for payment failure message: {StudentNumber}", message.StudentNumber);
+                    return;
+                }
+
+                var studentEmail = !string.IsNullOrEmpty(student.Email) ? student.Email : $"{student.StudentNumber}@student.xyzuniversity.edu";
+
+                // Send payment failure notification
+                var emailSent = await _emailService.SendPaymentFailureNotificationAsync(
+                    studentEmail,
+                    student.FullName,
+                    message.ErrorReason
+                );
+
+                if (emailSent)
+                {
+                    _logger.LogInformation("Payment failure notification sent successfully for payment: {PaymentReference}", message.PaymentReference);
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to send payment failure notification for payment: {PaymentReference}", message.PaymentReference);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                _logger.LogInformation("Payment validation passed for reference: {PaymentReference}", message.PaymentReference);
+                _logger.LogError(ex, "Error processing payment failure message: {PaymentReference}", message.PaymentReference);
+                throw;
             }
-
-            // Here you would typically:
-            // 1. Log validation results
-            // 2. Send validation report to relevant departments
-            // 3. Update validation metrics
-
-            await Task.CompletedTask;
         }
     }
 }

@@ -3,89 +3,79 @@
 
 -- Add Bazaar user (for managing university bazaar/shop payments)
 INSERT INTO Users (Username, Email, PasswordHash, IsActive, CreatedAt) 
-VALUES ('bazaar.admin', 'bazaar@xyzuniversity.edu', '$2a$11$YourHashedPasswordHere', 1, GETDATE());
+VALUES ('bazaar.admin', 'bazaar@xyzuniversity.edu', 'QWRtaW4xMjMh', 1, GETDATE());
 
 -- Add Registrar user (for managing student registrations and academic records)
 INSERT INTO Users (Username, Email, PasswordHash, IsActive, CreatedAt) 
-VALUES ('registrar', 'registrar@xyzuniversity.edu', '$2a$11$YourHashedPasswordHere', 1, GETDATE());
+VALUES ('registrar', 'registrar@xyzuniversity.edu', 'QWRtaW4xMjMh', 1, GETDATE());
 
 -- Add Accounts user (for managing financial accounts and payments)
 INSERT INTO Users (Username, Email, PasswordHash, IsActive, CreatedAt) 
-VALUES ('accounts', 'accounts@xyzuniversity.edu', '$2a$11$YourHashedPasswordHere', 1, GETDATE());
+VALUES ('accounts', 'accounts@xyzuniversity.edu', 'QWRtaW4xMjMh', 1, GETDATE());
 
 -- Add Finance Officer user
 INSERT INTO Users (Username, Email, PasswordHash, IsActive, CreatedAt) 
-VALUES ('finance.officer', 'finance@xyzuniversity.edu', '$2a$11$YourHashedPasswordHere', 1, GETDATE());
+VALUES ('finance.officer', 'finance@xyzuniversity.edu', 'QWRtaW4xMjMh', 1, GETDATE());
 
 -- Add Academic Advisor user
 INSERT INTO Users (Username, Email, PasswordHash, IsActive, CreatedAt) 
-VALUES ('academic.advisor', 'advisor@xyzuniversity.edu', '$2a$11$YourHashedPasswordHere', 1, GETDATE());
+VALUES ('academic.advisor', 'advisor@xyzuniversity.edu', 'QWRtaW4xMjMh', 1, GETDATE());
 
 -- Add Library user (for managing library fees)
 INSERT INTO Users (Username, Email, PasswordHash, IsActive, CreatedAt) 
-VALUES ('library', 'library@xyzuniversity.edu', '$2a$11$YourHashedPasswordHere', 1, GETDATE());
+VALUES ('library', 'library@xyzuniversity.edu', 'QWRtaW4xMjMh', 1, GETDATE());
 
 -- Add more student users for testing
 INSERT INTO Users (Username, Email, PasswordHash, IsActive, CreatedAt) 
-VALUES ('john.student', 'john.student@xyzuniversity.edu', '$2a$11$YourHashedPasswordHere', 1, GETDATE());
+VALUES ('john.student', 'john.student@xyzuniversity.edu', 'U3R1ZGVudDEyMyE=', 1, GETDATE());
 
 INSERT INTO Users (Username, Email, PasswordHash, IsActive, CreatedAt) 
-VALUES ('sarah.student', 'sarah.student@xyzuniversity.edu', '$2a$11$YourHashedPasswordHere', 1, GETDATE());
+VALUES ('sarah.student', 'sarah.student@xyzuniversity.edu', 'U3R1ZGVudDEyMyE=', 1, GETDATE());
 
 INSERT INTO Users (Username, Email, PasswordHash, IsActive, CreatedAt) 
-VALUES ('mike.student', 'mike.student@xyzuniversity.edu', '$2a$11$YourHashedPasswordHere', 1, GETDATE());
+VALUES ('mike.student', 'mike.student@xyzuniversity.edu', 'U3R1ZGVudDEyMyE=', 1, GETDATE());
 
--- Get the user IDs for role assignment
-DECLARE @BazaarUserId INT = (SELECT Id FROM Users WHERE Username = 'bazaar.admin');
-DECLARE @RegistrarUserId INT = (SELECT Id FROM Users WHERE Username = 'registrar');
-DECLARE @AccountsUserId INT = (SELECT Id FROM Users WHERE Username = 'accounts');
-DECLARE @FinanceOfficerUserId INT = (SELECT Id FROM Users WHERE Username = 'finance.officer');
-DECLARE @AcademicAdvisorUserId INT = (SELECT Id FROM Users WHERE Username = 'academic.advisor');
-DECLARE @LibraryUserId INT = (SELECT Id FROM Users WHERE Username = 'library');
-DECLARE @JohnStudentUserId INT = (SELECT Id FROM Users WHERE Username = 'john.student');
-DECLARE @SarahStudentUserId INT = (SELECT Id FROM Users WHERE Username = 'sarah.student');
-DECLARE @MikeStudentUserId INT = (SELECT Id FROM Users WHERE Username = 'mike.student');
-
--- Get role IDs
+-- Assign roles to new users
+-- Get role IDs first
 DECLARE @AdminRoleId INT = (SELECT Id FROM Roles WHERE Name = 'Admin');
 DECLARE @ManagerRoleId INT = (SELECT Id FROM Roles WHERE Name = 'Manager');
 DECLARE @StaffRoleId INT = (SELECT Id FROM Roles WHERE Name = 'Staff');
 DECLARE @StudentRoleId INT = (SELECT Id FROM Roles WHERE Name = 'Student');
 
--- Assign roles to users
--- Bazaar admin gets Manager role
-INSERT INTO UserRoles (UserId, RoleId, AssignedAt, AssignedBy) 
-VALUES (@BazaarUserId, @ManagerRoleId, GETDATE(), 'System');
+-- Assign Bazaar Admin role (Manager level)
+INSERT INTO UserRoles (UserId, RoleId, AssignedAt, AssignedBy)
+SELECT Id, @ManagerRoleId, GETDATE(), 'System'
+FROM Users WHERE Username = 'bazaar.admin';
 
--- Registrar gets Manager role
-INSERT INTO UserRoles (UserId, RoleId, AssignedAt, AssignedBy) 
-VALUES (@RegistrarUserId, @ManagerRoleId, GETDATE(), 'System');
+-- Assign Registrar role (Manager level)
+INSERT INTO UserRoles (UserId, RoleId, AssignedAt, AssignedBy)
+SELECT Id, @ManagerRoleId, GETDATE(), 'System'
+FROM Users WHERE Username = 'registrar';
 
--- Accounts gets Staff role
-INSERT INTO UserRoles (UserId, RoleId, AssignedAt, AssignedBy) 
-VALUES (@AccountsUserId, @StaffRoleId, GETDATE(), 'System');
+-- Assign Accounts role (Staff level)
+INSERT INTO UserRoles (UserId, RoleId, AssignedAt, AssignedBy)
+SELECT Id, @StaffRoleId, GETDATE(), 'System'
+FROM Users WHERE Username = 'accounts';
 
--- Finance Officer gets Manager role
-INSERT INTO UserRoles (UserId, RoleId, AssignedAt, AssignedBy) 
-VALUES (@FinanceOfficerUserId, @ManagerRoleId, GETDATE(), 'System');
+-- Assign Finance Officer role (Manager level)
+INSERT INTO UserRoles (UserId, RoleId, AssignedAt, AssignedBy)
+SELECT Id, @ManagerRoleId, GETDATE(), 'System'
+FROM Users WHERE Username = 'finance.officer';
 
--- Academic Advisor gets Staff role
-INSERT INTO UserRoles (UserId, RoleId, AssignedAt, AssignedBy) 
-VALUES (@AcademicAdvisorUserId, @StaffRoleId, GETDATE(), 'System');
+-- Assign Academic Advisor role (Staff level)
+INSERT INTO UserRoles (UserId, RoleId, AssignedAt, AssignedBy)
+SELECT Id, @StaffRoleId, GETDATE(), 'System'
+FROM Users WHERE Username = 'academic.advisor';
 
--- Library gets Staff role
-INSERT INTO UserRoles (UserId, RoleId, AssignedAt, AssignedBy) 
-VALUES (@LibraryUserId, @StaffRoleId, GETDATE(), 'System');
+-- Assign Library role (Staff level)
+INSERT INTO UserRoles (UserId, RoleId, AssignedAt, AssignedBy)
+SELECT Id, @StaffRoleId, GETDATE(), 'System'
+FROM Users WHERE Username = 'library';
 
--- Student users get Student role
-INSERT INTO UserRoles (UserId, RoleId, AssignedAt, AssignedBy) 
-VALUES (@JohnStudentUserId, @StudentRoleId, GETDATE(), 'System');
-
-INSERT INTO UserRoles (UserId, RoleId, AssignedAt, AssignedBy) 
-VALUES (@SarahStudentUserId, @StudentRoleId, GETDATE(), 'System');
-
-INSERT INTO UserRoles (UserId, RoleId, AssignedAt, AssignedBy) 
-VALUES (@MikeStudentUserId, @StudentRoleId, GETDATE(), 'System');
+-- Assign Student roles
+INSERT INTO UserRoles (UserId, RoleId, AssignedAt, AssignedBy)
+SELECT Id, @StudentRoleId, GETDATE(), 'System'
+FROM Users WHERE Username IN ('john.student', 'sarah.student', 'mike.student');
 
 -- Add more students to the Students table
 INSERT INTO Students (StudentNumber, FullName, Program, Email, PhoneNumber, DateOfBirth, Address, IsActive, CreatedAt)

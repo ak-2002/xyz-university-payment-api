@@ -150,7 +150,7 @@ const StudentProfile = () => {
               <span className="text-gray-600 font-medium">Current Semester:</span>
               <span className="font-bold text-gray-900">{studentData.academicInfo?.currentSemester || 'Not specified'}</span>
             </div>
-            <div className="flex justify-between items-center p-3 bg-gradient-to-r from-gray-50 to-gray-100/50 rounded-xl">
+            <div className="flex justify-between items-center p-3 b g-gradient-to-r from-gray-50 to-gray-100/50 rounded-xl">
               <span className="text-gray-600 font-medium">Enrollment Status:</span>
               <span className={`px-3 py-1 text-sm font-semibold rounded-full ${
                 studentData.academicInfo?.enrollmentStatus === 'Active'

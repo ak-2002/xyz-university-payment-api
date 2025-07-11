@@ -44,6 +44,13 @@ namespace xyz_university_payment_api.Core.Application.DTOs
         public List<string> Permissions { get; set; } = new List<string>();
     }
 
+    public class CreateFullAccessUserDto
+    {
+        public string Username { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+    }
+
     // Role DTOs
     public class CreateRoleDto
     {

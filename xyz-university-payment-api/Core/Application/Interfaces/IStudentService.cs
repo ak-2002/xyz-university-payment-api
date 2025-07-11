@@ -22,7 +22,7 @@ namespace xyz_university_payment_api.Core.Application.Interfaces
         Task<Student> UpdateStudentAsync(Student student);
 
 
-        Task<bool> DeleteStudentAsync(int id);
+        Task<bool> DeleteStudentAsync(int id, bool force = false);
 
 
         Task<IEnumerable<Student>> GetActiveStudentsAsync();

@@ -1,0 +1,93 @@
+2025-07-11 10:07:04.777 +03:00 [INF] Ensuring database is created
+2025-07-11 10:07:05.334 +03:00 [INF] Database created successfully
+2025-07-11 10:07:05.338 +03:00 [INF] Seeding default roles and permissions
+2025-07-11 10:07:05.659 +03:00 [INF] Valid data already seeded, skipping seeding process
+2025-07-11 10:07:05.665 +03:00 [INF] Default roles and permissions seeded successfully
+2025-07-11 10:07:05.773 +03:00 [INF] XYZ University Payment API started successfully
+2025-07-11 10:07:05.856 +03:00 [INF] Configured endpoint PaymentMessage, Consumer: xyz_university_payment_api.Core.Application.Services.PaymentMessageConsumer
+2025-07-11 10:07:05.866 +03:00 [INF] Configured endpoint PaymentFailedMessage, Consumer: xyz_university_payment_api.Core.Application.Services.PaymentFailedMessageConsumer
+2025-07-11 10:07:06.090 +03:00 [INF] Bus started: "rabbitmq://localhost/"
+2025-07-11 10:07:22.408 +03:00 [INF] GetUsers endpoint called by user: admin
+2025-07-11 10:07:22.408 +03:00 [INF] GetUsers endpoint called by user: admin
+2025-07-11 10:07:22.562 +03:00 [INF] Total users in database: 11
+2025-07-11 10:07:22.595 +03:00 [INF] Total users in database: 11
+2025-07-11 10:07:22.788 +03:00 [INF] Returning 11 users
+2025-07-11 10:07:22.788 +03:00 [INF] Returning 11 users
+2025-07-11 10:07:28.453 +03:00 [INF] Retrieving students V3 with filter: {"StudentNumber":null,"FullName":null,"Program":null,"IsActive":null,"CreatedFrom":null,"CreatedTo":null,"Tags":null,"MinTotalPayments":null,"MaxTotalPayments":null,"SearchTerm":null,"Metadata":null,"$type":"StudentFilterDtoV3"}
+2025-07-11 10:07:28.510 +03:00 [INF] Current user role: Admin, User ID: 1
+2025-07-11 10:07:28.596 +03:00 [INF] Retrieving students V3 with filter: {"StudentNumber":null,"FullName":null,"Program":null,"IsActive":null,"CreatedFrom":null,"CreatedTo":null,"Tags":null,"MinTotalPayments":null,"MaxTotalPayments":null,"SearchTerm":null,"Metadata":null,"$type":"StudentFilterDtoV3"}
+2025-07-11 10:07:28.615 +03:00 [INF] Current user role: Admin, User ID: 1
+2025-07-11 10:07:31.193 +03:00 [INF] Retrieving students V3 with filter: {"StudentNumber":null,"FullName":null,"Program":null,"IsActive":null,"CreatedFrom":null,"CreatedTo":null,"Tags":null,"MinTotalPayments":null,"MaxTotalPayments":null,"SearchTerm":null,"Metadata":null,"$type":"StudentFilterDtoV3"}
+2025-07-11 10:07:31.213 +03:00 [INF] Current user role: Admin, User ID: 1
+2025-07-11 10:07:31.233 +03:00 [INF] Retrieving students V3 with filter: {"StudentNumber":null,"FullName":null,"Program":null,"IsActive":null,"CreatedFrom":null,"CreatedTo":null,"Tags":null,"MinTotalPayments":null,"MaxTotalPayments":null,"SearchTerm":null,"Metadata":null,"$type":"StudentFilterDtoV3"}
+2025-07-11 10:07:31.262 +03:00 [INF] Current user role: Admin, User ID: 1
+2025-07-11 10:08:20.474 +03:00 [INF] Retrieving students V3 with filter: {"StudentNumber":null,"FullName":null,"Program":null,"IsActive":null,"CreatedFrom":null,"CreatedTo":null,"Tags":null,"MinTotalPayments":null,"MaxTotalPayments":null,"SearchTerm":null,"Metadata":null,"$type":"StudentFilterDtoV3"}
+2025-07-11 10:08:20.489 +03:00 [INF] Current user role: Admin, User ID: 1
+2025-07-11 10:08:20.505 +03:00 [INF] Retrieving students V3 with filter: {"StudentNumber":null,"FullName":null,"Program":null,"IsActive":null,"CreatedFrom":null,"CreatedTo":null,"Tags":null,"MinTotalPayments":null,"MaxTotalPayments":null,"SearchTerm":null,"Metadata":null,"$type":"StudentFilterDtoV3"}
+2025-07-11 10:08:20.518 +03:00 [INF] Current user role: Admin, User ID: 1
+2025-07-11 10:08:25.397 +03:00 [INF] Retrieving students V3 with filter: {"StudentNumber":null,"FullName":null,"Program":null,"IsActive":null,"CreatedFrom":null,"CreatedTo":null,"Tags":null,"MinTotalPayments":null,"MaxTotalPayments":null,"SearchTerm":null,"Metadata":null,"$type":"StudentFilterDtoV3"}
+2025-07-11 10:08:25.547 +03:00 [INF] Current user role: Admin, User ID: 1
+2025-07-11 10:08:25.567 +03:00 [INF] Retrieving students V3 with filter: {"StudentNumber":null,"FullName":null,"Program":null,"IsActive":null,"CreatedFrom":null,"CreatedTo":null,"Tags":null,"MinTotalPayments":null,"MaxTotalPayments":null,"SearchTerm":null,"Metadata":null,"$type":"StudentFilterDtoV3"}
+2025-07-11 10:08:25.634 +03:00 [INF] Current user role: Admin, User ID: 1
+2025-07-11 10:08:31.166 +03:00 [INF] GetUsers endpoint called by user: admin
+2025-07-11 10:08:31.180 +03:00 [INF] Total users in database: 11
+2025-07-11 10:08:31.192 +03:00 [INF] Returning 11 users
+2025-07-11 10:08:31.201 +03:00 [INF] GetUsers endpoint called by user: admin
+2025-07-11 10:08:31.207 +03:00 [INF] Total users in database: 11
+2025-07-11 10:08:31.213 +03:00 [INF] Returning 11 users
+2025-07-11 10:08:37.928 +03:00 [INF] Retrieving students V3 with filter: {"StudentNumber":null,"FullName":null,"Program":null,"IsActive":null,"CreatedFrom":null,"CreatedTo":null,"Tags":null,"MinTotalPayments":null,"MaxTotalPayments":null,"SearchTerm":null,"Metadata":null,"$type":"StudentFilterDtoV3"}
+2025-07-11 10:08:37.946 +03:00 [INF] Current user role: Admin, User ID: 1
+2025-07-11 10:09:08.508 +03:00 [INF] Retrieving students V3 with filter: {"StudentNumber":null,"FullName":null,"Program":null,"IsActive":null,"CreatedFrom":null,"CreatedTo":null,"Tags":null,"MinTotalPayments":null,"MaxTotalPayments":null,"SearchTerm":null,"Metadata":null,"$type":"StudentFilterDtoV3"}
+2025-07-11 10:09:08.517 +03:00 [INF] V3 GetAllPayments endpoint called with page 1
+2025-07-11 10:09:08.535 +03:00 [INF] Current user role: Admin, User ID: 1
+2025-07-11 10:09:08.539 +03:00 [INF] Retrieving all payments with student information
+2025-07-11 10:09:08.548 +03:00 [INF] Current user role: Admin, User ID: 1
+2025-07-11 10:09:08.566 +03:00 [INF] Retrieving students V3 with filter: {"StudentNumber":null,"FullName":null,"Program":null,"IsActive":null,"CreatedFrom":null,"CreatedTo":null,"Tags":null,"MinTotalPayments":null,"MaxTotalPayments":null,"SearchTerm":null,"Metadata":null,"$type":"StudentFilterDtoV3"}
+2025-07-11 10:09:08.586 +03:00 [INF] Current user role: Admin, User ID: 1
+2025-07-11 10:09:08.597 +03:00 [INF] Retrieved 8 payments for Admin
+2025-07-11 10:09:08.614 +03:00 [INF] Retrieved 9 students for lookup
+2025-07-11 10:09:08.622 +03:00 [INF] Payment 1 for student S12345, found student: Yes
+2025-07-11 10:09:08.797 +03:00 [INF] Payment 2 for student S67890, found student: Yes
+2025-07-11 10:09:08.803 +03:00 [INF] Payment 3 for student S66004, found student: Yes
+2025-07-11 10:09:08.810 +03:00 [INF] Payment 4 for student S66001, found student: Yes
+2025-07-11 10:09:08.817 +03:00 [INF] Payment 5 for student S660066, found student: Yes
+2025-07-11 10:09:08.854 +03:00 [INF] Payment 6 for student S660088, found student: Yes
+2025-07-11 10:09:08.861 +03:00 [INF] Payment 7 for student S660099, found student: Yes
+2025-07-11 10:09:08.868 +03:00 [INF] Payment 8 for student S660099, found student: Yes
+2025-07-11 10:09:08.874 +03:00 [INF] Returning 8 payment DTOs
+2025-07-11 10:09:08.901 +03:00 [INF] V3 GetAllPayments endpoint called with page 1
+2025-07-11 10:09:08.907 +03:00 [INF] Retrieving all payments with student information
+2025-07-11 10:09:08.916 +03:00 [INF] Current user role: Admin, User ID: 1
+2025-07-11 10:09:08.932 +03:00 [INF] Retrieved 8 payments for Admin
+2025-07-11 10:09:08.945 +03:00 [INF] Retrieved 9 students for lookup
+2025-07-11 10:09:08.951 +03:00 [INF] Payment 1 for student S12345, found student: Yes
+2025-07-11 10:09:08.957 +03:00 [INF] Payment 2 for student S67890, found student: Yes
+2025-07-11 10:09:08.963 +03:00 [INF] Payment 3 for student S66004, found student: Yes
+2025-07-11 10:09:08.969 +03:00 [INF] Payment 4 for student S66001, found student: Yes
+2025-07-11 10:09:08.974 +03:00 [INF] Payment 5 for student S660066, found student: Yes
+2025-07-11 10:09:08.978 +03:00 [INF] Payment 6 for student S660088, found student: Yes
+2025-07-11 10:09:08.983 +03:00 [INF] Payment 7 for student S660099, found student: Yes
+2025-07-11 10:09:08.988 +03:00 [INF] Payment 8 for student S660099, found student: Yes
+2025-07-11 10:09:08.993 +03:00 [INF] Returning 8 payment DTOs
+2025-07-11 10:09:13.688 +03:00 [INF] Retrieving students V3 with filter: {"StudentNumber":null,"FullName":null,"Program":null,"IsActive":null,"CreatedFrom":null,"CreatedTo":null,"Tags":null,"MinTotalPayments":null,"MaxTotalPayments":null,"SearchTerm":null,"Metadata":null,"$type":"StudentFilterDtoV3"}
+2025-07-11 10:09:13.709 +03:00 [INF] Current user role: Admin, User ID: 1
+2025-07-11 10:09:13.724 +03:00 [INF] Retrieving students V3 with filter: {"StudentNumber":null,"FullName":null,"Program":null,"IsActive":null,"CreatedFrom":null,"CreatedTo":null,"Tags":null,"MinTotalPayments":null,"MaxTotalPayments":null,"SearchTerm":null,"Metadata":null,"$type":"StudentFilterDtoV3"}
+2025-07-11 10:09:13.737 +03:00 [INF] Current user role: Admin, User ID: 1
+2025-07-11 10:09:51.017 +03:00 [INF] Updating student V3 with ID: 10
+2025-07-11 10:09:51.025 +03:00 [INF] Retrieving student with ID: 10
+2025-07-11 10:09:51.043 +03:00 [INF] Student cached: 10
+2025-07-11 10:09:51.049 +03:00 [INF] Updating student: S660099
+2025-07-11 10:09:51.102 +03:00 [INF] Student updated successfully: S660099
+2025-07-11 10:09:51.109 +03:00 [WRN] Pattern-based cache removal not fully implemented for pattern: students_v3_*
+2025-07-11 10:09:51.123 +03:00 [INF] Retrieving students V3 with filter: {"StudentNumber":null,"FullName":null,"Program":null,"IsActive":null,"CreatedFrom":null,"CreatedTo":null,"Tags":null,"MinTotalPayments":null,"MaxTotalPayments":null,"SearchTerm":null,"Metadata":null,"$type":"StudentFilterDtoV3"}
+2025-07-11 10:09:51.137 +03:00 [INF] Current user role: Admin, User ID: 1
+2025-07-11 10:09:59.878 +03:00 [INF] GetUsers endpoint called by user: admin
+2025-07-11 10:09:59.889 +03:00 [INF] GetUsers endpoint called by user: admin
+2025-07-11 10:09:59.921 +03:00 [INF] Total users in database: 11
+2025-07-11 10:09:59.922 +03:00 [INF] Total users in database: 11
+2025-07-11 10:09:59.948 +03:00 [INF] Returning 11 users
+2025-07-11 10:09:59.949 +03:00 [INF] Returning 11 users
+2025-07-11 10:10:03.380 +03:00 [INF] Retrieving students V3 with filter: {"StudentNumber":null,"FullName":null,"Program":null,"IsActive":null,"CreatedFrom":null,"CreatedTo":null,"Tags":null,"MinTotalPayments":null,"MaxTotalPayments":null,"SearchTerm":null,"Metadata":null,"$type":"StudentFilterDtoV3"}
+2025-07-11 10:10:03.400 +03:00 [INF] Current user role: Admin, User ID: 1
+2025-07-11 10:27:10.316 +03:00 [INF] Bus stopped: "rabbitmq://localhost/"
+2025-07-11 10:27:19.947 +03:00 [INF] Starting XYZ University Payment API {"MachineName":"DESKTOP-F3AMJ10","ThreadId":1,"ProcessId":18800,"Application":"XYZ University Payment API"}

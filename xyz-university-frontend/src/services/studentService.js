@@ -79,9 +79,9 @@ export const studentService = {
   },
 
   // Delete student
-  async deleteStudent(id) {
+  async deleteStudent(id, permanent = false) {
     try {
-      const response = await api.delete(`/api/v3/StudentControllerV/${id}`);
+      const response = await api.delete(`/api/v3/StudentControllerV/${id}?permanent=${permanent}`);
       return response.data;
     } catch (error) {
       console.error('Error deleting student:', error);

@@ -2146,6 +2146,38 @@ namespace xyz_university_payment_api.Presentation.Controllers
             }
         }
 
+        /// <summary>
+        /// Create a new user with full access to students and payments
+        /// </summary>
+        [HttpPost("create-full-access-user")]
+        [AuthorizePermission("Users", "Create")]
+        public async Task<IActionResult> CreateFullAccessUser([FromBody] CreateFullAccessUserDto createUserDto)
+        {
+            try
+            {
+                _logger.LogInformation("Creating full access user: {Username}", createUserDto.Username);
+
+                var result = await _authorizationService.CreateFullAccessUserAsync(createUserDto);
+
+                if (result.Success)
+                {
+                    return CreatedAtAction(nameof(GetUserById), new { id = result.Data?.Id }, result);
+                }
+
+                return BadRequest(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating full access user: {Username}", createUserDto.Username);
+                return StatusCode(500, new ApiResponse<UserDto>
+                {
+                    Success = false,
+                    Message = "Internal server error",
+                    Errors = new List<string> { ex.Message }
+                });
+            }
+        }
+
         [HttpGet("debug/user/{username}/roles")]
         [AllowAnonymous] // Temporary for debugging
         public async Task<IActionResult> DebugUserRoles(string username)

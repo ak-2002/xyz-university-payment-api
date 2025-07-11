@@ -48,6 +48,9 @@ try
 
     var builder = WebApplication.CreateBuilder(args);
 
+    // Add environment variables support
+    builder.Configuration.AddEnvironmentVariables();
+
 
 
     // Configure Serilog for the application
@@ -69,8 +72,10 @@ try
             rollOnFileSizeLimit: true));
 
     // Register Database Context
+    var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING") ?? 
+                          builder.Configuration.GetConnectionString("DefaultConnection");
     builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+        options.UseSqlServer(connectionString));
 
     // Configure In-Memory Cache (temporary replacement for Redis)
     builder.Services.AddDistributedMemoryCache();
@@ -102,6 +107,28 @@ try
     builder.Services.AddScoped<IPaymentService, xyz_university_payment_api.Core.Application.Services.PaymentService>();
     builder.Services.AddScoped<ILoggingService, xyz_university_payment_api.Core.Application.Services.LoggingService>();
     builder.Services.AddScoped<IMessagePublisher, xyz_university_payment_api.Core.Application.Services.RabbitMQMessagePublisher>();
+    
+    // Configure SendGrid with environment variables
+    var sendGridApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY") ?? 
+                        builder.Configuration["SendGrid:ApiKey"];
+    var sendGridFromEmail = Environment.GetEnvironmentVariable("SENDGRID_FROM_EMAIL") ?? 
+                           builder.Configuration["SendGrid:FromEmail"];
+    var sendGridFromName = Environment.GetEnvironmentVariable("SENDGRID_FROM_NAME") ?? 
+                          builder.Configuration["SendGrid:FromName"];
+    var sendGridReplyToEmail = Environment.GetEnvironmentVariable("SENDGRID_REPLY_TO_EMAIL") ?? 
+                              builder.Configuration["SendGrid:ReplyToEmail"];
+    
+    // Override configuration with environment variables
+    if (!string.IsNullOrEmpty(sendGridApiKey))
+        builder.Configuration["SendGrid:ApiKey"] = sendGridApiKey;
+    if (!string.IsNullOrEmpty(sendGridFromEmail))
+        builder.Configuration["SendGrid:FromEmail"] = sendGridFromEmail;
+    if (!string.IsNullOrEmpty(sendGridFromName))
+        builder.Configuration["SendGrid:FromName"] = sendGridFromName;
+    if (!string.IsNullOrEmpty(sendGridReplyToEmail))
+        builder.Configuration["SendGrid:ReplyToEmail"] = sendGridReplyToEmail;
+    
+    builder.Services.AddScoped<IEmailService, xyz_university_payment_api.Core.Application.Services.EmailService>();
 
     // Register Authorization Services
     builder.Services.AddScoped<IAuthorizationService, xyz_university_payment_api.Core.Application.Services.AuthorizationService>();
@@ -122,9 +149,8 @@ try
     {
 
         //Register Consumers
-        x.AddConsumer<xyz_university_payment_api.Core.Application.Services.PaymentProcessedMessageConsumer>();
+        x.AddConsumer<xyz_university_payment_api.Core.Application.Services.PaymentMessageConsumer>();
         x.AddConsumer<xyz_university_payment_api.Core.Application.Services.PaymentFailedMessageConsumer>();
-        x.AddConsumer<xyz_university_payment_api.Core.Application.Services.PaymentValidationMessageConsumer>();
 
         x.UsingRabbitMq((
             context, cfg) =>
