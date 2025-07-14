@@ -22,6 +22,71 @@ namespace xyz_university_payment_api.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.AdditionalFee", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("ApplicableClasses")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("ApplicablePrograms")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("ApplicableStudents")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<int>("ApplicableTo")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Frequency")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AdditionalFees");
+                });
+
             modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.AuthorizationAuditLog", b =>
                 {
                     b.Property<int>("Id")
@@ -72,6 +137,215 @@ namespace xyz_university_payment_api.Migrations
                     b.ToTable("AuthorizationAuditLogs");
                 });
 
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.FeeCategory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("Frequency")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("FeeCategories");
+                });
+
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.FeeSchedule", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AcademicYear")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("LaboratoryFee")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("LibraryFee")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("OtherFees")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Program")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<decimal>("RegistrationFee")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Semester")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TuitionFee")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Semester", "AcademicYear", "Program")
+                        .IsUnique();
+
+                    b.ToTable("FeeSchedules");
+                });
+
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.FeeStructure", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AcademicYear")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Semester")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AcademicYear", "Semester", "Name")
+                        .IsUnique();
+
+                    b.ToTable("FeeStructures");
+                });
+
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.FeeStructureItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("DueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("FeeCategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FeeStructureId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FeeCategoryId");
+
+                    b.HasIndex("FeeStructureId");
+
+                    b.ToTable("FeeStructureItems");
+                });
+
             modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.PaymentNotification", b =>
                 {
                     b.Property<int>("Id")
@@ -97,12 +371,18 @@ namespace xyz_university_payment_api.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("PaymentPlanId")
+                        .HasColumnType("int");
+
                     b.Property<string>("PaymentReference")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ReceiptNumber")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("StudentBalanceId")
+                        .HasColumnType("int");
 
                     b.Property<string>("StudentNumber")
                         .IsRequired()
@@ -113,7 +393,86 @@ namespace xyz_university_payment_api.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("PaymentPlanId");
+
+                    b.HasIndex("StudentBalanceId");
+
                     b.ToTable("PaymentNotifications");
+                });
+
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.PaymentPlan", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("AmountPaid")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("CompletedInstallments")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("InstallmentAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PlanType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<decimal>("RemainingAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("StudentBalanceId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StudentNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("TotalInstallments")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentBalanceId");
+
+                    b.HasIndex("StudentNumber");
+
+                    b.ToTable("PaymentPlans");
                 });
 
             modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.Permission", b =>
@@ -221,7 +580,8 @@ namespace xyz_university_payment_api.Migrations
 
                     b.Property<string>("Address")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -231,33 +591,247 @@ namespace xyz_university_payment_api.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("FullName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("Program")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("StudentNumber")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("StudentNumber")
+                        .IsUnique();
+
                     b.ToTable("Students");
+                });
+
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.StudentAdditionalFee", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AdditionalFeeId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("AssignedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StudentNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AdditionalFeeId");
+
+                    b.HasIndex("StudentNumber", "AdditionalFeeId")
+                        .IsUnique();
+
+                    b.ToTable("StudentAdditionalFees");
+                });
+
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.StudentBalance", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("AmountPaid")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("FeeScheduleId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("OutstandingBalance")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("StudentNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FeeScheduleId");
+
+                    b.HasIndex("StudentNumber", "FeeScheduleId")
+                        .IsUnique();
+
+                    b.ToTable("StudentBalances");
+                });
+
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.StudentFeeAssignment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AcademicYear")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("AssignedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("AssignedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("FeeStructureId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Semester")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("StudentNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FeeStructureId");
+
+                    b.HasIndex("StudentNumber", "FeeStructureId", "AcademicYear", "Semester")
+                        .IsUnique();
+
+                    b.ToTable("StudentFeeAssignments");
+                });
+
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.StudentFeeBalance", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("AmountPaid")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("FeeStructureItemId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("OutstandingBalance")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StudentNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FeeStructureItemId");
+
+                    b.HasIndex("StudentNumber", "FeeStructureItemId")
+                        .IsUnique();
+
+                    b.ToTable("StudentFeeBalances");
                 });
 
             modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.User", b =>
@@ -323,6 +897,56 @@ namespace xyz_university_payment_api.Migrations
                     b.ToTable("UserRoles");
                 });
 
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.FeeStructureItem", b =>
+                {
+                    b.HasOne("xyz_university_payment_api.Core.Domain.Entities.FeeCategory", "FeeCategory")
+                        .WithMany("FeeStructureItems")
+                        .HasForeignKey("FeeCategoryId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("xyz_university_payment_api.Core.Domain.Entities.FeeStructure", "FeeStructure")
+                        .WithMany("FeeStructureItems")
+                        .HasForeignKey("FeeStructureId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FeeCategory");
+
+                    b.Navigation("FeeStructure");
+                });
+
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.PaymentNotification", b =>
+                {
+                    b.HasOne("xyz_university_payment_api.Core.Domain.Entities.PaymentPlan", null)
+                        .WithMany("Payments")
+                        .HasForeignKey("PaymentPlanId");
+
+                    b.HasOne("xyz_university_payment_api.Core.Domain.Entities.StudentBalance", null)
+                        .WithMany("Payments")
+                        .HasForeignKey("StudentBalanceId");
+                });
+
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.PaymentPlan", b =>
+                {
+                    b.HasOne("xyz_university_payment_api.Core.Domain.Entities.StudentBalance", "StudentBalance")
+                        .WithMany()
+                        .HasForeignKey("StudentBalanceId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("xyz_university_payment_api.Core.Domain.Entities.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentNumber")
+                        .HasPrincipalKey("StudentNumber")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Student");
+
+                    b.Navigation("StudentBalance");
+                });
+
             modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.RolePermission", b =>
                 {
                     b.HasOne("xyz_university_payment_api.Core.Domain.Entities.Permission", "Permission")
@@ -340,6 +964,86 @@ namespace xyz_university_payment_api.Migrations
                     b.Navigation("Permission");
 
                     b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.StudentAdditionalFee", b =>
+                {
+                    b.HasOne("xyz_university_payment_api.Core.Domain.Entities.AdditionalFee", "AdditionalFee")
+                        .WithMany("StudentAdditionalFees")
+                        .HasForeignKey("AdditionalFeeId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("xyz_university_payment_api.Core.Domain.Entities.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentNumber")
+                        .HasPrincipalKey("StudentNumber")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("AdditionalFee");
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.StudentBalance", b =>
+                {
+                    b.HasOne("xyz_university_payment_api.Core.Domain.Entities.FeeSchedule", "FeeSchedule")
+                        .WithMany("StudentBalances")
+                        .HasForeignKey("FeeScheduleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("xyz_university_payment_api.Core.Domain.Entities.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentNumber")
+                        .HasPrincipalKey("StudentNumber")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FeeSchedule");
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.StudentFeeAssignment", b =>
+                {
+                    b.HasOne("xyz_university_payment_api.Core.Domain.Entities.FeeStructure", "FeeStructure")
+                        .WithMany("StudentFeeAssignments")
+                        .HasForeignKey("FeeStructureId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("xyz_university_payment_api.Core.Domain.Entities.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentNumber")
+                        .HasPrincipalKey("StudentNumber")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("FeeStructure");
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.StudentFeeBalance", b =>
+                {
+                    b.HasOne("xyz_university_payment_api.Core.Domain.Entities.FeeStructureItem", "FeeStructureItem")
+                        .WithMany("StudentFeeBalances")
+                        .HasForeignKey("FeeStructureItemId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("xyz_university_payment_api.Core.Domain.Entities.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentNumber")
+                        .HasPrincipalKey("StudentNumber")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("FeeStructureItem");
+
+                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.UserRole", b =>
@@ -361,6 +1065,38 @@ namespace xyz_university_payment_api.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.AdditionalFee", b =>
+                {
+                    b.Navigation("StudentAdditionalFees");
+                });
+
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.FeeCategory", b =>
+                {
+                    b.Navigation("FeeStructureItems");
+                });
+
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.FeeSchedule", b =>
+                {
+                    b.Navigation("StudentBalances");
+                });
+
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.FeeStructure", b =>
+                {
+                    b.Navigation("FeeStructureItems");
+
+                    b.Navigation("StudentFeeAssignments");
+                });
+
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.FeeStructureItem", b =>
+                {
+                    b.Navigation("StudentFeeBalances");
+                });
+
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.PaymentPlan", b =>
+                {
+                    b.Navigation("Payments");
+                });
+
             modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.Permission", b =>
                 {
                     b.Navigation("RolePermissions");
@@ -371,6 +1107,11 @@ namespace xyz_university_payment_api.Migrations
                     b.Navigation("RolePermissions");
 
                     b.Navigation("UserRoles");
+                });
+
+            modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.StudentBalance", b =>
+                {
+                    b.Navigation("Payments");
                 });
 
             modelBuilder.Entity("xyz_university_payment_api.Core.Domain.Entities.User", b =>

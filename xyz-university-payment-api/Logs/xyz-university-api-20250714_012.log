@@ -1,0 +1,93 @@
+2025-07-14 10:56:32.524 +03:00 [INF] Ensuring database is created
+2025-07-14 10:56:33.276 +03:00 [INF] Database created successfully
+2025-07-14 10:56:33.281 +03:00 [INF] Seeding default roles and permissions
+2025-07-14 10:56:33.648 +03:00 [INF] Valid data already seeded, skipping seeding process
+2025-07-14 10:56:33.653 +03:00 [INF] Default roles and permissions seeded successfully
+2025-07-14 10:56:33.712 +03:00 [INF] Fee schedules and student balances already exist, skipping seeding
+2025-07-14 10:56:33.836 +03:00 [INF] XYZ University Payment API started successfully
+2025-07-14 10:56:34.109 +03:00 [INF] Configured endpoint PaymentMessage, Consumer: xyz_university_payment_api.Core.Application.Services.PaymentMessageConsumer
+2025-07-14 10:56:34.153 +03:00 [INF] Configured endpoint PaymentFailedMessage, Consumer: xyz_university_payment_api.Core.Application.Services.PaymentFailedMessageConsumer
+2025-07-14 10:56:34.500 +03:00 [INF] Bus started: "rabbitmq://localhost/"
+2025-07-14 10:56:38.832 +03:00 [INF] V3 GetStudentStats endpoint called
+2025-07-14 10:56:38.841 +03:00 [INF] Current user: S6600991 (ID: 62)
+2025-07-14 10:56:38.848 +03:00 [INF] User roles: Student, Student
+2025-07-14 10:56:38.853 +03:00 [INF] User permissions: Payments.Read, Students.Read
+2025-07-14 10:56:38.860 +03:00 [INF] Retrieving all students
+2025-07-14 10:56:38.916 +03:00 [INF] Getting balance summary for student: S6600991
+2025-07-14 10:56:39.022 +03:00 [INF] Using new balance system for student S6600991: Outstanding=$1400.00
+2025-07-14 10:56:39.056 +03:00 [INF] Student balance summary cached: S6600991
+2025-07-14 10:56:39.063 +03:00 [INF] Retrieving payments for student: S6600991
+2025-07-14 10:56:39.072 +03:00 [INF] Student payments cached: S6600991
+2025-07-14 10:56:39.079 +03:00 [INF] Retrieved balance for student S6600991: Outstanding=$1400.00, Paid=$45000.00, Due=2025-08-13
+2025-07-14 10:56:39.116 +03:00 [INF] V3 GetStudentStats endpoint called
+2025-07-14 10:56:39.123 +03:00 [INF] Current user: S6600991 (ID: 62)
+2025-07-14 10:56:39.130 +03:00 [INF] User roles: Student, Student
+2025-07-14 10:56:39.136 +03:00 [INF] User permissions: Payments.Read, Students.Read
+2025-07-14 10:56:39.142 +03:00 [INF] Retrieving all students
+2025-07-14 10:56:39.198 +03:00 [INF] Getting balance summary for student: S6600991
+2025-07-14 10:56:39.213 +03:00 [INF] Student balance summary retrieved from cache: S6600991
+2025-07-14 10:56:39.219 +03:00 [INF] Retrieving payments for student: S6600991
+2025-07-14 10:56:39.308 +03:00 [INF] Student payments retrieved from cache: S6600991
+2025-07-14 10:56:39.314 +03:00 [INF] Retrieved balance for student S6600991: Outstanding=$1400.00, Paid=$45000.00, Due=2025-08-13
+2025-07-14 10:56:59.669 +03:00 [INF] V3 GetStudentStats endpoint called
+2025-07-14 10:56:59.677 +03:00 [INF] Current user: S6600991 (ID: 62)
+2025-07-14 10:56:59.683 +03:00 [INF] User roles: Student, Student
+2025-07-14 10:56:59.689 +03:00 [INF] User permissions: Payments.Read, Students.Read
+2025-07-14 10:56:59.697 +03:00 [INF] Retrieving all students
+2025-07-14 10:56:59.706 +03:00 [INF] Getting balance summary for student: S6600991
+2025-07-14 10:56:59.713 +03:00 [INF] Student balance summary retrieved from cache: S6600991
+2025-07-14 10:56:59.718 +03:00 [INF] Retrieving payments for student: S6600991
+2025-07-14 10:56:59.723 +03:00 [INF] Student payments retrieved from cache: S6600991
+2025-07-14 10:56:59.730 +03:00 [INF] Retrieved balance for student S6600991: Outstanding=$1400.00, Paid=$45000.00, Due=2025-08-13
+2025-07-14 10:56:59.738 +03:00 [INF] V3 GetStudentStats endpoint called
+2025-07-14 10:56:59.746 +03:00 [INF] Current user: S6600991 (ID: 62)
+2025-07-14 10:56:59.752 +03:00 [INF] User roles: Student, Student
+2025-07-14 10:56:59.758 +03:00 [INF] User permissions: Payments.Read, Students.Read
+2025-07-14 10:56:59.766 +03:00 [INF] Retrieving all students
+2025-07-14 10:56:59.776 +03:00 [INF] Getting balance summary for student: S6600991
+2025-07-14 10:56:59.781 +03:00 [INF] Student balance summary retrieved from cache: S6600991
+2025-07-14 10:56:59.785 +03:00 [INF] Retrieving payments for student: S6600991
+2025-07-14 10:56:59.791 +03:00 [INF] Student payments retrieved from cache: S6600991
+2025-07-14 10:56:59.797 +03:00 [INF] Retrieved balance for student S6600991: Outstanding=$1400.00, Paid=$45000.00, Due=2025-08-13
+2025-07-14 10:57:01.291 +03:00 [INF] V3 GetStudentStats endpoint called
+2025-07-14 10:57:01.297 +03:00 [INF] Current user: S6600991 (ID: 62)
+2025-07-14 10:57:01.303 +03:00 [INF] User roles: Student, Student
+2025-07-14 10:57:01.309 +03:00 [INF] User permissions: Payments.Read, Students.Read
+2025-07-14 10:57:01.314 +03:00 [INF] Retrieving all students
+2025-07-14 10:57:01.321 +03:00 [INF] Getting balance summary for student: S6600991
+2025-07-14 10:57:01.327 +03:00 [INF] Student balance summary retrieved from cache: S6600991
+2025-07-14 10:57:01.333 +03:00 [INF] Retrieving payments for student: S6600991
+2025-07-14 10:57:01.337 +03:00 [INF] Student payments retrieved from cache: S6600991
+2025-07-14 10:57:01.342 +03:00 [INF] Retrieved balance for student S6600991: Outstanding=$1400.00, Paid=$45000.00, Due=2025-08-13
+2025-07-14 10:57:01.351 +03:00 [INF] V3 GetStudentStats endpoint called
+2025-07-14 10:57:01.355 +03:00 [INF] Current user: S6600991 (ID: 62)
+2025-07-14 10:57:01.362 +03:00 [INF] User roles: Student, Student
+2025-07-14 10:57:01.367 +03:00 [INF] User permissions: Payments.Read, Students.Read
+2025-07-14 10:57:01.371 +03:00 [INF] Retrieving all students
+2025-07-14 10:57:01.381 +03:00 [INF] Getting balance summary for student: S6600991
+2025-07-14 10:57:01.385 +03:00 [INF] Student balance summary retrieved from cache: S6600991
+2025-07-14 10:57:01.390 +03:00 [INF] Retrieving payments for student: S6600991
+2025-07-14 10:57:01.396 +03:00 [INF] Student payments retrieved from cache: S6600991
+2025-07-14 10:57:01.400 +03:00 [INF] Retrieved balance for student S6600991: Outstanding=$1400.00, Paid=$45000.00, Due=2025-08-13
+2025-07-14 10:57:02.420 +03:00 [INF] V3 GetStudentStats endpoint called
+2025-07-14 10:57:02.428 +03:00 [INF] Current user: S6600991 (ID: 62)
+2025-07-14 10:57:02.434 +03:00 [INF] User roles: Student, Student
+2025-07-14 10:57:02.438 +03:00 [INF] User permissions: Payments.Read, Students.Read
+2025-07-14 10:57:02.443 +03:00 [INF] Retrieving all students
+2025-07-14 10:57:02.451 +03:00 [INF] Getting balance summary for student: S6600991
+2025-07-14 10:57:02.456 +03:00 [INF] Student balance summary retrieved from cache: S6600991
+2025-07-14 10:57:02.462 +03:00 [INF] Retrieving payments for student: S6600991
+2025-07-14 10:57:02.468 +03:00 [INF] Student payments retrieved from cache: S6600991
+2025-07-14 10:57:02.473 +03:00 [INF] Retrieved balance for student S6600991: Outstanding=$1400.00, Paid=$45000.00, Due=2025-08-13
+2025-07-14 10:57:02.484 +03:00 [INF] V3 GetStudentStats endpoint called
+2025-07-14 10:57:02.490 +03:00 [INF] Current user: S6600991 (ID: 62)
+2025-07-14 10:57:02.497 +03:00 [INF] User roles: Student, Student
+2025-07-14 10:57:02.503 +03:00 [INF] User permissions: Payments.Read, Students.Read
+2025-07-14 10:57:02.509 +03:00 [INF] Retrieving all students
+2025-07-14 10:57:02.518 +03:00 [INF] Getting balance summary for student: S6600991
+2025-07-14 10:57:02.523 +03:00 [INF] Student balance summary retrieved from cache: S6600991
+2025-07-14 10:57:02.530 +03:00 [INF] Retrieving payments for student: S6600991
+2025-07-14 10:57:02.535 +03:00 [INF] Student payments retrieved from cache: S6600991
+2025-07-14 10:57:02.539 +03:00 [INF] Retrieved balance for student S6600991: Outstanding=$1400.00, Paid=$45000.00, Due=2025-08-13
+2025-07-14 11:11:04.886 +03:00 [INF] Bus stopped: "rabbitmq://localhost/"
+2025-07-14 11:11:15.867 +03:00 [INF] Starting XYZ University Payment API {"MachineName":"DESKTOP-F3AMJ10","ThreadId":1,"ProcessId":18036,"Application":"XYZ University Payment API"}

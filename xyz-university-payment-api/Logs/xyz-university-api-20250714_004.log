@@ -1,0 +1,45 @@
+2025-07-14 09:03:44.194 +03:00 [INF] Ensuring database is created
+2025-07-14 09:03:44.786 +03:00 [INF] Database created successfully
+2025-07-14 09:03:44.792 +03:00 [INF] Seeding default roles and permissions
+2025-07-14 09:03:45.091 +03:00 [INF] Valid data already seeded, skipping seeding process
+2025-07-14 09:03:45.097 +03:00 [INF] Default roles and permissions seeded successfully
+2025-07-14 09:03:45.228 +03:00 [INF] XYZ University Payment API started successfully
+2025-07-14 09:03:45.319 +03:00 [INF] Configured endpoint PaymentMessage, Consumer: xyz_university_payment_api.Core.Application.Services.PaymentMessageConsumer
+2025-07-14 09:03:45.329 +03:00 [INF] Configured endpoint PaymentFailedMessage, Consumer: xyz_university_payment_api.Core.Application.Services.PaymentFailedMessageConsumer
+2025-07-14 09:03:45.560 +03:00 [INF] Bus started: "rabbitmq://localhost/"
+2025-07-14 09:36:30.045 +03:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-07-14 09:36:30.088 +03:00 [INF] Generated access token for user S6600991 with 1 roles and 2 permissions
+2025-07-14 09:36:30.317 +03:00 [INF] V3 GetStudentStats endpoint called
+2025-07-14 09:36:30.325 +03:00 [INF] Current user: S6600991 (ID: 62)
+2025-07-14 09:36:30.331 +03:00 [INF] User roles: Student, Student
+2025-07-14 09:36:30.335 +03:00 [INF] User permissions: Payments.Read, Students.Read
+2025-07-14 09:36:30.342 +03:00 [INF] Retrieving all students
+2025-07-14 09:36:30.420 +03:00 [INF] Retrieving payments for student: S6600991
+2025-07-14 09:36:30.468 +03:00 [INF] Student payments cached: S6600991
+2025-07-14 09:36:30.481 +03:00 [INF] Found 2 payments for student S6600991, total paid: 45000.00
+2025-07-14 09:36:30.503 +03:00 [INF] V3 GetStudentStats endpoint called
+2025-07-14 09:36:30.509 +03:00 [INF] Current user: S6600991 (ID: 62)
+2025-07-14 09:36:30.515 +03:00 [INF] User roles: Student, Student
+2025-07-14 09:36:30.519 +03:00 [INF] User permissions: Payments.Read, Students.Read
+2025-07-14 09:36:30.524 +03:00 [INF] Retrieving all students
+2025-07-14 09:36:30.533 +03:00 [INF] Retrieving payments for student: S6600991
+2025-07-14 09:36:30.542 +03:00 [INF] Student payments retrieved from cache: S6600991
+2025-07-14 09:36:30.549 +03:00 [INF] Found 2 payments for student S6600991, total paid: 45000.00
+2025-07-14 09:46:53.493 +03:00 [INF] V3 GetStudentStats endpoint called
+2025-07-14 09:46:53.500 +03:00 [INF] Current user: S6600991 (ID: 62)
+2025-07-14 09:46:53.507 +03:00 [INF] User roles: Student, Student
+2025-07-14 09:46:53.513 +03:00 [INF] User permissions: Payments.Read, Students.Read
+2025-07-14 09:46:53.518 +03:00 [INF] Retrieving all students
+2025-07-14 09:46:53.573 +03:00 [INF] Retrieving payments for student: S6600991
+2025-07-14 09:46:53.582 +03:00 [INF] Student payments retrieved from cache: S6600991
+2025-07-14 09:46:53.586 +03:00 [INF] Found 2 payments for student S6600991, total paid: 45000.00
+2025-07-14 09:46:53.597 +03:00 [INF] V3 GetStudentStats endpoint called
+2025-07-14 09:46:53.602 +03:00 [INF] Current user: S6600991 (ID: 62)
+2025-07-14 09:46:53.607 +03:00 [INF] User roles: Student, Student
+2025-07-14 09:46:53.614 +03:00 [INF] User permissions: Payments.Read, Students.Read
+2025-07-14 09:46:53.619 +03:00 [INF] Retrieving all students
+2025-07-14 09:46:53.630 +03:00 [INF] Retrieving payments for student: S6600991
+2025-07-14 09:46:53.634 +03:00 [INF] Student payments retrieved from cache: S6600991
+2025-07-14 09:46:53.640 +03:00 [INF] Found 2 payments for student S6600991, total paid: 45000.00
+2025-07-14 10:13:14.986 +03:00 [INF] Bus stopped: "rabbitmq://localhost/"
+2025-07-14 10:13:49.404 +03:00 [INF] Starting XYZ University Payment API {"MachineName":"DESKTOP-F3AMJ10","ThreadId":1,"ProcessId":3576,"Application":"XYZ University Payment API"}

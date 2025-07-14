@@ -297,7 +297,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
 
         [HttpGet("roles")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<IEnumerable<RoleDto>>> GetRoles()
+        public async Task<ActionResult<IEnumerable<UserRoleDto>>> GetRoles()
         {
             try
             {
@@ -311,7 +311,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
                 }
 
                 var roles = await _context.Roles
-                    .Select(r => new RoleDto
+                    .Select(r => new UserRoleDto
                     {
                         Id = r.Id,
                         Name = r.Name,
@@ -617,7 +617,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
         public string RoleName { get; set; }
     }
 
-    public class RoleDto
+    public class UserRoleDto
     {
         public int Id { get; set; }
         public string Name { get; set; }

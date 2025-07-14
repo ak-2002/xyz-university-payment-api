@@ -1,9 +1,0 @@
-2025-06-17 13:28:32.725 +03:00 [INF] Ensuring database is created
-2025-06-17 13:28:32.752 +03:00 [INF] Database created successfully
-2025-06-17 13:28:32.832 +03:00 [INF] Seeding initial student data
-2025-06-17 13:28:32.886 +03:00 [INF] Student data seeded successfully
-2025-06-17 13:28:32.888 +03:00 [INF] Seeding initial payment data
-2025-06-17 13:28:32.905 +03:00 [INF] Payment data seeded successfully
-2025-06-17 13:28:32.986 +03:00 [INF] XYZ University Payment API started successfully
-2025-06-17 13:28:33.087 +03:00 [WRN] Failed to determine the https port for redirect.
-2025-06-17 13:35:11.422 +03:00 [INF] Starting XYZ University Payment API {"MachineName":"DESKTOP-F3AMJ10","ThreadId":20,"ProcessId":6820,"Application":"XYZ University Payment API","Environment":"Development"}

@@ -45,6 +45,14 @@ const Navbar = () => {
                 >
                   Payments
                 </Link>
+                {isAdmin && (
+                  <Link
+                    to="/fee-management"
+                    className="text-gray-900 hover:text-gray-500 px-3 py-2 rounded-md text-sm font-medium"
+                  >
+                    Fee Management
+                  </Link>
+                )}
                 {!isStudent && (
                   <>
                     <Link
@@ -150,6 +158,15 @@ const Navbar = () => {
               >
                 Payments
               </Link>
+              {isAdmin && (
+                <Link
+                  to="/fee-management"
+                  className="text-gray-900 hover:text-gray-500 block px-3 py-2 rounded-md text-base font-medium"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Fee Management
+                </Link>
+              )}
               {!isStudent && (
                 <>
                   <Link

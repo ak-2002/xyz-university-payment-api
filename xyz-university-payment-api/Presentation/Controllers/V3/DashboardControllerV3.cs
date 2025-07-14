@@ -25,17 +25,20 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
     {
         private readonly IStudentService _studentService;
         private readonly IPaymentService _paymentService;
+        private readonly IStudentBalanceService _studentBalanceService;
         private readonly ILogger<DashboardController> _logger;
         private readonly IMapper _mapper;
 
         public DashboardController(
             IStudentService studentService, 
             IPaymentService paymentService, 
+            IStudentBalanceService studentBalanceService,
             ILogger<DashboardController> logger, 
             IMapper mapper)
         {
             _studentService = studentService;
             _paymentService = paymentService;
+            _studentBalanceService = studentBalanceService;
             _logger = logger;
             _mapper = mapper;
         }
@@ -314,15 +317,41 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
                     }
                 }
 
-                // Get student payments
+                // Get student balance and payment information
                 var studentPayments = new List<object>();
                 var totalPaid = 0.0m;
-                var balance = 5000.0m; // Default balance for demo
+                var balance = 0.0m;
+                var nextPaymentDue = DateTime.UtcNow.AddDays(30);
 
                 if (student != null)
                 {
                     try
                     {
+                        // Get real balance data from the new service
+                        var balanceSummary = await _studentBalanceService.GetStudentBalanceSummaryAsync(student.StudentNumber);
+                        balance = balanceSummary.TotalOutstandingBalance;
+                        totalPaid = balanceSummary.TotalPaid;
+                        nextPaymentDue = balanceSummary.NextPaymentDue;
+
+                        // Get recent payments for display
+                        var payments = await _paymentService.GetPaymentsByStudentAsync(student.StudentNumber);
+                        studentPayments = payments.OrderByDescending(p => p.PaymentDate).Take(5).Select(p => new
+                        {
+                            Id = p.Id,
+                            Amount = p.AmountPaid,
+                            Date = p.PaymentDate.ToString("yyyy-MM-dd"),
+                            Status = "Completed",
+                            Description = $"Payment - {p.PaymentReference}"
+                        }).ToList<object>();
+                        
+                        _logger.LogInformation("Retrieved balance for student {StudentNumber}: Outstanding=${Balance}, Paid=${TotalPaid}, Due={NextPaymentDue}", 
+                            student.StudentNumber, balance, totalPaid, nextPaymentDue.ToString("yyyy-MM-dd"));
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Could not retrieve balance data for student {StudentNumber}, using fallback", student.StudentNumber);
+                        
+                        // Fallback to payment-based calculation
                         var payments = await _paymentService.GetPaymentsByStudentAsync(student.StudentNumber);
                         studentPayments = payments.OrderByDescending(p => p.PaymentDate).Take(5).Select(p => new
                         {
@@ -334,14 +363,10 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
                         }).ToList<object>();
                         
                         totalPaid = payments.Sum(p => p.AmountPaid);
-                        balance = 5000.0m - totalPaid; // Assuming total tuition is 5000
+                        balance = 5000.0m - totalPaid; // Fallback calculation
                         
-                        _logger.LogInformation("Found {PaymentCount} payments for student {StudentNumber}, total paid: {TotalPaid}", 
-                            payments.Count(), student.StudentNumber, totalPaid);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogWarning(ex, "Could not retrieve payments for student {StudentNumber}", student.StudentNumber);
+                        _logger.LogInformation("Using fallback calculation for student {StudentNumber}: total paid: {TotalPaid}", 
+                            student.StudentNumber, totalPaid);
                     }
                 }
                 else
@@ -358,7 +383,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
                     Message = student != null ? "Student dashboard - showing individual data" : "Student dashboard - showing generic data",
                     AcademicInfo = new
                     {
-                        CurrentSemester = "Spring 2024",
+                        CurrentSemester = "Summer 2025",
                         EnrollmentStatus = student?.IsActive == true ? "Active" : "Inactive",
                         AcademicStanding = "Good Standing"
                     },
@@ -366,7 +391,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
                     {
                         Balance = balance,
                         TotalPaid = totalPaid,
-                        NextPaymentDue = DateTime.UtcNow.AddDays(30),
+                        NextPaymentDue = nextPaymentDue,
                         NextPaymentDueAmount = balance > 0 ? balance : 0,
                         RecentPayments = studentPayments
                     },

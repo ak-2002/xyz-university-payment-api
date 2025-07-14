@@ -23,7 +23,7 @@ namespace xyz_university_payment_api.Core.Application.Services
             _logger = logger;
         }
 
-        public async Task<T?> GetAsync<T>(string key) where T : class
+        public async Task<T?> GetAsync<T>(string key)
         {
             try
             {
@@ -31,7 +31,7 @@ namespace xyz_university_payment_api.Core.Application.Services
                 if (string.IsNullOrEmpty(cachedValue))
                 {
                     _logger.LogDebug("Cache miss for key: {Key}", key);
-                    return null;
+                    return default;
                 }
 
                 _logger.LogDebug("Cache hit for key: {Key}", key);
@@ -40,16 +40,16 @@ namespace xyz_university_payment_api.Core.Application.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving from cache for key: {Key}", key);
-                return null;
+                return default;
             }
         }
 
-        public async Task SetAsync<T>(string key, T value) where T : class
+        public async Task SetAsync<T>(string key, T value)
         {
             await SetAsync(key, value, TimeSpan.FromMinutes(_redisConfig.DefaultExpirationMinutes));
         }
 
-        public async Task SetAsync<T>(string key, T value, TimeSpan expiration) where T : class
+        public async Task SetAsync<T>(string key, T value, TimeSpan expiration)
         {
             try
             {

@@ -8,6 +8,9 @@ namespace xyz_university_payment_api.Core.Application.Interfaces
         // Repository properties
         IGenericRepository<Student> Students { get; }
         IGenericRepository<PaymentNotification> Payments { get; }
+        IGenericRepository<FeeSchedule> FeeSchedules { get; }
+        IGenericRepository<StudentBalance> StudentBalances { get; }
+        IGenericRepository<PaymentPlan> PaymentPlans { get; }
 
         // Transaction management
         Task BeginTransactionAsync();

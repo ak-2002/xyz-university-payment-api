@@ -1,0 +1,117 @@
+2025-07-14 10:13:49.646 +03:00 [INF] Ensuring database is created
+2025-07-14 10:13:50.316 +03:00 [INF] Database created successfully
+2025-07-14 10:13:50.320 +03:00 [INF] Seeding default roles and permissions
+2025-07-14 10:13:50.634 +03:00 [INF] Valid data already seeded, skipping seeding process
+2025-07-14 10:13:50.639 +03:00 [INF] Default roles and permissions seeded successfully
+2025-07-14 10:13:50.682 +03:00 [INF] Seeding fee schedules and student balances
+2025-07-14 10:13:50.690 +03:00 [INF] Starting comprehensive data seeding...
+2025-07-14 10:13:50.697 +03:00 [INF] Seeding fee schedules...
+2025-07-14 10:13:50.935 +03:00 [INF] Seeded 6 fee schedules
+2025-07-14 10:13:50.948 +03:00 [INF] Seeding student balances...
+2025-07-14 10:13:51.088 +03:00 [INF] Seeded 10 student balances
+2025-07-14 10:13:51.095 +03:00 [INF] Clearing all student balance caches
+2025-07-14 10:13:51.110 +03:00 [INF] Student balance caches invalidated for student: S12345
+2025-07-14 10:13:51.117 +03:00 [INF] Student balance caches invalidated for student: S67890
+2025-07-14 10:13:51.121 +03:00 [INF] Student balance caches invalidated for student: S66001
+2025-07-14 10:13:51.126 +03:00 [INF] Student balance caches invalidated for student: S66002
+2025-07-14 10:13:51.132 +03:00 [INF] Student balance caches invalidated for student: S66004
+2025-07-14 10:13:51.137 +03:00 [INF] Student balance caches invalidated for student: S660055
+2025-07-14 10:13:51.142 +03:00 [INF] Student balance caches invalidated for student: S660066
+2025-07-14 10:13:51.148 +03:00 [INF] Student balance caches invalidated for student: S660088
+2025-07-14 10:13:51.153 +03:00 [INF] Student balance caches invalidated for student: S660099
+2025-07-14 10:13:51.156 +03:00 [INF] Student balance caches invalidated for student: S6600991
+2025-07-14 10:13:51.161 +03:00 [INF] All student balance caches cleared successfully
+2025-07-14 10:13:51.166 +03:00 [INF] Data seeding completed successfully
+2025-07-14 10:13:51.171 +03:00 [INF] Fee schedules and student balances seeded successfully
+2025-07-14 10:13:51.360 +03:00 [INF] XYZ University Payment API started successfully
+2025-07-14 10:13:51.491 +03:00 [INF] Configured endpoint PaymentMessage, Consumer: xyz_university_payment_api.Core.Application.Services.PaymentMessageConsumer
+2025-07-14 10:13:51.503 +03:00 [INF] Configured endpoint PaymentFailedMessage, Consumer: xyz_university_payment_api.Core.Application.Services.PaymentFailedMessageConsumer
+2025-07-14 10:13:51.837 +03:00 [INF] Bus started: "rabbitmq://localhost/"
+2025-07-14 10:15:03.676 +03:00 [INF] V3 GetStudentStats endpoint called
+2025-07-14 10:15:03.683 +03:00 [INF] Current user: S6600991 (ID: 62)
+2025-07-14 10:15:03.689 +03:00 [INF] User roles: Student, Student
+2025-07-14 10:15:03.694 +03:00 [INF] User permissions: Payments.Read, Students.Read
+2025-07-14 10:15:03.699 +03:00 [INF] Retrieving all students
+2025-07-14 10:15:03.725 +03:00 [INF] Retrieving payments for student: S6600991
+2025-07-14 10:15:03.781 +03:00 [INF] Student payments cached: S6600991
+2025-07-14 10:15:03.790 +03:00 [INF] Found 2 payments for student S6600991, total paid: 45000.00
+2025-07-14 10:15:03.825 +03:00 [INF] V3 GetStudentStats endpoint called
+2025-07-14 10:15:03.830 +03:00 [INF] Current user: S6600991 (ID: 62)
+2025-07-14 10:15:03.835 +03:00 [INF] User roles: Student, Student
+2025-07-14 10:15:03.840 +03:00 [INF] User permissions: Payments.Read, Students.Read
+2025-07-14 10:15:03.846 +03:00 [INF] Retrieving all students
+2025-07-14 10:15:03.890 +03:00 [INF] Retrieving payments for student: S6600991
+2025-07-14 10:15:03.900 +03:00 [INF] Student payments retrieved from cache: S6600991
+2025-07-14 10:15:03.905 +03:00 [INF] Found 2 payments for student S6600991, total paid: 45000.00
+2025-07-14 10:15:51.775 +03:00 [INF] V3 GetStudentStats endpoint called
+2025-07-14 10:15:51.779 +03:00 [INF] Current user: S6600991 (ID: 62)
+2025-07-14 10:15:51.857 +03:00 [INF] User roles: Student, Student
+2025-07-14 10:15:51.862 +03:00 [INF] User permissions: Payments.Read, Students.Read
+2025-07-14 10:15:51.866 +03:00 [INF] Retrieving all students
+2025-07-14 10:15:51.890 +03:00 [INF] Retrieving payments for student: S6600991
+2025-07-14 10:15:51.895 +03:00 [INF] Student payments retrieved from cache: S6600991
+2025-07-14 10:15:51.899 +03:00 [INF] Found 2 payments for student S6600991, total paid: 45000.00
+2025-07-14 10:15:51.908 +03:00 [INF] V3 GetStudentStats endpoint called
+2025-07-14 10:15:51.912 +03:00 [INF] Current user: S6600991 (ID: 62)
+2025-07-14 10:15:51.917 +03:00 [INF] User roles: Student, Student
+2025-07-14 10:15:51.922 +03:00 [INF] User permissions: Payments.Read, Students.Read
+2025-07-14 10:15:51.927 +03:00 [INF] Retrieving all students
+2025-07-14 10:15:51.935 +03:00 [INF] Retrieving payments for student: S6600991
+2025-07-14 10:15:51.941 +03:00 [INF] Student payments retrieved from cache: S6600991
+2025-07-14 10:15:51.945 +03:00 [INF] Found 2 payments for student S6600991, total paid: 45000.00
+2025-07-14 10:16:00.563 +03:00 [INF] V3 GetStudentStats endpoint called
+2025-07-14 10:16:00.575 +03:00 [INF] Current user: S6600991 (ID: 62)
+2025-07-14 10:16:00.583 +03:00 [INF] User roles: Student, Student
+2025-07-14 10:16:00.590 +03:00 [INF] User permissions: Payments.Read, Students.Read
+2025-07-14 10:16:00.597 +03:00 [INF] Retrieving all students
+2025-07-14 10:16:00.609 +03:00 [INF] Retrieving payments for student: S6600991
+2025-07-14 10:16:00.615 +03:00 [INF] Student payments retrieved from cache: S6600991
+2025-07-14 10:16:00.620 +03:00 [INF] Found 2 payments for student S6600991, total paid: 45000.00
+2025-07-14 10:16:00.627 +03:00 [INF] V3 GetStudentStats endpoint called
+2025-07-14 10:16:00.631 +03:00 [INF] Current user: S6600991 (ID: 62)
+2025-07-14 10:16:00.637 +03:00 [INF] User roles: Student, Student
+2025-07-14 10:16:00.642 +03:00 [INF] User permissions: Payments.Read, Students.Read
+2025-07-14 10:16:00.646 +03:00 [INF] Retrieving all students
+2025-07-14 10:16:00.656 +03:00 [INF] Retrieving payments for student: S6600991
+2025-07-14 10:16:00.661 +03:00 [INF] Student payments retrieved from cache: S6600991
+2025-07-14 10:16:00.665 +03:00 [INF] Found 2 payments for student S6600991, total paid: 45000.00
+2025-07-14 10:16:02.422 +03:00 [INF] V3 GetPaymentsByStudent endpoint called for student: S6600991
+2025-07-14 10:16:02.427 +03:00 [INF] Calling payment service for student: S6600991
+2025-07-14 10:16:02.432 +03:00 [INF] Retrieving payments for student: S6600991
+2025-07-14 10:16:02.438 +03:00 [INF] Student payments retrieved from cache: S6600991
+2025-07-14 10:16:02.442 +03:00 [INF] Payment service returned 2 payments for student: S6600991
+2025-07-14 10:16:02.447 +03:00 [INF] Payment: ID=17, Ref=REF00991, Amount=25000.00, Student=S6600991
+2025-07-14 10:16:02.452 +03:00 [INF] Payment: ID=18, Ref=REF099912, Amount=20000.00, Student=S6600991
+2025-07-14 10:16:02.464 +03:00 [INF] AutoMapper converted to 2 DTOs
+2025-07-14 10:16:02.469 +03:00 [INF] Final paged result: 2 items, Total: 2, Page: 1
+2025-07-14 10:16:02.487 +03:00 [INF] V3 GetPaymentsByStudent endpoint called for student: S6600991
+2025-07-14 10:16:02.491 +03:00 [INF] Calling payment service for student: S6600991
+2025-07-14 10:16:02.495 +03:00 [INF] Retrieving payments for student: S6600991
+2025-07-14 10:16:02.499 +03:00 [INF] Student payments retrieved from cache: S6600991
+2025-07-14 10:16:02.503 +03:00 [INF] Payment service returned 2 payments for student: S6600991
+2025-07-14 10:16:02.508 +03:00 [INF] Payment: ID=17, Ref=REF00991, Amount=25000.00, Student=S6600991
+2025-07-14 10:16:02.513 +03:00 [INF] Payment: ID=18, Ref=REF099912, Amount=20000.00, Student=S6600991
+2025-07-14 10:16:02.518 +03:00 [INF] AutoMapper converted to 2 DTOs
+2025-07-14 10:16:02.523 +03:00 [INF] Final paged result: 2 items, Total: 2, Page: 1
+2025-07-14 10:18:04.915 +03:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-07-14 10:18:04.951 +03:00 [INF] Generated access token for user S660099 with 1 roles and 2 permissions
+2025-07-14 10:18:05.023 +03:00 [INF] V3 GetStudentStats endpoint called
+2025-07-14 10:18:05.035 +03:00 [INF] Current user: S660099 (ID: 61)
+2025-07-14 10:18:05.043 +03:00 [INF] User roles: Student, Student
+2025-07-14 10:18:05.053 +03:00 [INF] User permissions: Payments.Read, Students.Read
+2025-07-14 10:18:05.062 +03:00 [INF] Retrieving all students
+2025-07-14 10:18:05.072 +03:00 [INF] Retrieving payments for student: S660099
+2025-07-14 10:18:05.082 +03:00 [INF] Student payments cached: S660099
+2025-07-14 10:18:05.087 +03:00 [INF] Found 8 payments for student S660099, total paid: 11100.00
+2025-07-14 10:18:05.094 +03:00 [INF] V3 GetStudentStats endpoint called
+2025-07-14 10:18:05.099 +03:00 [INF] Current user: S660099 (ID: 61)
+2025-07-14 10:18:05.104 +03:00 [INF] User roles: Student, Student
+2025-07-14 10:18:05.108 +03:00 [INF] User permissions: Payments.Read, Students.Read
+2025-07-14 10:18:05.114 +03:00 [INF] Retrieving all students
+2025-07-14 10:18:05.119 +03:00 [INF] Retrieving payments for student: S660099
+2025-07-14 10:18:05.124 +03:00 [INF] Student payments retrieved from cache: S660099
+2025-07-14 10:18:05.130 +03:00 [INF] Found 8 payments for student S660099, total paid: 11100.00
+2025-07-14 10:19:49.340 +03:00 [INF] Bus stopped: "rabbitmq://localhost/"
+2025-07-14 10:20:09.437 +03:00 [INF] Starting XYZ University Payment API {"MachineName":"DESKTOP-F3AMJ10","ThreadId":4,"ProcessId":21324,"Application":"XYZ University Payment API"}
+2025-07-14 10:20:09.481 +03:00 [INF] EF command detected, skipping application startup {"MachineName":"DESKTOP-F3AMJ10","ThreadId":4,"ProcessId":21324,"Application":"XYZ University Payment API"}
+2025-07-14 10:20:51.621 +03:00 [INF] Starting XYZ University Payment API {"MachineName":"DESKTOP-F3AMJ10","ThreadId":1,"ProcessId":17592,"Application":"XYZ University Payment API"}

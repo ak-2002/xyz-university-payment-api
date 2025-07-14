@@ -105,8 +105,15 @@ try
     // Register Services
     builder.Services.AddScoped<IStudentService, xyz_university_payment_api.Core.Application.Services.StudentService>();
     builder.Services.AddScoped<IPaymentService, xyz_university_payment_api.Core.Application.Services.PaymentService>();
+    builder.Services.AddScoped<IStudentBalanceService, xyz_university_payment_api.Core.Application.Services.StudentBalanceService>();
+    builder.Services.AddScoped<IDataSeedingService, xyz_university_payment_api.Core.Application.Services.DataSeedingService>();
     builder.Services.AddScoped<ILoggingService, xyz_university_payment_api.Core.Application.Services.LoggingService>();
     builder.Services.AddScoped<IMessagePublisher, xyz_university_payment_api.Core.Application.Services.RabbitMQMessagePublisher>();
+    
+    // Register Fee Management Services
+    builder.Services.AddScoped<IFeeManagementService, xyz_university_payment_api.Core.Application.Services.FeeManagementService>();
+    builder.Services.AddScoped<xyz_university_payment_api.Infrastructure.Data.Repositories.IFeeManagementRepository, xyz_university_payment_api.Infrastructure.Data.Repositories.FeeManagementRepository>();
+    builder.Services.AddScoped<xyz_university_payment_api.Core.Application.Services.FeeManagementSeedingService>();
     
     // Configure SendGrid with environment variables
     var sendGridApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY") ?? 
@@ -192,6 +199,9 @@ try
         c.SwaggerDoc("v1", new OpenApiInfo { Title = "XYZ University Payment API v1", Version = "v1" });
         c.SwaggerDoc("v2", new OpenApiInfo { Title = "XYZ University Payment API v2", Version = "v2" });
         c.SwaggerDoc("v3", new OpenApiInfo { Title = "XYZ University Payment API v3", Version = "v3" });
+        
+        // Handle duplicate schema names
+        c.CustomSchemaIds(type => type.FullName?.Replace(".", "_") ?? type.Name);
         
         c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
         {
@@ -377,6 +387,19 @@ try
                     );
                     context.SaveChanges();
                     Log.Information("Payment data seeded successfully");
+                }
+
+                // Seed fee schedules and student balances
+                var dataSeedingService = scope.ServiceProvider.GetRequiredService<IDataSeedingService>();
+                if (!await dataSeedingService.HasSeedDataAsync())
+                {
+                    Log.Information("Seeding fee schedules and student balances");
+                    await dataSeedingService.SeedAllDataAsync();
+                    Log.Information("Fee schedules and student balances seeded successfully");
+                }
+                else
+                {
+                    Log.Information("Fee schedules and student balances already exist, skipping seeding");
                 }
 
                 // Create student user account for testing

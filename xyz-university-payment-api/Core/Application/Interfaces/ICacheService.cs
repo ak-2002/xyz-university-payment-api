@@ -8,17 +8,17 @@ namespace xyz_university_payment_api.Core.Application.Interfaces
         /// <summary>
         /// Get value from cache
         /// </summary>
-        Task<T?> GetAsync<T>(string key) where T : class;
+        Task<T?> GetAsync<T>(string key);
 
         /// <summary>
         /// Set value in cache with default expiration
         /// </summary>
-        Task SetAsync<T>(string key, T value) where T : class;
+        Task SetAsync<T>(string key, T value);
 
         /// <summary>
         /// Set value in cache with custom expiration
         /// </summary>
-        Task SetAsync<T>(string key, T value, TimeSpan expiration) where T : class;
+        Task SetAsync<T>(string key, T value, TimeSpan expiration);
 
         /// <summary>
         /// Remove value from cache

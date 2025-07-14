@@ -17,6 +17,15 @@ namespace xyz_university_payment_api.Infrastructure.Data
         public DbSet<StudentBalance> StudentBalances { get; set; } // Database table for student balances
         public DbSet<PaymentPlan> PaymentPlans { get; set; } // Database table for payment plans
 
+        // Fee Management entities
+        public DbSet<FeeCategory> FeeCategories { get; set; }
+        public DbSet<FeeStructure> FeeStructures { get; set; }
+        public DbSet<FeeStructureItem> FeeStructureItems { get; set; }
+        public DbSet<StudentFeeAssignment> StudentFeeAssignments { get; set; }
+        public DbSet<StudentFeeBalance> StudentFeeBalances { get; set; }
+        public DbSet<AdditionalFee> AdditionalFees { get; set; }
+        public DbSet<StudentAdditionalFee> StudentAdditionalFees { get; set; }
+
         // Authorization entities
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
@@ -28,6 +37,19 @@ namespace xyz_university_payment_api.Infrastructure.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // Student configuration
+            modelBuilder.Entity<Student>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.StudentNumber).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.FullName).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Program).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Email).HasMaxLength(100);
+                entity.Property(e => e.PhoneNumber).HasMaxLength(20);
+                entity.Property(e => e.Address).HasMaxLength(200);
+                entity.HasIndex(e => e.StudentNumber).IsUnique();
+            });
 
             modelBuilder.Entity<PaymentNotification>()
                 .Property(p => p.AmountPaid)
@@ -85,17 +107,17 @@ namespace xyz_university_payment_api.Infrastructure.Data
                 entity.Property(e => e.RemainingAmount).HasPrecision(18, 2);
                 entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
                 
-                // Relationships
+                // Relationships - using NoAction to avoid cascade cycles
                 entity.HasOne(e => e.Student)
                     .WithMany()
                     .HasForeignKey(e => e.StudentNumber)
                     .HasPrincipalKey(s => s.StudentNumber)
-                    .OnDelete(DeleteBehavior.Cascade);
+                    .OnDelete(DeleteBehavior.NoAction);
                     
                 entity.HasOne(e => e.StudentBalance)
                     .WithMany()
                     .HasForeignKey(e => e.StudentBalanceId)
-                    .OnDelete(DeleteBehavior.Cascade);
+                    .OnDelete(DeleteBehavior.NoAction);
             });
 
             // User configuration
@@ -167,6 +189,137 @@ namespace xyz_university_payment_api.Infrastructure.Data
                 entity.Property(e => e.PerformedBy).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.IpAddress).HasMaxLength(45);
                 entity.Property(e => e.UserAgent).HasMaxLength(500);
+            });
+
+            // Fee Management configurations
+            ConfigureFeeManagementEntities(modelBuilder);
+        }
+
+        private void ConfigureFeeManagementEntities(ModelBuilder modelBuilder)
+        {
+            // FeeCategory configuration
+            modelBuilder.Entity<FeeCategory>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Description).HasMaxLength(500);
+                entity.Property(e => e.Type).IsRequired();
+                entity.Property(e => e.Frequency).IsRequired();
+                entity.HasIndex(e => e.Name).IsUnique();
+            });
+
+            // FeeStructure configuration
+            modelBuilder.Entity<FeeStructure>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Description).HasMaxLength(500);
+                entity.Property(e => e.AcademicYear).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.Semester).IsRequired().HasMaxLength(50);
+                entity.HasIndex(e => new { e.AcademicYear, e.Semester, e.Name }).IsUnique();
+            });
+
+            // FeeStructureItem configuration
+            modelBuilder.Entity<FeeStructureItem>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Amount).HasPrecision(18, 2);
+                entity.Property(e => e.Description).HasMaxLength(500);
+                
+                // Relationships
+                entity.HasOne(e => e.FeeStructure)
+                    .WithMany(f => f.FeeStructureItems)
+                    .HasForeignKey(e => e.FeeStructureId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                    
+                entity.HasOne(e => e.FeeCategory)
+                    .WithMany(c => c.FeeStructureItems)
+                    .HasForeignKey(e => e.FeeCategoryId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            // StudentFeeAssignment configuration
+            modelBuilder.Entity<StudentFeeAssignment>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.StudentNumber).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.AcademicYear).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.Semester).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.AssignedBy).IsRequired().HasMaxLength(100);
+                entity.HasIndex(e => new { e.StudentNumber, e.FeeStructureId, e.AcademicYear, e.Semester }).IsUnique();
+                
+                // Relationships
+                entity.HasOne(e => e.Student)
+                    .WithMany()
+                    .HasForeignKey(e => e.StudentNumber)
+                    .HasPrincipalKey(s => s.StudentNumber)
+                    .OnDelete(DeleteBehavior.NoAction);
+                    
+                entity.HasOne(e => e.FeeStructure)
+                    .WithMany(f => f.StudentFeeAssignments)
+                    .HasForeignKey(e => e.FeeStructureId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            // StudentFeeBalance configuration
+            modelBuilder.Entity<StudentFeeBalance>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.StudentNumber).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.TotalAmount).HasPrecision(18, 2);
+                entity.Property(e => e.AmountPaid).HasPrecision(18, 2);
+                entity.Property(e => e.OutstandingBalance).HasPrecision(18, 2);
+                entity.Property(e => e.Status).IsRequired();
+                entity.HasIndex(e => new { e.StudentNumber, e.FeeStructureItemId }).IsUnique();
+                
+                // Relationships
+                entity.HasOne(e => e.Student)
+                    .WithMany()
+                    .HasForeignKey(e => e.StudentNumber)
+                    .HasPrincipalKey(s => s.StudentNumber)
+                    .OnDelete(DeleteBehavior.NoAction);
+                    
+                entity.HasOne(e => e.FeeStructureItem)
+                    .WithMany(f => f.StudentFeeBalances)
+                    .HasForeignKey(e => e.FeeStructureItemId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            // AdditionalFee configuration
+            modelBuilder.Entity<AdditionalFee>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Description).HasMaxLength(500);
+                entity.Property(e => e.Amount).HasPrecision(18, 2);
+                entity.Property(e => e.Frequency).IsRequired();
+                entity.Property(e => e.ApplicableTo).IsRequired();
+                entity.Property(e => e.ApplicablePrograms).HasMaxLength(1000);
+                entity.Property(e => e.ApplicableClasses).HasMaxLength(1000);
+                entity.Property(e => e.ApplicableStudents).HasMaxLength(2000);
+                entity.Property(e => e.CreatedBy).IsRequired().HasMaxLength(100);
+            });
+
+            // StudentAdditionalFee configuration
+            modelBuilder.Entity<StudentAdditionalFee>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.StudentNumber).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.Amount).HasPrecision(18, 2);
+                entity.Property(e => e.Status).IsRequired();
+                entity.HasIndex(e => new { e.StudentNumber, e.AdditionalFeeId }).IsUnique();
+                
+                // Relationships
+                entity.HasOne(e => e.Student)
+                    .WithMany()
+                    .HasForeignKey(e => e.StudentNumber)
+                    .HasPrincipalKey(s => s.StudentNumber)
+                    .OnDelete(DeleteBehavior.NoAction);
+                    
+                entity.HasOne(e => e.AdditionalFee)
+                    .WithMany(f => f.StudentAdditionalFees)
+                    .HasForeignKey(e => e.AdditionalFeeId)
+                    .OnDelete(DeleteBehavior.NoAction);
             });
         }
     }
