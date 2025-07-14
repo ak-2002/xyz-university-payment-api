@@ -1,0 +1,73 @@
+# .NET build artifacts
+bin/
+obj/
+*.user
+*.suo
+*.cache
+*.pdb
+*.dll
+*.exe
+
+# Configuration files with secrets
+appsettings.Development.json
+appsettings.Production.json
+appsettings.Staging.json
+**/bin/Debug/
+**/bin/Release/
+**/obj/Debug/
+**/obj/Release/
+
+# Logs
+Logs/
+*.log
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.production
+
+# IDE files
+.vs/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test results
+TestResults/
+[Tt]est[Rr]esult*/
+*.trx
+
+# Coverage reports
+*.coverage
+*.coveragexml
+
+# NuGet packages
+*.nupkg
+packages/
+*.nuget.props
+*.nuget.targets
+
+# Node modules (for frontend)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Frontend build
+xyz-university-frontend/dist/
+xyz-university-frontend/build/
+
+# Database files
+*.mdf
+*.ldf
+*.ndf
+
+# Temporary files
+*.tmp
+*.temp 
