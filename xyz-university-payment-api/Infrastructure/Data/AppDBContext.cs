@@ -13,6 +13,9 @@ namespace xyz_university_payment_api.Infrastructure.Data
 
         public DbSet<Student> Students { get; set; } // Database table for students
         public DbSet<PaymentNotification> PaymentNotifications { get; set; } // Database table for payment notifications
+        public DbSet<FeeSchedule> FeeSchedules { get; set; } // Database table for fee schedules
+        public DbSet<StudentBalance> StudentBalances { get; set; } // Database table for student balances
+        public DbSet<PaymentPlan> PaymentPlans { get; set; } // Database table for payment plans
 
         // Authorization entities
         public DbSet<User> Users { get; set; }
@@ -29,6 +32,71 @@ namespace xyz_university_payment_api.Infrastructure.Data
             modelBuilder.Entity<PaymentNotification>()
                 .Property(p => p.AmountPaid)
                 .HasPrecision(18, 2);
+
+            // FeeSchedule configuration
+            modelBuilder.Entity<FeeSchedule>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Semester).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.AcademicYear).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.Program).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.TuitionFee).HasPrecision(18, 2);
+                entity.Property(e => e.RegistrationFee).HasPrecision(18, 2);
+                entity.Property(e => e.LibraryFee).HasPrecision(18, 2);
+                entity.Property(e => e.LaboratoryFee).HasPrecision(18, 2);
+                entity.Property(e => e.OtherFees).HasPrecision(18, 2);
+                entity.Property(e => e.TotalAmount).HasPrecision(18, 2);
+                entity.HasIndex(e => new { e.Semester, e.AcademicYear, e.Program }).IsUnique();
+            });
+
+            // StudentBalance configuration
+            modelBuilder.Entity<StudentBalance>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.StudentNumber).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.TotalAmount).HasPrecision(18, 2);
+                entity.Property(e => e.AmountPaid).HasPrecision(18, 2);
+                entity.Property(e => e.OutstandingBalance).HasPrecision(18, 2);
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
+                entity.HasIndex(e => new { e.StudentNumber, e.FeeScheduleId }).IsUnique();
+                
+                // Relationships
+                entity.HasOne(e => e.Student)
+                    .WithMany()
+                    .HasForeignKey(e => e.StudentNumber)
+                    .HasPrincipalKey(s => s.StudentNumber)
+                    .OnDelete(DeleteBehavior.Cascade);
+                    
+                entity.HasOne(e => e.FeeSchedule)
+                    .WithMany(f => f.StudentBalances)
+                    .HasForeignKey(e => e.FeeScheduleId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // PaymentPlan configuration
+            modelBuilder.Entity<PaymentPlan>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.StudentNumber).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.PlanType).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.InstallmentAmount).HasPrecision(18, 2);
+                entity.Property(e => e.TotalAmount).HasPrecision(18, 2);
+                entity.Property(e => e.AmountPaid).HasPrecision(18, 2);
+                entity.Property(e => e.RemainingAmount).HasPrecision(18, 2);
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
+                
+                // Relationships
+                entity.HasOne(e => e.Student)
+                    .WithMany()
+                    .HasForeignKey(e => e.StudentNumber)
+                    .HasPrincipalKey(s => s.StudentNumber)
+                    .OnDelete(DeleteBehavior.Cascade);
+                    
+                entity.HasOne(e => e.StudentBalance)
+                    .WithMany()
+                    .HasForeignKey(e => e.StudentBalanceId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
 
             // User configuration
             modelBuilder.Entity<User>(entity =>

@@ -14,6 +14,9 @@ namespace xyz_university_payment_api.Infrastructure.Data
         // Repository instances
         private IGenericRepository<Student>? _students;
         private IGenericRepository<PaymentNotification>? _payments;
+        private IGenericRepository<FeeSchedule>? _feeSchedules;
+        private IGenericRepository<StudentBalance>? _studentBalances;
+        private IGenericRepository<PaymentPlan>? _paymentPlans;
 
         public UnitOfWork(AppDbContext context)
         {
@@ -36,6 +39,33 @@ namespace xyz_university_payment_api.Infrastructure.Data
             {
                 _payments ??= new GenericRepository<PaymentNotification>(_context);
                 return _payments;
+            }
+        }
+
+        public IGenericRepository<FeeSchedule> FeeSchedules
+        {
+            get
+            {
+                _feeSchedules ??= new GenericRepository<FeeSchedule>(_context);
+                return _feeSchedules;
+            }
+        }
+
+        public IGenericRepository<StudentBalance> StudentBalances
+        {
+            get
+            {
+                _studentBalances ??= new GenericRepository<StudentBalance>(_context);
+                return _studentBalances;
+            }
+        }
+
+        public IGenericRepository<PaymentPlan> PaymentPlans
+        {
+            get
+            {
+                _paymentPlans ??= new GenericRepository<PaymentPlan>(_context);
+                return _paymentPlans;
             }
         }
 
