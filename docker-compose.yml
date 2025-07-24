@@ -2,7 +2,7 @@ version: '3.8'
 services:
   app:
     build: 
-      context: ..
+      context: ./xyz-university-payment-api
       dockerfile: .devcontainer/Dockerfile
     volumes:
       - ..:/workspaces:cached
