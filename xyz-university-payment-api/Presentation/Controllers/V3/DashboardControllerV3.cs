@@ -26,6 +26,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
         private readonly IStudentService _studentService;
         private readonly IPaymentService _paymentService;
         private readonly IStudentBalanceService _studentBalanceService;
+        private readonly IFeeManagementService _feeManagementService;
         private readonly ILogger<DashboardController> _logger;
         private readonly IMapper _mapper;
 
@@ -33,12 +34,14 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
             IStudentService studentService, 
             IPaymentService paymentService, 
             IStudentBalanceService studentBalanceService,
+            IFeeManagementService feeManagementService,
             ILogger<DashboardController> logger, 
             IMapper mapper)
         {
             _studentService = studentService;
             _paymentService = paymentService;
             _studentBalanceService = studentBalanceService;
+            _feeManagementService = feeManagementService;
             _logger = logger;
             _mapper = mapper;
         }
@@ -56,6 +59,11 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
                 var students = await _studentService.GetAllStudentsAsync();
                 var payments = await _paymentService.GetAllPaymentsAsync();
 
+                // Get all student fee balances for system-wide paid/pending
+                var allFeeBalances = await _feeManagementService.GetAllStudentFeeBalancesAsync();
+                var paidAmount = allFeeBalances.Sum(b => b.AmountPaid);
+                var pendingAmount = allFeeBalances.Sum(b => b.OutstandingBalance);
+
                 var stats = new
                 {
                     TotalUsers = students.Count() + 10, // Add some admin/staff users
@@ -70,7 +78,9 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
                         ThisMonth = payments.Count(p => p.PaymentDate.Month == DateTime.UtcNow.Month),
                         LastMonth = payments.Count(p => p.PaymentDate.Month == DateTime.UtcNow.AddMonths(-1).Month),
                         ThisYear = payments.Count(p => p.PaymentDate.Year == DateTime.UtcNow.Year)
-                    }
+                    },
+                    PaidAmount = paidAmount,
+                    PendingAmount = pendingAmount
                 };
 
                 return Ok(new ApiResponseDto<object>
@@ -317,7 +327,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
                     }
                 }
 
-                // Get student balance and payment information
+                // Get student balance and payment information using the new StudentFeeBalance system
                 var studentPayments = new List<object>();
                 var totalPaid = 0.0m;
                 var balance = 0.0m;
@@ -327,11 +337,11 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
                 {
                     try
                     {
-                        // Get real balance data from the new service
-                        var balanceSummary = await _studentBalanceService.GetStudentBalanceSummaryAsync(student.StudentNumber);
-                        balance = balanceSummary.TotalOutstandingBalance;
-                        totalPaid = balanceSummary.TotalPaid;
-                        nextPaymentDue = balanceSummary.NextPaymentDue;
+                        // Get balance data from the new StudentFeeBalance system
+                        var feeBalanceSummary = await _feeManagementService.GetStudentFeeBalanceSummaryAsync(student.StudentNumber);
+                        balance = feeBalanceSummary.TotalOutstandingBalance;
+                        totalPaid = feeBalanceSummary.TotalPaid;
+                        nextPaymentDue = feeBalanceSummary.NextPaymentDue;
 
                         // Get recent payments for display
                         var payments = await _paymentService.GetPaymentsByStudentAsync(student.StudentNumber);
@@ -344,12 +354,12 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
                             Description = $"Payment - {p.PaymentReference}"
                         }).ToList<object>();
                         
-                        _logger.LogInformation("Retrieved balance for student {StudentNumber}: Outstanding=${Balance}, Paid=${TotalPaid}, Due={NextPaymentDue}", 
+                        _logger.LogInformation("Retrieved fee balance for student {StudentNumber}: Outstanding=${Balance}, Paid=${TotalPaid}, Due={NextPaymentDue}", 
                             student.StudentNumber, balance, totalPaid, nextPaymentDue.ToString("yyyy-MM-dd"));
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogWarning(ex, "Could not retrieve balance data for student {StudentNumber}, using fallback", student.StudentNumber);
+                        _logger.LogWarning(ex, "Could not retrieve fee balance data for student {StudentNumber}, using fallback", student.StudentNumber);
                         
                         // Fallback to payment-based calculation
                         var payments = await _paymentService.GetPaymentsByStudentAsync(student.StudentNumber);
@@ -363,7 +373,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
                         }).ToList<object>();
                         
                         totalPaid = payments.Sum(p => p.AmountPaid);
-                        balance = 5000.0m - totalPaid; // Fallback calculation
+                        balance = 0.0m; // No outstanding balance if fee balance system is not available
                         
                         _logger.LogInformation("Using fallback calculation for student {StudentNumber}: total paid: {TotalPaid}", 
                             student.StudentNumber, totalPaid);

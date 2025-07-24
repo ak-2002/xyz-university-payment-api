@@ -14,7 +14,7 @@ export const paymentService = {
       }
 
       console.log('Fetching payments with params:', params.toString());
-      const response = await api.get(`/api/v3/Payment?${params}`);
+      const response = await api.get(`/api/v3/payment?${params}`);
       console.log('Payments API response:', response.data);
       
       // Handle the wrapped API response structure for payments
@@ -37,7 +37,7 @@ export const paymentService = {
   // Get payment by ID
   async getPaymentById(id) {
     try {
-      const response = await api.get(`/api/v3/Payment/${id}`);
+      const response = await api.get(`/api/v3/payment/${id}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching payment:', error);
@@ -48,7 +48,7 @@ export const paymentService = {
   // Create new payment notification
   async createPayment(paymentData) {
     try {
-      const response = await api.post('/api/v3/Payment', paymentData);
+      const response = await api.post('/api/v3/payment', paymentData);
       return response.data;
     } catch (error) {
       console.error('Error creating payment:', error);
@@ -65,7 +65,7 @@ export const paymentService = {
       });
 
       console.log('Fetching payments for student:', studentNumber);
-      const response = await api.get(`/api/v3/Payment/student/${studentNumber}?${params}`);
+      const response = await api.get(`/api/v3/payment/student/${studentNumber}?${params}`);
       console.log('Student payments API response:', response.data);
       
       // Handle the wrapped API response structure
@@ -95,7 +95,7 @@ export const paymentService = {
   async getPaymentSummaryByStudent(studentNumber) {
     try {
       console.log('Fetching payment summary for student:', studentNumber);
-      const response = await api.get(`/api/v3/Payment/student/${studentNumber}/summary`);
+      const response = await api.get(`/api/v3/payment/student/${studentNumber}/summary`);
       console.log('Payment summary API response:', response.data);
       
       // Handle the wrapped API response structure
@@ -117,7 +117,7 @@ export const paymentService = {
   // Get payment statistics
   async getPaymentStatistics() {
     try {
-      const response = await api.get('/api/v3/Payment/statistics');
+      const response = await api.get('/api/v3/payment/statistics');
       return response.data;
     } catch (error) {
       console.error('Error fetching payment statistics:', error);
@@ -135,7 +135,7 @@ export const paymentService = {
         pageSize: pageSize.toString(),
       });
 
-      const response = await api.get(`/api/v3/Payment/date-range?${params}`);
+      const response = await api.get(`/api/v3/payment/date-range?${params}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching payments by date range:', error);
@@ -146,7 +146,7 @@ export const paymentService = {
   // Validate payment data
   async validatePayment(paymentData) {
     try {
-      const response = await api.post('/api/v3/Payment/validate', paymentData);
+      const response = await api.post('/api/v3/payment/validate', paymentData);
       return response.data;
     } catch (error) {
       console.error('Error validating payment:', error);
@@ -157,7 +157,7 @@ export const paymentService = {
   // Process payment notification (from Family Bank)
   async processPaymentNotification(notificationData) {
     try {
-      const response = await api.post('/api/v3/Payment/notify', notificationData);
+      const response = await api.post('/api/v3/payment/notify', notificationData);
       return response.data;
     } catch (error) {
       console.error('Error processing payment notification:', error);

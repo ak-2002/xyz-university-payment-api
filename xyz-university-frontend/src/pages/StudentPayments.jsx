@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { paymentService } from '../services/paymentService';
+import { dashboardService } from '../services/dashboardService';
 import Card from '../components/common/Card';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import NotificationModal from '../components/common/NotificationModal';
@@ -17,9 +18,11 @@ const StudentPayments = () => {
     message: '',
     details: ''
   });
+  const [financialInfo, setFinancialInfo] = useState({ balance: 0, totalPaid: 0 });
 
   useEffect(() => {
     loadStudentPayments();
+    loadFinancialInfo();
   }, []);
 
   const loadStudentPayments = async () => {
@@ -45,6 +48,21 @@ const StudentPayments = () => {
       setError('Failed to load payment history');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadFinancialInfo = async () => {
+    try {
+      const response = await dashboardService.getStudentStats();
+      if (response.success && response.data && response.data.financialInfo) {
+        setFinancialInfo({
+          balance: response.data.financialInfo.balance || 0,
+          totalPaid: response.data.financialInfo.totalPaid || 0
+        });
+      }
+    } catch (err) {
+      console.error('Error loading financial info:', err);
+      setFinancialInfo({ balance: 0, totalPaid: 0 });
     }
   };
 
@@ -94,8 +112,13 @@ Generated on: ${new Date().toLocaleString()}
     showNotification('success', 'Receipt Downloaded', 'Payment receipt has been downloaded successfully.');
   };
 
+  // Remove use of financialInfo.totalPaid for display
+  // Instead, calculate totalPaid from payments
   const totalPaid = payments.reduce((sum, payment) => sum + (payment.amountPaid || 0), 0);
-  const outstandingBalance = 5000 - totalPaid; // Assuming total tuition is 5000
+  // Use backend outstanding balance if available, else fallback
+  const outstandingBalance = financialInfo.balance !== undefined && financialInfo.balance !== null
+    ? financialInfo.balance
+    : Math.max(0, 5000 - totalPaid); // fallback if backend fails
 
   if (loading) {
     return <LoadingSpinner size="large" text="Loading payment history..." />;

@@ -8,6 +8,12 @@ namespace xyz_university_payment_api.Core.Application.DTOs
         public string PaymentReference { get; set; } = string.Empty;
         public decimal AmountPaid { get; set; }
         public DateTime PaymentDate { get; set; }
+        
+        // Additional fields for frontend form
+        public string? PaymentMethod { get; set; } = "M-Pesa";
+        public string? TransactionId { get; set; }
+        public string? ReceiptNumber { get; set; }
+        public string? Notes { get; set; }
     }
 
     // Output DTO for returning payment data to clients
@@ -21,6 +27,12 @@ namespace xyz_university_payment_api.Core.Application.DTOs
         public DateTime DateReceived { get; set; }
         public string StudentName { get; set; } = string.Empty; // Joined from Student table
         public string StudentProgram { get; set; } = string.Empty; // Joined from Student table
+        
+        // Additional fields
+        public string PaymentMethod { get; set; } = "M-Pesa";
+        public string? TransactionId { get; set; }
+        public string? ReceiptNumber { get; set; }
+        public string? Notes { get; set; }
     }
 
     // Response DTO for payment processing results

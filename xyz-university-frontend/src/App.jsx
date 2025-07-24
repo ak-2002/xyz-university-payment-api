@@ -15,7 +15,8 @@ import RoleManagement from './pages/RoleManagement';
 import Reports from './pages/Reports';
 import TestAPI from './pages/TestAPI';
 import LoadingSpinner from './components/common/LoadingSpinner';
-import FeeManagementDashboard from './components/fee-management/FeeManagementDashboard';
+import FeeManagementDashboard from './pages/FeeManagementDashboard';
+import FeeStructureManager from './pages/FeeStructureManager';
 
 // Placeholder components for now - we'll create these in the next steps
 const StudentsPage = () => {
@@ -153,6 +154,16 @@ const AppContent = () => {
             <ProtectedRoute>
               <Layout>
                 <FeeManagementDashboard />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/fee-structures"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <FeeStructureManager />
               </Layout>
             </ProtectedRoute>
           }

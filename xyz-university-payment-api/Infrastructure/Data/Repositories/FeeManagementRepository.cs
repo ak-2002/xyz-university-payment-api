@@ -66,6 +66,15 @@ namespace xyz_university_payment_api.Infrastructure.Data.Repositories
                 .ToListAsync();
         }
 
+        public async Task<List<FeeStructure>> GetAllFeeStructuresIncludingInactiveAsync()
+        {
+            return await _context.FeeStructures
+                .Include(fs => fs.FeeStructureItems)
+                    .ThenInclude(fsi => fsi.FeeCategory)
+                .OrderByDescending(fs => fs.CreatedAt)
+                .ToListAsync();
+        }
+
         public async Task<FeeStructure?> GetFeeStructureByIdAsync(int id)
         {
             return await _context.FeeStructures
@@ -238,14 +247,21 @@ namespace xyz_university_payment_api.Infrastructure.Data.Repositories
                                 sfa.Semester == semester);
         }
 
+        public async Task<List<StudentFeeAssignment>> GetAllStudentFeeAssignmentsAsync()
+        {
+            return await _context.StudentFeeAssignments
+                .Include(sfa => sfa.FeeStructure)
+                .Include(sfa => sfa.Student)
+                .OrderByDescending(sfa => sfa.AssignedAt)
+                .ToListAsync();
+        }
+
         // Student Fee Balance operations
         public async Task<List<StudentFeeBalance>> GetStudentFeeBalancesAsync(string studentNumber)
         {
             return await _context.StudentFeeBalances
-                .Include(sfb => sfb.FeeStructureItem)
-                    .ThenInclude(fsi => fsi.FeeCategory)
-                .Where(sfb => sfb.StudentNumber == studentNumber && sfb.IsActive)
-                .OrderBy(sfb => sfb.DueDate)
+                .Include(b => b.FeeStructureItem)
+                .Where(b => b.StudentNumber == studentNumber)
                 .ToListAsync();
         }
 
@@ -274,6 +290,17 @@ namespace xyz_university_payment_api.Infrastructure.Data.Repositories
                 .Include(sfb => sfb.FeeStructureItem)
                     .ThenInclude(fsi => fsi.FeeCategory)
                 .Where(sfb => sfb.Status == status && sfb.IsActive)
+                .OrderBy(sfb => sfb.DueDate)
+                .ToListAsync();
+        }
+
+        public async Task<List<StudentFeeBalance>> GetAllStudentFeeBalancesAsync()
+        {
+            return await _context.StudentFeeBalances
+                .Include(sfb => sfb.Student)
+                .Include(sfb => sfb.FeeStructureItem)
+                    .ThenInclude(fsi => fsi.FeeCategory)
+                .Where(sfb => sfb.IsActive)
                 .OrderBy(sfb => sfb.DueDate)
                 .ToListAsync();
         }
@@ -382,9 +409,142 @@ namespace xyz_university_payment_api.Infrastructure.Data.Repositories
                 .ToListAsync();
         }
 
+        public async Task<List<Student>> GetAllStudentsAsync()
+        {
+            return await _context.Students.ToListAsync();
+        }
+
         public async Task<int> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync();
+        }
+
+        // Migration operations
+        public async Task<List<StudentBalance>> GetAllOldStudentBalancesAsync()
+        {
+            try
+            {
+                Console.WriteLine("Getting all old student balances from database...");
+                var balances = await _context.StudentBalances
+                    .Include(sb => sb.Student)
+                    .Include(sb => sb.FeeSchedule)
+                    .Where(sb => sb.IsActive)
+                    .OrderBy(sb => sb.StudentNumber)
+                    .ToListAsync();
+                
+                Console.WriteLine($"Retrieved {balances.Count} old student balances");
+                return balances;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting old student balances: {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task<FeeStructureItem?> GetOrCreateFeeStructureItemForOldBalanceAsync(StudentBalance oldBalance)
+        {
+            try
+            {
+                Console.WriteLine($"Looking for existing fee structure for FeeScheduleId: {oldBalance.FeeScheduleId}");
+                
+                // First, try to find an existing fee structure that matches the old balance
+                var existingFeeStructure = await _context.FeeStructures
+                    .Include(fs => fs.FeeStructureItems)
+                    .FirstOrDefaultAsync(fs => fs.Id == oldBalance.FeeScheduleId);
+
+                if (existingFeeStructure != null && existingFeeStructure.FeeStructureItems.Any())
+                {
+                    Console.WriteLine($"Found existing fee structure {existingFeeStructure.Id} with {existingFeeStructure.FeeStructureItems.Count} items");
+                    // Use the first fee structure item from the existing structure
+                    return existingFeeStructure.FeeStructureItems.First();
+                }
+
+                Console.WriteLine("No existing fee structure found, creating new one...");
+                
+                // If no existing structure, create a new one based on the old balance
+                var feeCategory = await _context.FeeCategories.FirstOrDefaultAsync();
+                if (feeCategory == null)
+                {
+                    Console.WriteLine("No fee categories found, creating default category...");
+                    feeCategory = await CreateDefaultFeeCategoryAsync();
+                }
+
+                Console.WriteLine($"Using fee category: {feeCategory.Name} (ID: {feeCategory.Id})");
+
+                // Generate a unique name using a combination of FeeScheduleId and a timestamp
+                var uniqueName = $"Migrated Structure - {oldBalance.FeeScheduleId} - {DateTime.UtcNow.Ticks}";
+                
+                // Check if a fee structure with this name already exists (should be very unlikely with timestamp)
+                var existingStructureWithName = await _context.FeeStructures
+                    .FirstOrDefaultAsync(fs => fs.Name == uniqueName &&
+                                               fs.AcademicYear == "2025" &&
+                                               fs.Semester == "Summer");
+
+                if (existingStructureWithName != null)
+                {
+                    Console.WriteLine($"Fee structure with name '{uniqueName}' already exists, using existing one");
+                    var existingItem = await _context.FeeStructureItems
+                        .FirstOrDefaultAsync(fsi => fsi.FeeStructureId == existingStructureWithName.Id);
+                    return existingItem;
+                }
+
+                var feeStructure = new FeeStructure
+                {
+                    Name = uniqueName,
+                    Description = $"Migrated from old fee schedule {oldBalance.FeeScheduleId}",
+                    AcademicYear = "2025",
+                    Semester = "Summer",
+                    IsActive = true
+                };
+
+                Console.WriteLine($"Creating fee structure: {feeStructure.Name}");
+                await _context.FeeStructures.AddAsync(feeStructure);
+                await _context.SaveChangesAsync();
+                Console.WriteLine($"Created fee structure with ID: {feeStructure.Id}");
+
+                var feeStructureItem = new FeeStructureItem
+                {
+                    FeeStructureId = feeStructure.Id,
+                    FeeCategoryId = feeCategory.Id,
+                    Description = "Migrated tuition fee",
+                    Amount = oldBalance.TotalAmount,
+                    DueDate = oldBalance.DueDate,
+                    IsRequired = true
+                };
+
+                Console.WriteLine($"Creating fee structure item with amount: ${feeStructureItem.Amount}");
+                await _context.FeeStructureItems.AddAsync(feeStructureItem);
+                await _context.SaveChangesAsync();
+                Console.WriteLine($"Created fee structure item with ID: {feeStructureItem.Id}");
+
+                return feeStructureItem;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetOrCreateFeeStructureItemForOldBalanceAsync: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                throw;
+            }
+        }
+
+        private async Task<FeeCategory> CreateDefaultFeeCategoryAsync()
+        {
+            var defaultCategory = new FeeCategory
+            {
+                Name = "Tuition",
+                Description = "Default tuition fee category",
+                IsActive = true
+            };
+
+            await _context.FeeCategories.AddAsync(defaultCategory);
+            await _context.SaveChangesAsync();
+            return defaultCategory;
+        }
+
+        public async Task<List<PaymentNotification>> GetAllPaymentsAsync()
+        {
+            return await _context.PaymentNotifications.ToListAsync();
         }
     }
 } 

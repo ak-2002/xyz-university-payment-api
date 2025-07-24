@@ -61,6 +61,12 @@ namespace xyz_university_payment_api.Core.Application.Services
             return _mapper.Map<List<FeeStructureDto>>(structures);
         }
 
+        public async Task<List<FeeStructureDto>> GetAllFeeStructuresIncludingInactiveAsync()
+        {
+            var structures = await _repository.GetAllFeeStructuresIncludingInactiveAsync();
+            return _mapper.Map<List<FeeStructureDto>>(structures);
+        }
+
         public async Task<FeeStructureDto?> GetFeeStructureByIdAsync(int id)
         {
             var structure = await _repository.GetFeeStructureByIdAsync(id);
@@ -94,7 +100,12 @@ namespace xyz_university_payment_api.Core.Application.Services
             if (existingStructure == null)
                 throw new InvalidOperationException($"Fee structure with ID {id} not found.");
 
-            _mapper.Map(dto, existingStructure);
+            // Update basic properties
+            existingStructure.Name = dto.Name;
+            existingStructure.Description = dto.Description;
+            existingStructure.AcademicYear = dto.AcademicYear;
+            existingStructure.Semester = dto.Semester;
+            existingStructure.IsActive = dto.IsActive;
             
             // Update fee structure items
             existingStructure.FeeStructureItems.Clear();
@@ -111,6 +122,19 @@ namespace xyz_university_payment_api.Core.Application.Services
         public async Task<bool> DeleteFeeStructureAsync(int id)
         {
             return await _repository.DeleteFeeStructureAsync(id);
+        }
+
+        public async Task<FeeStructureDto> ReactivateFeeStructureAsync(int id)
+        {
+            var existingStructure = await _repository.GetFeeStructureByIdAsync(id);
+            if (existingStructure == null)
+                throw new InvalidOperationException($"Fee structure with ID {id} not found.");
+
+            existingStructure.IsActive = true;
+            existingStructure.UpdatedAt = DateTime.UtcNow;
+
+            var updatedStructure = await _repository.UpdateFeeStructureAsync(existingStructure);
+            return _mapper.Map<FeeStructureDto>(updatedStructure);
         }
 
         // Additional Fee Operations
@@ -177,7 +201,6 @@ namespace xyz_university_payment_api.Core.Application.Services
         public async Task<List<StudentFeeAssignmentDto>> BulkAssignFeeStructureAsync(BulkAssignFeeStructureDto dto)
         {
             var assignments = new List<StudentFeeAssignmentDto>();
-            
             foreach (var studentNumber in dto.StudentNumbers)
             {
                 try
@@ -189,18 +212,38 @@ namespace xyz_university_payment_api.Core.Application.Services
                         AcademicYear = dto.AcademicYear,
                         Semester = dto.Semester
                     };
-                    
                     var assignment = await AssignFeeStructureToStudentAsync(assignmentDto);
                     assignments.Add(assignment);
+
+                    // --- Reconcile the new StudentFeeBalance for this student and structure ---
+                    var balances = await _repository.GetStudentFeeBalancesAsync(studentNumber);
+                    var payments = await _repository.GetAllPaymentsAsync();
+                    var studentPayments = payments.Where(p => p.StudentNumber == studentNumber).ToList();
+                    var totalPaid = studentPayments.Sum(p => p.AmountPaid);
+                    foreach (var balance in balances)
+                    {
+                        if (balance.FeeStructureItem != null && balance.FeeStructureItem.FeeStructureId == dto.FeeStructureId)
+                        {
+                            balance.AmountPaid = totalPaid;
+                            balance.OutstandingBalance = balance.TotalAmount - totalPaid;
+                            // Update status
+                            if (balance.OutstandingBalance <= 0)
+                                balance.Status = FeeBalanceStatus.Paid;
+                            else if (totalPaid > 0)
+                                balance.Status = FeeBalanceStatus.Partial;
+                            else
+                                balance.Status = FeeBalanceStatus.Outstanding;
+                            await _repository.UpdateStudentFeeBalanceAsync(balance);
+                        }
+                    }
+                    // --- End reconciliation ---
                 }
                 catch (Exception ex)
                 {
                     // Log the error but continue with other students
-                    // In a production environment, you might want to collect all errors and return them
                     Console.WriteLine($"Error assigning fee structure to student {studentNumber}: {ex.Message}");
                 }
             }
-            
             return assignments;
         }
 
@@ -209,15 +252,98 @@ namespace xyz_university_payment_api.Core.Application.Services
             return await _repository.DeleteStudentFeeAssignmentAsync(assignmentId);
         }
 
+        public async Task<AssignmentResultDto> AssignFeeStructureToAllAsync(int feeStructureId)
+        {
+            var result = new AssignmentResultDto();
+            
+            // Get the fee structure
+            var feeStructure = await _repository.GetFeeStructureByIdAsync(feeStructureId);
+            if (feeStructure == null)
+                throw new InvalidOperationException($"Fee structure with ID {feeStructureId} not found");
+
+            // Get all students
+            var allStudents = await _repository.GetAllStudentsAsync();
+            
+            // Get all existing assignments for this fee structure
+            var existingAssignments = await _repository.GetAllStudentFeeAssignmentsAsync();
+            var existingForThisStructure = existingAssignments
+                .Where(a => a.FeeStructureId == feeStructureId)
+                .Select(a => a.StudentNumber)
+                .ToHashSet();
+
+            // Get outstanding balances from previous semesters for each student
+            var outstandingBalances = await _repository.GetAllStudentFeeBalancesAsync();
+            
+            foreach (var student in allStudents)
+            {
+                // Skip if already assigned this fee structure
+                if (existingForThisStructure.Contains(student.StudentNumber))
+                    continue;
+
+                // Calculate outstanding amount from previous semesters
+                var previousOutstanding = outstandingBalances
+                    .Where(b => b.StudentNumber == student.StudentNumber && 
+                               b.OutstandingBalance > 0)
+                    .Sum(b => b.OutstandingBalance);
+
+                // Create new assignment
+                var assignment = new StudentFeeAssignment
+                {
+                    StudentNumber = student.StudentNumber,
+                    FeeStructureId = feeStructureId,
+                    AcademicYear = feeStructure.AcademicYear,
+                    Semester = feeStructure.Semester,
+                    AssignedAt = DateTime.UtcNow,
+                    AssignedBy = "Admin"
+                };
+
+                await _repository.CreateStudentFeeAssignmentAsync(assignment);
+
+                // Create fee balance entries for each fee structure item
+                var feeStructureItems = await _repository.GetFeeStructureItemsByStructureIdAsync(feeStructureId);
+                foreach (var item in feeStructureItems)
+                {
+                    var balance = new StudentFeeBalance
+                    {
+                        StudentNumber = student.StudentNumber,
+                        FeeStructureItemId = item.Id,
+                        TotalAmount = item.Amount,
+                        AmountPaid = 0,
+                        OutstandingBalance = item.Amount + (previousOutstanding > 0 ? previousOutstanding : 0),
+                        DueDate = item.DueDate ?? DateTime.UtcNow.AddDays(30),
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    await _repository.CreateStudentFeeBalanceAsync(balance);
+                }
+
+                result.TotalAssigned++;
+                if (previousOutstanding > 0)
+                {
+                    result.OutstandingBalancesAdded++;
+                    result.TotalOutstandingAmount += previousOutstanding;
+                }
+            }
+
+            await _repository.SaveChangesAsync();
+            return result;
+        }
+
         // Student Fee Balance Operations
         public async Task<StudentFeeBalanceSummaryDto> GetStudentFeeBalanceSummaryAsync(string studentNumber)
         {
             var feeBalances = await _repository.GetStudentFeeBalancesAsync(studentNumber);
             var additionalFees = await _repository.GetStudentAdditionalFeesAsync(studentNumber);
             
+            // Get student information
+            var student = await _repository.GetStudentsByNumbersAsync(new List<string> { studentNumber });
+            var studentInfo = student.FirstOrDefault();
+            
             var summary = new StudentFeeBalanceSummaryDto
             {
                 StudentNumber = studentNumber,
+                StudentName = studentInfo?.FullName ?? "Unknown Student",
+                Program = studentInfo?.Program ?? "Unknown Program",
                 FeeBalances = _mapper.Map<List<StudentFeeBalanceDto>>(feeBalances),
                 AdditionalFees = _mapper.Map<List<StudentAdditionalFeeDto>>(additionalFees)
             };
@@ -381,8 +507,19 @@ namespace xyz_university_payment_api.Core.Application.Services
             var summaries = new List<StudentFeeBalanceSummaryDto>();
             foreach (var studentNumber in studentNumbers)
             {
-                var summary = await GetStudentFeeBalanceSummaryAsync(studentNumber);
-                summaries.Add(summary);
+                try
+                {
+                    var summary = await GetStudentFeeBalanceSummaryAsync(studentNumber);
+                    if (summary.TotalOutstandingBalance > 0)
+                    {
+                        summaries.Add(summary);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log error but continue with other students
+                    Console.WriteLine($"Error getting balance summary for student {studentNumber}: {ex.Message}");
+                }
             }
             
             return summaries.OrderBy(s => s.TotalOutstandingBalance).ToList();
@@ -396,8 +533,19 @@ namespace xyz_university_payment_api.Core.Application.Services
             var summaries = new List<StudentFeeBalanceSummaryDto>();
             foreach (var studentNumber in studentNumbers)
             {
-                var summary = await GetStudentFeeBalanceSummaryAsync(studentNumber);
-                summaries.Add(summary);
+                try
+                {
+                    var summary = await GetStudentFeeBalanceSummaryAsync(studentNumber);
+                    if (summary.TotalOutstandingBalance > 0)
+                    {
+                        summaries.Add(summary);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log error but continue with other students
+                    Console.WriteLine($"Error getting balance summary for student {studentNumber}: {ex.Message}");
+                }
             }
             
             return summaries.OrderBy(s => s.NextPaymentDue).ToList();
@@ -493,9 +641,138 @@ namespace xyz_university_payment_api.Core.Application.Services
 
         public async Task<bool> GenerateFeeBalancesForNewAssignmentsAsync()
         {
-            // This method would be called periodically to generate fee balances for new assignments
-            // Implementation would depend on your specific business logic
-            return true;
+            try
+            {
+                // Get all fee structure assignments
+                var assignments = await _repository.GetAllStudentFeeAssignmentsAsync();
+                var generatedCount = 0;
+
+                foreach (var assignment in assignments)
+                {
+                    try
+                    {
+                        // Generate fee balances for this assignment
+                        await GenerateFeeBalancesForStudentAsync(assignment.StudentNumber, assignment.FeeStructureId);
+                        generatedCount++;
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log error but continue with other assignments
+                        Console.WriteLine($"Error generating balances for assignment {assignment.Id}: {ex.Message}");
+                    }
+                }
+
+                Console.WriteLine($"Generated fee balances for {generatedCount} assignments");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GenerateFeeBalancesForNewAssignmentsAsync: {ex.Message}");
+                return false;
+            }
+        }
+
+        public async Task<bool> MigrateOldStudentBalancesAsync()
+        {
+            try
+            {
+                Console.WriteLine("Starting migration of old student balances...");
+                
+                // Get all old student balances from the StudentBalance table
+                var oldBalances = await _repository.GetAllOldStudentBalancesAsync();
+                Console.WriteLine($"Found {oldBalances.Count} old student balances to migrate");
+                
+                var migratedCount = 0;
+                var errorCount = 0;
+
+                foreach (var oldBalance in oldBalances)
+                {
+                    try
+                    {
+                        Console.WriteLine($"Processing student {oldBalance.StudentNumber} with balance ${oldBalance.OutstandingBalance}");
+                        
+                        // Find or create a fee structure item that matches this balance
+                        var feeStructureItem = await _repository.GetOrCreateFeeStructureItemForOldBalanceAsync(oldBalance);
+                        
+                        if (feeStructureItem != null)
+                        {
+                            Console.WriteLine($"Created/found fee structure item {feeStructureItem.Id} for student {oldBalance.StudentNumber}");
+                            
+                            // Check if a StudentFeeBalance already exists for this student and item
+                            var existingBalance = await _repository.GetStudentFeeBalanceByStudentAndItemAsync(
+                                oldBalance.StudentNumber, feeStructureItem.Id);
+                            
+                            if (existingBalance == null)
+                            {
+                                // Convert old balance status to new enum
+                                var newStatus = ConvertOldStatusToNewStatus(oldBalance.Status);
+                                Console.WriteLine($"Converting status from '{oldBalance.Status}' to '{newStatus}'");
+                                
+                                var newBalance = new StudentFeeBalance
+                                {
+                                    StudentNumber = oldBalance.StudentNumber,
+                                    FeeStructureItemId = feeStructureItem.Id,
+                                    TotalAmount = oldBalance.TotalAmount,
+                                    AmountPaid = oldBalance.AmountPaid,
+                                    OutstandingBalance = oldBalance.OutstandingBalance,
+                                    DueDate = oldBalance.DueDate,
+                                    Status = newStatus,
+                                    IsActive = oldBalance.IsActive,
+                                    CreatedAt = oldBalance.CreatedAt,
+                                    UpdatedAt = oldBalance.UpdatedAt
+                                };
+
+                                await _repository.CreateStudentFeeBalanceAsync(newBalance);
+                                migratedCount++;
+                                Console.WriteLine($"Successfully migrated balance for student {oldBalance.StudentNumber}");
+                            }
+                            else
+                            {
+                                Console.WriteLine($"Balance already exists for student {oldBalance.StudentNumber}, skipping");
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Failed to create fee structure item for student {oldBalance.StudentNumber}");
+                            errorCount++;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log error but continue with other balances
+                        Console.WriteLine($"Error migrating balance for student {oldBalance.StudentNumber}: {ex.Message}");
+                        Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                        errorCount++;
+                    }
+                }
+
+                Console.WriteLine($"Migration completed. Migrated: {migratedCount}, Errors: {errorCount}");
+                
+                if (errorCount > 0)
+                {
+                    Console.WriteLine("Some balances failed to migrate. Check the logs above for details.");
+                }
+                
+                return migratedCount > 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in MigrateOldStudentBalancesAsync: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                return false;
+            }
+        }
+
+        private FeeBalanceStatus ConvertOldStatusToNewStatus(string oldStatus)
+        {
+            return oldStatus.ToLower() switch
+            {
+                "outstanding" => FeeBalanceStatus.Outstanding,
+                "partial" => FeeBalanceStatus.Partial,
+                "paid" => FeeBalanceStatus.Paid,
+                "overdue" => FeeBalanceStatus.Overdue,
+                _ => FeeBalanceStatus.Outstanding
+            };
         }
 
         // Private helper methods
@@ -522,6 +799,61 @@ namespace xyz_university_payment_api.Core.Application.Services
 
                 await _repository.CreateStudentFeeBalanceAsync(balance);
             }
+        }
+
+        public async Task<bool> ReconcileStudentFeeBalancesAsync()
+        {
+            // Get all StudentFeeBalance records
+            var allFeeBalances = await _repository.GetAllStudentFeeBalancesAsync();
+            if (allFeeBalances.Count == 0) return false;
+
+            // Get all payments
+            var allPayments = await _repository.GetAllPaymentsAsync();
+
+            int updatedCount = 0;
+            foreach (var feeBalance in allFeeBalances)
+            {
+                // Sum all payments for this student
+                var studentPayments = allPayments
+                    .Where(p => p.StudentNumber == feeBalance.StudentNumber)
+                    .ToList();
+                var totalPaid = studentPayments.Sum(p => p.AmountPaid);
+                var newOutstanding = Math.Max(0, feeBalance.TotalAmount - totalPaid);
+
+                // Only update if values have changed
+                if (feeBalance.AmountPaid != totalPaid || feeBalance.OutstandingBalance != newOutstanding)
+                {
+                    feeBalance.AmountPaid = totalPaid;
+                    feeBalance.OutstandingBalance = newOutstanding;
+
+                    // Update status
+                    if (feeBalance.OutstandingBalance <= 0)
+                        feeBalance.Status = FeeBalanceStatus.Paid;
+                    else if (feeBalance.AmountPaid > 0)
+                        feeBalance.Status = FeeBalanceStatus.Partial;
+                    else
+                        feeBalance.Status = FeeBalanceStatus.Outstanding;
+
+                    await _repository.UpdateStudentFeeBalanceAsync(feeBalance);
+                    updatedCount++;
+                }
+            }
+            return updatedCount > 0;
+        }
+
+        public async Task<List<StudentFeeBalance>> GetAllStudentFeeBalancesAsync()
+        {
+            return await _repository.GetAllStudentFeeBalancesAsync();
+        }
+
+        public async Task<List<Student>> GetAllStudentsAsync()
+        {
+            return await _repository.GetAllStudentsAsync();
+        }
+
+        public async Task<List<StudentFeeAssignment>> GetAllStudentFeeAssignmentsAsync()
+        {
+            return await _repository.GetAllStudentFeeAssignmentsAsync();
         }
     }
 } 

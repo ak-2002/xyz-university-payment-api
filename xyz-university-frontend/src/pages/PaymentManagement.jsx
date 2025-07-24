@@ -53,6 +53,7 @@ const PaymentManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      console.log('Sending payment data:', formData);
       await paymentService.createPayment(formData);
       setShowAddModal(false);
       resetForm();
@@ -61,7 +62,21 @@ const PaymentManagement = () => {
     } catch (err) {
       console.error(err);
       const errorMessage = err.response?.data?.message || 'Failed to create payment';
-      const errorDetails = err.response?.data?.errors?.join(', ') || err.message;
+      
+      // Handle different types of error responses
+      let errorDetails = '';
+      if (err.response?.data?.errors) {
+        if (Array.isArray(err.response.data.errors)) {
+          errorDetails = err.response.data.errors.join(', ');
+        } else if (typeof err.response.data.errors === 'string') {
+          errorDetails = err.response.data.errors;
+        } else {
+          errorDetails = JSON.stringify(err.response.data.errors);
+        }
+      } else {
+        errorDetails = err.message || 'Unknown error occurred';
+      }
+      
       showNotification('error', 'Payment Creation Failed', errorMessage, errorDetails);
     }
   };

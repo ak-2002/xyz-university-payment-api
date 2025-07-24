@@ -14,11 +14,13 @@ namespace xyz_university_payment_api.Core.Application.Interfaces
 
         // Fee Structure Operations
         Task<List<FeeStructureDto>> GetAllFeeStructuresAsync();
+        Task<List<FeeStructureDto>> GetAllFeeStructuresIncludingInactiveAsync();
         Task<FeeStructureDto?> GetFeeStructureByIdAsync(int id);
         Task<List<FeeStructureDto>> GetFeeStructuresByAcademicYearAsync(string academicYear, string semester);
         Task<FeeStructureDto> CreateFeeStructureAsync(CreateFeeStructureDto dto);
         Task<FeeStructureDto> UpdateFeeStructureAsync(int id, UpdateFeeStructureDto dto);
         Task<bool> DeleteFeeStructureAsync(int id);
+        Task<FeeStructureDto> ReactivateFeeStructureAsync(int id);
 
         // Additional Fee Operations
         Task<List<AdditionalFeeDto>> GetAllAdditionalFeesAsync();
@@ -32,6 +34,7 @@ namespace xyz_university_payment_api.Core.Application.Interfaces
         Task<StudentFeeAssignmentDto> AssignFeeStructureToStudentAsync(AssignFeeStructureDto dto);
         Task<List<StudentFeeAssignmentDto>> BulkAssignFeeStructureAsync(BulkAssignFeeStructureDto dto);
         Task<bool> RemoveFeeStructureAssignmentAsync(int assignmentId);
+        Task<AssignmentResultDto> AssignFeeStructureToAllAsync(int feeStructureId);
 
         // Student Fee Balance Operations
         Task<StudentFeeBalanceSummaryDto> GetStudentFeeBalanceSummaryAsync(string studentNumber);
@@ -39,6 +42,8 @@ namespace xyz_university_payment_api.Core.Application.Interfaces
         Task<List<StudentFeeBalanceDto>> GetStudentFeeBalancesByStatusAsync(FeeBalanceStatus status);
         Task<StudentFeeBalanceDto> UpdateStudentFeeBalanceAsync(int balanceId, decimal amountPaid);
         Task<bool> RecalculateStudentBalancesAsync(string studentNumber);
+        Task<bool> ReconcileStudentFeeBalancesAsync();
+        Task<List<StudentFeeBalance>> GetAllStudentFeeBalancesAsync();
 
         // Student Additional Fee Operations
         Task<List<StudentAdditionalFeeDto>> GetStudentAdditionalFeesAsync(string studentNumber);
@@ -55,5 +60,8 @@ namespace xyz_university_payment_api.Core.Application.Interfaces
         Task<bool> ApplyAdditionalFeesToStudentsAsync(int additionalFeeId);
         Task<bool> UpdateFeeBalanceStatusesAsync();
         Task<bool> GenerateFeeBalancesForNewAssignmentsAsync();
+        Task<bool> MigrateOldStudentBalancesAsync();
+        Task<List<Student>> GetAllStudentsAsync();
+        Task<List<StudentFeeAssignment>> GetAllStudentFeeAssignmentsAsync();
     }
 } 

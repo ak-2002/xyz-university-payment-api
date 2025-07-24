@@ -46,16 +46,21 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
 
             if (result.Success)
             {
-                var paymentDto = _mapper.Map<PaymentResponseDto>(result.ProcessedPayment);
-                paymentDto.Success = true;
-                paymentDto.Message = result.Message;
-                paymentDto.StudentExists = result.StudentExists;
-                paymentDto.StudentIsActive = result.StudentIsActive;
+                var paymentDto = _mapper.Map<PaymentDto>(result.ProcessedPayment);
+                var paymentResponseDto = new PaymentResponseDto
+                {
+                    Success = true,
+                    Message = result.Message,
+                    StudentExists = result.StudentExists,
+                    StudentIsActive = result.StudentIsActive,
+                    ProcessedPayment = paymentDto,
+                    ValidationErrors = result.Warnings ?? new List<string>()
+                };
 
                 return Ok(new ApiResponse<PaymentResponseDto>
                 {
                     Success = true,
-                    Data = paymentDto,
+                    Data = paymentResponseDto,
                     Message = "Payment processed successfully"
                 });
             }
@@ -141,11 +146,16 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
             var payment = _mapper.Map<PaymentNotification>(createPaymentDto);
             var result = await _paymentService.ProcessPaymentAsync(payment);
 
-            var paymentResponseDto = _mapper.Map<PaymentResponseDto>(result.ProcessedPayment);
-            paymentResponseDto.Success = true;
-            paymentResponseDto.Message = result.Message;
-            paymentResponseDto.StudentExists = result.StudentExists;
-            paymentResponseDto.StudentIsActive = result.StudentIsActive;
+            var paymentDto = _mapper.Map<PaymentDto>(result.ProcessedPayment);
+            var paymentResponseDto = new PaymentResponseDto
+            {
+                Success = true,
+                Message = result.Message,
+                StudentExists = result.StudentExists,
+                StudentIsActive = result.StudentIsActive,
+                ProcessedPayment = paymentDto,
+                ValidationErrors = result.Warnings ?? new List<string>()
+            };
 
             // V3: Enhanced response with real-time processing information
             return Ok(new ApiResponseDto<PaymentResponseDto>
@@ -424,6 +434,46 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
                     ["SupportedEvents"] = new[] { "payment.processed", "payment.failed", "payment.reconciled" }
                 }
             });
+        }
+
+        // NEW V3 ENDPOINT: GET api/v3/payment/check-reference/{paymentReference}
+        [HttpGet("check-reference/{paymentReference}")]
+        [AuthorizePermission("Payments", "Read")]
+        public async Task<IActionResult> CheckPaymentReference(string paymentReference)
+        {
+            _logger.LogInformation("V3 CheckPaymentReference endpoint called for reference: {PaymentReference}", paymentReference);
+            
+            try
+            {
+                var exists = await _paymentService.PaymentReferenceExistsAsync(paymentReference);
+                
+                return Ok(new ApiResponseDto<object>
+                {
+                    Success = true,
+                    Message = exists ? "Payment reference exists" : "Payment reference is available",
+                    Data = new { 
+                        PaymentReference = paymentReference,
+                        Exists = exists,
+                        Available = !exists
+                    },
+                    Metadata = new Dictionary<string, object>
+                    {
+                        ["ApiVersion"] = "3.0",
+                        ["CheckedAt"] = DateTime.UtcNow,
+                        ["Reference"] = paymentReference
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking payment reference {PaymentReference}", paymentReference);
+                return StatusCode(500, new ApiResponseDto<object>
+                {
+                    Success = false,
+                    Message = $"Failed to check payment reference {paymentReference}",
+                    Errors = new List<string> { ex.Message }
+                });
+            }
         }
     }
 }

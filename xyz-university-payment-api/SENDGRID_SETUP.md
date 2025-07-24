@@ -22,7 +22,7 @@
 Replace `YOUR_SENDGRID_API_KEY_HERE` in `appsettings.json`:
 ```json
 "SendGrid": {
-  "ApiKey": "SG.your-actual-api-key-here",
+  "ApiKey": "YOUR_SENDGRID_API_KEY_HERE",
   "FromEmail": "noreply@xyzuniversity.edu",
   "FromName": "XYZ University Finance Department"
 }
@@ -31,7 +31,7 @@ Replace `YOUR_SENDGRID_API_KEY_HERE` in `appsettings.json`:
 ### Option B: Production (Environment Variables)
 Create a `.env` file in project root:
 ```env
-SENDGRID__APIKEY=SG.your-actual-api-key-here
+SENDGRID__APIKEY=YOUR_SENDGRID_API_KEY_HERE
 SENDGRID__FROMEMAIL=noreply@xyzuniversity.edu
 SENDGRID__FROMNAME=XYZ University Finance Department
 ```

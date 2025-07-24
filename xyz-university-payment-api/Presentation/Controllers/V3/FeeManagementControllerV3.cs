@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using xyz_university_payment_api.Core.Application.DTOs;
 using xyz_university_payment_api.Core.Application.Interfaces;
 using xyz_university_payment_api.Core.Domain.Entities;
+using xyz_university_payment_api.Infrastructure.Data.Repositories;
 using xyz_university_payment_api.Core.Application.Services;
 
 namespace xyz_university_payment_api.Presentation.Controllers.V3
@@ -11,7 +13,7 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
     [Route("api/v3/feemanagement")]
     [ApiVersion("3.0")]
     [ApiExplorerSettings(GroupName = "v3")]
-    [Authorize(Roles = "Admin,Manager")]
+    [Authorize(Roles = "Admin,Manager,Student")]
     public class FeeManagementControllerV3 : ControllerBase
     {
         private readonly IFeeManagementService _feeManagementService;
@@ -153,22 +155,20 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
         }
 
         /// <summary>
-        /// Get fee structure by ID
+        /// Get all fee structures including inactive ones (Admin only)
         /// </summary>
-        [HttpGet("structures/{id}")]
-        public async Task<ActionResult<FeeStructureDto>> GetFeeStructure(int id)
+        [HttpGet("structures/all")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<List<FeeStructureDto>>> GetAllFeeStructuresIncludingInactive()
         {
             try
             {
-                var structure = await _feeManagementService.GetFeeStructureByIdAsync(id);
-                if (structure == null)
-                    return NotFound(new { error = "Fee structure not found" });
-
-                return Ok(structure);
+                var structures = await _feeManagementService.GetAllFeeStructuresIncludingInactiveAsync();
+                return Ok(structures);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { error = "Failed to retrieve fee structure", details = ex.Message });
+                return StatusCode(500, new { error = "Failed to retrieve fee structures", details = ex.Message });
             }
         }
 
@@ -186,6 +186,26 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
             catch (Exception ex)
             {
                 return StatusCode(500, new { error = "Failed to retrieve fee structures", details = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Get fee structure by ID
+        /// </summary>
+        [HttpGet("structures/{id}")]
+        public async Task<ActionResult<FeeStructureDto>> GetFeeStructure(int id)
+        {
+            try
+            {
+                var structure = await _feeManagementService.GetFeeStructureByIdAsync(id);
+                if (structure == null)
+                    return NotFound(new { error = "Fee structure not found" });
+
+                return Ok(structure);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "Failed to retrieve fee structure", details = ex.Message });
             }
         }
 
@@ -247,6 +267,28 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
             catch (Exception ex)
             {
                 return StatusCode(500, new { error = "Failed to delete fee structure", details = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Reactivate fee structure
+        /// </summary>
+        [HttpPatch("structures/{id}/reactivate")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<FeeStructureDto>> ReactivateFeeStructure(int id)
+        {
+            try
+            {
+                var structure = await _feeManagementService.ReactivateFeeStructureAsync(id);
+                return Ok(structure);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "Failed to reactivate fee structure", details = ex.Message });
             }
         }
 
@@ -674,6 +716,125 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
         #region Utility Operations
 
         /// <summary>
+        /// Debug endpoint to check fee balance data
+        /// </summary>
+        [HttpGet("utility/debug-balances")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> DebugFeeBalances()
+        {
+            try
+            {
+                var repository = HttpContext.RequestServices.GetRequiredService<IFeeManagementRepository>();
+                
+                // Get all fee balances
+                var allBalances = await repository.GetAllStudentFeeBalancesAsync();
+                
+                // Get balances by status
+                var outstandingBalances = await repository.GetStudentFeeBalancesByStatusAsync(FeeBalanceStatus.Outstanding);
+                var overdueBalances = await repository.GetStudentFeeBalancesByStatusAsync(FeeBalanceStatus.Overdue);
+                var partialBalances = await repository.GetStudentFeeBalancesByStatusAsync(FeeBalanceStatus.Partial);
+                var paidBalances = await repository.GetStudentFeeBalancesByStatusAsync(FeeBalanceStatus.Paid);
+                
+                // Get fee assignments
+                var assignments = await repository.GetAllStudentFeeAssignmentsAsync();
+                
+                return Ok(new
+                {
+                    totalFeeBalances = allBalances.Count,
+                    outstandingBalances = outstandingBalances.Count,
+                    overdueBalances = overdueBalances.Count,
+                    partialBalances = partialBalances.Count,
+                    paidBalances = paidBalances.Count,
+                    totalAssignments = assignments.Count,
+                    sampleBalances = allBalances.Take(5).Select(b => new
+                    {
+                        id = b.Id,
+                        studentNumber = b.StudentNumber,
+                        totalAmount = b.TotalAmount,
+                        amountPaid = b.AmountPaid,
+                        outstandingBalance = b.OutstandingBalance,
+                        status = b.Status.ToString(),
+                        isActive = b.IsActive,
+                        dueDate = b.DueDate
+                    }),
+                    sampleAssignments = assignments.Take(5).Select(a => new
+                    {
+                        id = a.Id,
+                        studentNumber = a.StudentNumber,
+                        feeStructureId = a.FeeStructureId,
+                        academicYear = a.AcademicYear,
+                        semester = a.Semester
+                    })
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "Failed to retrieve debug data", details = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Test endpoint to verify database connectivity
+        /// </summary>
+        [HttpGet("utility/test-database")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> TestDatabase()
+        {
+            try
+            {
+                var repository = HttpContext.RequestServices.GetRequiredService<IFeeManagementRepository>();
+                
+                // Test basic database operations
+                var oldBalancesCount = 0;
+                var feeCategoriesCount = 0;
+                var feeStructuresCount = 0;
+                
+                try
+                {
+                    var oldBalances = await repository.GetAllOldStudentBalancesAsync();
+                    oldBalancesCount = oldBalances.Count;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error getting old balances: {ex.Message}");
+                }
+                
+                try
+                {
+                    var feeCategories = await repository.GetAllFeeCategoriesAsync();
+                    feeCategoriesCount = feeCategories.Count;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error getting fee categories: {ex.Message}");
+                }
+                
+                try
+                {
+                    var feeStructures = await repository.GetAllFeeStructuresAsync();
+                    feeStructuresCount = feeStructures.Count;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error getting fee structures: {ex.Message}");
+                }
+                
+                return Ok(new
+                {
+                    message = "Database connectivity test completed",
+                    oldStudentBalancesCount = oldBalancesCount,
+                    feeCategoriesCount = feeCategoriesCount,
+                    feeStructuresCount = feeStructuresCount,
+                    timestamp = DateTime.UtcNow
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "Database test failed", details = ex.Message });
+            }
+        }
+
+        /// <summary>
         /// Update fee balance statuses
         /// </summary>
         [HttpPost("utility/update-balance-statuses")]
@@ -706,6 +867,129 @@ namespace xyz_university_payment_api.Presentation.Controllers.V3
             catch (Exception ex)
             {
                 return StatusCode(500, new { error = "Failed to generate fee balances", details = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Migrate old student balances to new fee management system
+        /// </summary>
+        [HttpPost("utility/migrate-old-balances")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> MigrateOldStudentBalances()
+        {
+            try
+            {
+                Console.WriteLine("Migration endpoint called");
+                var result = await _feeManagementService.MigrateOldStudentBalancesAsync();
+                
+                if (result)
+                {
+                    return Ok(new { message = "Old student balances migrated successfully" });
+                }
+                else
+                {
+                    return StatusCode(500, new { error = "Migration completed but no records were migrated" });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Migration failed with error: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                return StatusCode(500, new { 
+                    error = "Failed to migrate old student balances", 
+                    details = ex.Message,
+                    stackTrace = ex.StackTrace
+                });
+            }
+        }
+
+        /// <summary>
+        /// Reconcile StudentFeeBalance records with actual payments
+        /// </summary>
+        [HttpPost("utility/reconcile-fee-balances")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> ReconcileStudentFeeBalances()
+        {
+            try
+            {
+                var result = await _feeManagementService.ReconcileStudentFeeBalancesAsync();
+                if (result)
+                {
+                    return Ok(new { message = "Student fee balances reconciled successfully" });
+                }
+                else
+                {
+                    return StatusCode(500, new { error = "Reconciliation completed but no records were updated" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "Failed to reconcile student fee balances", details = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Flexible assignment of fee structure to students (by list, by program, or all)
+        /// </summary>
+        [HttpPost("utility/assign-fee-structure")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> FlexibleAssignFeeStructure([FromBody] FlexibleAssignFeeStructureDto dto)
+        {
+            try
+            {
+                // Get all students
+                var allStudents = await _feeManagementService.GetAllStudentsAsync();
+                var studentsToAssign = new List<string>();
+                if (dto.StudentNumbers != null && dto.StudentNumbers.Any())
+                {
+                    studentsToAssign.AddRange(dto.StudentNumbers);
+                }
+                if (dto.Programs != null && dto.Programs.Any())
+                {
+                    var programStudents = allStudents.Where(s => dto.Programs.Contains(s.Program)).Select(s => s.StudentNumber);
+                    studentsToAssign.AddRange(programStudents);
+                }
+                if ((!dto.StudentNumbers?.Any() ?? true) && (!dto.Programs?.Any() ?? true))
+                {
+                    // If no filters, assign to all students
+                    studentsToAssign = allStudents.Select(s => s.StudentNumber).ToList();
+                }
+                studentsToAssign = studentsToAssign.Distinct().ToList();
+                var bulkDto = new BulkAssignFeeStructureDto
+                {
+                    StudentNumbers = studentsToAssign,
+                    FeeStructureId = dto.FeeStructureId,
+                    AcademicYear = dto.AcademicYear,
+                    Semester = dto.Semester
+                };
+                var result = await _feeManagementService.BulkAssignFeeStructureAsync(bulkDto);
+                return Ok(new { message = $"Assigned fee structure to {result.Count} students" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "Failed to assign fee structure", details = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Assign fee structure to all students with outstanding balance handling
+        /// </summary>
+        [HttpPost("utility/assign-fee-structure-to-all")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> AssignFeeStructureToAll([FromBody] AssignFeeStructureToAllDto dto)
+        {
+            try
+            {
+                var result = await _feeManagementService.AssignFeeStructureToAllAsync(dto.FeeStructureId);
+                return Ok(new { 
+                    message = $"Assigned fee structure to {result.TotalAssigned} students", 
+                    outstandingBalancesAdded = result.OutstandingBalancesAdded,
+                    totalOutstandingAmount = result.TotalOutstandingAmount
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "Failed to assign fee structure", details = ex.Message });
             }
         }
 

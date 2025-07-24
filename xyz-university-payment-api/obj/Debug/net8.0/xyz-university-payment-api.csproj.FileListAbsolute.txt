@@ -332,3 +332,4 @@ C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\
 C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\bin\Debug\net8.0\xyz-university-payment-api.pdb
 C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\obj\Debug\net8.0\xyz-university-payment-api.genruntimeconfig.cache
 C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\obj\Debug\net8.0\ref\xyz-university-payment-api.dll
+C:\Users\wanja\Desktop\jj\xyz-university-payment-api\xyz-university-payment-api\obj\Debug\net8.0\xyz-university-payment-api.sourcelink.json

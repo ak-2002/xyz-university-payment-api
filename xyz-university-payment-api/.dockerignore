@@ -1,0 +1,10 @@
+bin
+obj
+.git
+.vscode
+*.user
+*.suo
+*.swp
+.env
+node_modules
+dist 

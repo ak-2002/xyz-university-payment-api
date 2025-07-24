@@ -1,0 +1,42 @@
+{
+  "name": "XYZ University Payment API",
+  "dockerComposeFile": ["../docker-compose.yml"],
+  "service": "app",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "18"
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/git:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-dotnettools.csharp",
+        "ms-dotnettools.vscode-dotnet-runtime",
+        "ms-vscode.vscode-json",
+        "bradlc.vscode-tailwindcss",
+        "esbenp.prettier-vscode",
+        "ms-vscode.vscode-typescript-next",
+        "ms-vscode.vscode-js-debug",
+        "ms-vscode.vscode-js-debug-companion"
+      ]
+    }
+  },
+  "forwardPorts": [5000, 3000, 1433],
+  "portsAttributes": {
+    "5000": {
+      "label": "API",
+      "onAutoForward": "notify"
+    },
+    "3000": {
+      "label": "Frontend",
+      "onAutoForward": "notify"
+    },
+    "1433": {
+      "label": "SQL Server"
+    }
+  },
+  "postCreateCommand": "chmod +x .devcontainer/setup.sh && .devcontainer/setup.sh",
+  "remoteUser": "vscode"
+} 

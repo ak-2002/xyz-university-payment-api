@@ -4,6 +4,7 @@ import Card from '../components/common/Card';
 import QuickActionButton from '../components/common/QuickActionButton';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { dashboardService } from '../services/dashboardService';
+import { paymentService } from '../services/paymentService';
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -17,6 +18,7 @@ const AdminDashboard = () => {
     recentPayments: [],
     paymentTrends: {}
   });
+  const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -50,8 +52,21 @@ const AdminDashboard = () => {
       }
     };
 
+    const loadAllPayments = async () => {
+      try {
+        const response = await paymentService.getPayments();
+        setPayments(response || []);
+      } catch (err) {
+        setPayments([]);
+      }
+    };
+
     fetchAdminStats();
+    loadAllPayments();
   }, []);
+
+  // Calculate totalPaid from all payments
+  const totalPaid = payments.reduce((sum, payment) => sum + (payment.amountPaid || 0), 0);
 
   if (loading) {
     return <LoadingSpinner size="large" text="Loading admin dashboard..." />;
@@ -147,8 +162,8 @@ const AdminDashboard = () => {
               </svg>
             </div>
             <div className="ml-6">
-              <p className="text-sm font-medium text-gray-600 mb-1">Total Revenue</p>
-              <p className="text-3xl font-bold text-gray-900">${stats.totalRevenue.toLocaleString()}</p>
+              <p className="text-sm font-medium text-gray-600 mb-1">Total Paid</p>
+              <p className="text-3xl font-bold text-gray-900">${totalPaid.toLocaleString()}</p>
             </div>
           </div>
         </Card>
@@ -191,6 +206,17 @@ const AdminDashboard = () => {
               className="group"
             >
               System Settings
+            </QuickActionButton>
+            
+            <QuickActionButton
+              icon={<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+              </svg>}
+              variant="secondary"
+              className="group"
+              onClick={() => window.location.href = '/admin/fee-structures'}
+            >
+              Manage Fee Structures
             </QuickActionButton>
           </div>
         </Card>

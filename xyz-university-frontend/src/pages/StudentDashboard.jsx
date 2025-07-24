@@ -6,6 +6,7 @@ import QuickActionButton from '../components/common/QuickActionButton';
 import NotificationCard from '../components/common/NotificationCard';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { dashboardService } from '../services/dashboardService';
+import { paymentService } from '../services/paymentService';
 
 const StudentDashboard = () => {
   const { user } = useAuth();
@@ -22,6 +23,7 @@ const StudentDashboard = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [payments, setPayments] = useState([]);
 
   useEffect(() => {
     const fetchStudentStats = async () => {
@@ -58,7 +60,18 @@ const StudentDashboard = () => {
     };
 
     fetchStudentStats();
+    loadStudentPayments();
   }, []);
+
+  const loadStudentPayments = async () => {
+    try {
+      const studentNumber = user?.name || '';
+      const response = await paymentService.getPaymentsByStudent(studentNumber);
+      setPayments(response.data || []);
+    } catch (err) {
+      setPayments([]);
+    }
+  };
 
   // Quick action handlers
   const handleMakePayment = () => {
@@ -78,6 +91,13 @@ const StudentDashboard = () => {
     // For now, show an alert - could be enhanced with a support form
     alert('Support request feature coming soon! Please contact the administration office for immediate assistance.');
   };
+
+  // Calculate totalPaid from payments
+  const totalPaid = payments.reduce((sum, payment) => sum + (payment.amountPaid || 0), 0);
+  // Use backend outstanding balance if available, else fallback
+  const outstandingBalance = studentData.financialInfo?.balance !== undefined && studentData.financialInfo?.balance !== null
+    ? studentData.financialInfo.balance
+    : Math.max(0, 5000 - totalPaid);
 
   if (loading) {
     return <LoadingSpinner size="large" text="Loading student dashboard..." />;
@@ -131,18 +151,77 @@ const StudentDashboard = () => {
         </div>
       </Card>
 
-      {/* Financial Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <Card variant="elevated" className="p-6 group">
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <Card variant="elevated" className="p-6 group cursor-pointer hover:shadow-lg transition-all duration-300">
           <div className="flex items-center">
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-red-100 to-red-200 text-red-600 group-hover:scale-110 transition-transform duration-300">
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="p-3 rounded-2xl bg-gradient-to-br from-blue-100 to-blue-200 text-blue-600 group-hover:scale-110 transition-transform duration-300">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">View Profile</p>
+              <p className="text-lg font-bold text-gray-900">My Details</p>
+            </div>
+          </div>
+        </Card>
+
+        <Card variant="elevated" className="p-6 group cursor-pointer hover:shadow-lg transition-all duration-300">
+          <div className="flex items-center">
+            <div className="p-3 rounded-2xl bg-gradient-to-br from-green-100 to-green-200 text-green-600 group-hover:scale-110 transition-transform duration-300">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
               </svg>
             </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Make Payment</p>
+              <p className="text-lg font-bold text-gray-900">Pay Fees</p>
+            </div>
+          </div>
+        </Card>
+
+        <Card variant="elevated" className="p-6 group cursor-pointer hover:shadow-lg transition-all duration-300">
+          <div className="flex items-center">
+            <div className="p-3 rounded-2xl bg-gradient-to-br from-purple-100 to-purple-200 text-purple-600 group-hover:scale-110 transition-transform duration-300">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">View History</p>
+              <p className="text-lg font-bold text-gray-900">Payment History</p>
+            </div>
+          </div>
+        </Card>
+
+        <Card variant="elevated" className="p-6 group cursor-pointer hover:shadow-lg transition-all duration-300">
+          <div className="flex items-center">
+            <div className="p-3 rounded-2xl bg-gradient-to-br from-orange-100 to-orange-200 text-orange-600 group-hover:scale-110 transition-transform duration-300">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Get Help</p>
+              <p className="text-lg font-bold text-gray-900">Support</p>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Academic Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+        <Card variant="elevated" className="p-6 group">
+          <div className="flex items-center">
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-100 to-blue-200 text-blue-600 group-hover:scale-110 transition-transform duration-300">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+            </div>
             <div className="ml-6">
-              <p className="text-sm font-medium text-gray-600 mb-1">Outstanding Balance</p>
-              <p className="text-3xl font-bold text-gray-900">${(studentData.financialInfo?.balance || 0).toLocaleString()}</p>
+              <p className="text-sm font-medium text-gray-600 mb-1">Current Semester</p>
+              <p className="text-3xl font-bold text-gray-900">{studentData.academicInfo?.currentSemester || 'Summer 2025'}</p>
             </div>
           </div>
         </Card>
@@ -155,8 +234,53 @@ const StudentDashboard = () => {
               </svg>
             </div>
             <div className="ml-6">
-              <p className="text-sm font-medium text-gray-600 mb-1">Total Paid</p>
-              <p className="text-3xl font-bold text-gray-900">${studentData.financialInfo?.totalPaid || 0}</p>
+              <p className="text-sm font-medium text-gray-600 mb-1">Enrollment Status</p>
+              <p className="text-3xl font-bold text-gray-900">{studentData.academicInfo?.enrollmentStatus || 'Active'}</p>
+            </div>
+          </div>
+        </Card>
+
+        <Card variant="elevated" className="p-6 group">
+          <div className="flex items-center">
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-purple-100 to-purple-200 text-purple-600 group-hover:scale-110 transition-transform duration-300">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <div className="ml-6">
+              <p className="text-sm font-medium text-gray-600 mb-1">Academic Standing</p>
+              <p className="text-3xl font-bold text-gray-900">{studentData.academicInfo?.academicStanding || 'Good Standing'}</p>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Financial Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+        <Card variant="elevated" className="p-6 group">
+          <div className="flex items-center">
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-red-100 to-red-200 text-red-600 group-hover:scale-110 transition-transform duration-300">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+              </svg>
+            </div>
+            <div className="ml-6">
+              <p className="text-sm font-medium text-gray-600 mb-1">Outstanding Balance</p>
+              <p className="text-3xl font-bold text-gray-900">${outstandingBalance.toLocaleString()}</p>
+            </div>
+          </div>
+        </Card>
+
+        <Card variant="elevated" className="p-6 group">
+          <div className="flex items-center">
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-green-100 to-green-200 text-green-600 group-hover:scale-110 transition-transform duration-300">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="ml-6">
+              <p className="text-sm font-medium text-green-600 mb-1">Total Paid</p>
+              <p className="text-3xl font-bold text-gray-900">${totalPaid.toLocaleString()}</p>
             </div>
           </div>
         </Card>
@@ -173,88 +297,6 @@ const StudentDashboard = () => {
               <p className="text-xl font-bold text-gray-900">
                 {studentData.financialInfo?.nextPaymentDue ? new Date(studentData.financialInfo.nextPaymentDue).toLocaleDateString() : 'N/A'}
               </p>
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card variant="elevated" className="p-6">
-          <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-            <span className="w-2 h-8 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full mr-3"></span>
-            Quick Actions
-          </h3>
-          <div className="space-y-4">
-            <QuickActionButton
-              icon={<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-              </svg>}
-              variant="primary"
-              className="group cursor-pointer"
-              onClick={handleMakePayment}
-            >
-              Make Payment
-            </QuickActionButton>
-            
-            <QuickActionButton
-              icon={<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>}
-              variant="secondary"
-              className="group cursor-pointer"
-              onClick={handleViewPaymentHistory}
-            >
-              View Payment History
-            </QuickActionButton>
-            
-            <QuickActionButton
-              icon={<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>}
-              variant="secondary"
-              className="group cursor-pointer"
-              onClick={handleDownloadReceipts}
-            >
-              Download Receipts
-            </QuickActionButton>
-            
-            <QuickActionButton
-              icon={<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>}
-              variant="secondary"
-              className="group cursor-pointer"
-              onClick={handleRequestSupport}
-            >
-              Request Support
-            </QuickActionButton>
-          </div>
-        </Card>
-
-        <Card variant="elevated" className="p-6">
-          <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-            <span className="w-2 h-8 bg-gradient-to-b from-green-500 to-blue-500 rounded-full mr-3"></span>
-            Academic Information
-          </h3>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center p-3 bg-gradient-to-r from-gray-50 to-gray-100/50 rounded-xl">
-              <span className="text-gray-600 font-medium">Current Semester:</span>
-              <span className="font-bold text-gray-900">{studentData.academicInfo?.currentSemester || 'Not specified'}</span>
-            </div>
-            <div className="flex justify-between items-center p-3 bg-gradient-to-r from-gray-50 to-gray-100/50 rounded-xl">
-              <span className="text-gray-600 font-medium">Enrollment Status:</span>
-              <span className={`px-3 py-1 text-sm font-semibold rounded-full ${
-                studentData.academicInfo?.enrollmentStatus === 'Active'
-                  ? 'bg-gradient-to-r from-green-100 to-green-200 text-green-800' 
-                  : 'bg-gradient-to-r from-red-100 to-red-200 text-red-800'
-              }`}>
-                {studentData.academicInfo?.enrollmentStatus || 'Unknown'}
-              </span>
-            </div>
-            <div className="flex justify-between items-center p-3 bg-gradient-to-r from-gray-50 to-gray-100/50 rounded-xl">
-              <span className="text-gray-600 font-medium">Academic Standing:</span>
-              <span className="font-bold text-gray-900">{studentData.academicInfo?.academicStanding || 'Not specified'}</span>
             </div>
           </div>
         </Card>

@@ -52,6 +52,7 @@ namespace xyz_university_payment_api.Core.Application.DTOs
         public string Description { get; set; } = string.Empty;
         public required string AcademicYear { get; set; }
         public required string Semester { get; set; }
+        public bool IsActive { get; set; } = true;
         public List<CreateFeeStructureItemDto> FeeStructureItems { get; set; } = new List<CreateFeeStructureItemDto>();
     }
 
@@ -163,6 +164,27 @@ namespace xyz_university_payment_api.Core.Application.DTOs
         public required int FeeStructureId { get; set; }
         public required string AcademicYear { get; set; }
         public required string Semester { get; set; }
+    }
+
+    public class FlexibleAssignFeeStructureDto
+    {
+        public int FeeStructureId { get; set; }
+        public string AcademicYear { get; set; } = string.Empty;
+        public string Semester { get; set; } = string.Empty;
+        public List<string>? StudentNumbers { get; set; }
+        public List<string>? Programs { get; set; }
+    }
+
+    public class AssignFeeStructureToAllDto
+    {
+        public int FeeStructureId { get; set; }
+    }
+
+    public class AssignmentResultDto
+    {
+        public int TotalAssigned { get; set; }
+        public int OutstandingBalancesAdded { get; set; }
+        public decimal TotalOutstandingAmount { get; set; }
     }
 
     // Student Fee Balance DTOs

@@ -3,6 +3,7 @@ import { useAuth } from '../hooks/useAuth';
 import Card from '../components/common/Card';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { dashboardService } from '../services/dashboardService';
+import { feeManagementService } from '../services/feeManagementService';
 
 const StudentProfile = () => {
   const { user } = useAuth();
@@ -18,6 +19,13 @@ const StudentProfile = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedSemester, setSelectedSemester] = useState('');
+  const [selectedAcademicYear, setSelectedAcademicYear] = useState('');
+  const [feeStructures, setFeeStructures] = useState([]);
+  const [loadingFeeData, setLoadingFeeData] = useState(false);
+
+  const availableSemesters = feeManagementService.getAvailableSemesters();
+  const availableAcademicYears = feeManagementService.getAvailableAcademicYears();
 
   useEffect(() => {
     const fetchStudentData = async () => {
@@ -41,6 +49,19 @@ const StudentProfile = () => {
             financialInfo: response.data.financialInfo || {},
             systemInfo: response.data.systemInfo || {}
           });
+
+          // Set default semester and academic year based on current academic info
+          if (response.data.academicInfo?.currentSemester) {
+            setSelectedSemester(response.data.academicInfo.currentSemester);
+          } else {
+            setSelectedSemester('Fall'); // Default to Fall
+          }
+          
+          if (response.data.academicInfo?.academicYear) {
+            setSelectedAcademicYear(response.data.academicInfo.academicYear);
+          } else {
+            setSelectedAcademicYear(new Date().getFullYear().toString());
+          }
         } else {
           console.log('StudentProfile: Response not successful:', response);
           setError(response.message || 'Failed to load student data');
@@ -55,6 +76,29 @@ const StudentProfile = () => {
 
     fetchStudentData();
   }, []);
+
+  // Fetch fee structures when semester or academic year changes
+  useEffect(() => {
+    if (selectedSemester && selectedAcademicYear) {
+      fetchFeeStructures();
+    }
+  }, [selectedSemester, selectedAcademicYear]);
+
+  const fetchFeeStructures = async () => {
+    try {
+      setLoadingFeeData(true);
+      console.log('Fetching fee structures for:', selectedAcademicYear, selectedSemester);
+      console.log('Current user role:', studentData.userRole);
+      const structures = await feeManagementService.getFeeStructuresBySemester(selectedAcademicYear, selectedSemester);
+      console.log('Received fee structures:', structures);
+      setFeeStructures(structures);
+    } catch (error) {
+      console.error('Error fetching fee structures:', error);
+      setFeeStructures([]);
+    } finally {
+      setLoadingFeeData(false);
+    }
+  };
 
   if (loading) {
     return <LoadingSpinner size="large" text="Loading student profile..." />;
@@ -172,13 +216,64 @@ const StudentProfile = () => {
         </Card>
       </div>
 
-      {/* Financial Summary */}
+      {/* Enhanced Academic Information */}
+      <Card variant="elevated" className="p-6">
+        <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+          <span className="w-2 h-8 bg-gradient-to-b from-blue-500 to-indigo-500 rounded-full mr-3"></span>
+          Academic Information
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200">
+            <div className="flex items-center">
+              <div className="p-3 rounded-full bg-blue-200 text-blue-600">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-blue-600">Current Semester</p>
+                <p className="text-2xl font-bold text-gray-900">{studentData.academicInfo?.currentSemester || 'Summer 2025'}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-xl border border-green-200">
+            <div className="flex items-center">
+              <div className="p-3 rounded-full bg-green-200 text-green-600">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-green-600">Enrollment Status</p>
+                <p className="text-2xl font-bold text-gray-900">{studentData.academicInfo?.enrollmentStatus || 'Active'}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl border border-purple-200">
+            <div className="flex items-center">
+              <div className="p-3 rounded-full bg-purple-200 text-purple-600">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-purple-600">Academic Standing</p>
+                <p className="text-2xl font-bold text-gray-900">{studentData.academicInfo?.academicStanding || 'Good Standing'}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Enhanced Financial Summary with Fee Balance */}
       <Card variant="elevated" className="p-6">
         <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
           <span className="w-2 h-8 bg-gradient-to-b from-purple-500 to-pink-500 rounded-full mr-3"></span>
           Financial Summary
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="p-4 bg-gradient-to-r from-red-50 to-red-100 rounded-xl border border-red-200">
             <div className="flex items-center">
               <div className="p-3 rounded-full bg-red-200 text-red-600">
@@ -188,7 +283,9 @@ const StudentProfile = () => {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-red-600">Outstanding Balance</p>
-                <p className="text-2xl font-bold text-gray-900">${(studentData.financialInfo?.balance || 0).toLocaleString()}</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  ${(studentData.financialInfo?.balance || 0).toLocaleString()}
+                </p>
               </div>
             </div>
           </div>
@@ -202,7 +299,25 @@ const StudentProfile = () => {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-green-600">Total Paid</p>
-                <p className="text-2xl font-bold text-gray-900">${studentData.financialInfo?.totalPaid || 0}</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  ${(studentData.financialInfo?.totalPaid || 0).toLocaleString()}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200">
+            <div className="flex items-center">
+              <div className="p-3 rounded-full bg-blue-200 text-blue-600">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-blue-600">Total Assigned</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  ${((studentData.financialInfo?.balance || 0) + (studentData.financialInfo?.totalPaid || 0)).toLocaleString()}
+                </p>
               </div>
             </div>
           </div>
@@ -223,6 +338,93 @@ const StudentProfile = () => {
             </div>
           </div>
         </div>
+      </Card>
+
+      {/* Fee Structures Section */}
+      <Card variant="elevated" className="p-6">
+        <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+          <span className="w-2 h-8 bg-gradient-to-b from-green-500 to-teal-500 rounded-full mr-3"></span>
+          Fee Structures
+        </h3>
+        
+        {/* Semester and Academic Year Selection */}
+        <div className="flex flex-wrap gap-4 mb-6">
+          <div className="flex-1 min-w-[200px]">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Academic Year</label>
+            <select
+              value={selectedAcademicYear}
+              onChange={(e) => setSelectedAcademicYear(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              {availableAcademicYears.map(year => (
+                <option key={year} value={year}>{year}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex-1 min-w-[200px]">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Semester</label>
+            <select
+              value={selectedSemester}
+              onChange={(e) => setSelectedSemester(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              {availableSemesters.map(semester => (
+                <option key={semester} value={semester}>{semester}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {loadingFeeData ? (
+          <div className="flex justify-center items-center h-32">
+            <LoadingSpinner size="medium" text="Loading fee structures..." />
+          </div>
+        ) : feeStructures.length > 0 ? (
+          <div className="space-y-4">
+            {feeStructures.map((structure) => (
+              <div key={structure.id} className="p-4 bg-gradient-to-r from-gray-50 to-gray-100/50 rounded-xl border border-gray-200">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <h4 className="text-lg font-bold text-gray-900">{structure.name}</h4>
+                    <p className="text-sm text-gray-600">{structure.description}</p>
+                  </div>
+                  <div className="text-right">
+                    <span className={`px-3 py-1 text-sm font-semibold rounded-full ${
+                      structure.isActive 
+                        ? 'bg-gradient-to-r from-green-100 to-green-200 text-green-800' 
+                        : 'bg-gradient-to-r from-red-100 to-red-200 text-red-800'
+                    }`}>
+                      {structure.isActive ? 'Active' : 'Inactive'}
+                    </span>
+                  </div>
+                </div>
+                
+                {structure.feeItems && structure.feeItems.length > 0 && (
+                  <div className="space-y-2">
+                    <h5 className="font-semibold text-gray-800">Fee Items:</h5>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {structure.feeItems.map((item) => (
+                        <div key={item.id} className="flex justify-between items-center p-2 bg-white rounded-lg border border-gray-200">
+                          <span className="text-sm font-medium text-gray-700">{item.name}</span>
+                          <span className="text-sm font-bold text-gray-900">${item.amount.toLocaleString()}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <div className="text-gray-500 mb-2">
+              <svg className="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <p className="text-gray-600">No fee structures found for the selected semester and academic year.</p>
+          </div>
+        )}
       </Card>
 
       {/* Account Information */}

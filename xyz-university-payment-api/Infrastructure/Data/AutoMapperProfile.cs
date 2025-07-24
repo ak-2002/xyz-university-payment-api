@@ -15,7 +15,12 @@ namespace xyz_university_payment_api.Infrastructure.Data
             CreateMap<Student, UpdateStudentDto>().ReverseMap();
 
             CreateMap<PaymentNotification, PaymentDto>().ReverseMap();
-            CreateMap<PaymentNotification, CreatePaymentDto>().ReverseMap();
+            CreateMap<PaymentNotification, CreatePaymentDto>()
+                .ForMember(dest => dest.PaymentMethod, opt => opt.MapFrom(src => src.PaymentMethod))
+                .ForMember(dest => dest.TransactionId, opt => opt.MapFrom(src => src.TransactionId))
+                .ForMember(dest => dest.ReceiptNumber, opt => opt.MapFrom(src => src.ReceiptNumber))
+                .ForMember(dest => dest.Notes, opt => opt.MapFrom(src => src.Notes))
+                .ReverseMap();
 
             CreateMap<FeeSchedule, FeeScheduleDto>().ReverseMap();
             CreateMap<FeeSchedule, CreateFeeScheduleDto>().ReverseMap();

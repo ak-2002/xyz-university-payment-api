@@ -104,25 +104,42 @@ namespace xyz_university_payment_api.Core.Application.Services
 
                 // Save the payment regardless of student activity to keep all records
                 var processedPayment = await _unitOfWork.Payments.AddAsync(payment);
+                
+                // Ensure the payment is committed to the database
+                await _unitOfWork.SaveChangesAsync();
 
                 _logger.LogInformation("Payment processed successfully: {PaymentReference}", payment.PaymentReference);
 
-                // Invalidate related caches
-                await InvalidatePaymentCachesAsync(payment.StudentNumber, payment.PaymentReference);
-
-                // Publish successful payment message
-                await _messagePublisher.PublishPaymentProcessedAsync(new PaymentProcessedMessage
+                // Try to invalidate related caches (don't fail if this doesn't work)
+                try
                 {
-                    PaymentReference = payment.PaymentReference,
-                    StudentNumber = payment.StudentNumber,
-                    Amount = payment.AmountPaid,
-                    PaymentDate = payment.PaymentDate,
-                    Status = "Processed",
-                    Message = student.IsActive ? "Payment processed successfully. Student is currently enrolled."
-                                               : "Payment processed successfully. Student is not currently enrolled.",
-                    StudentExists = true,
-                    StudentIsActive = student.IsActive
-                });
+                    await InvalidatePaymentCachesAsync(payment.StudentNumber, payment.PaymentReference);
+                }
+                catch (Exception cacheEx)
+                {
+                    _logger.LogWarning(cacheEx, "Cache invalidation failed for payment {PaymentReference}, but payment was saved", payment.PaymentReference);
+                }
+
+                // Try to publish successful payment message (don't fail if this doesn't work)
+                try
+                {
+                    await _messagePublisher.PublishPaymentProcessedAsync(new PaymentProcessedMessage
+                    {
+                        PaymentReference = payment.PaymentReference,
+                        StudentNumber = payment.StudentNumber,
+                        Amount = payment.AmountPaid,
+                        PaymentDate = payment.PaymentDate,
+                        Status = "Processed",
+                        Message = student.IsActive ? "Payment processed successfully. Student is currently enrolled."
+                                                   : "Payment processed successfully. Student is not currently enrolled.",
+                        StudentExists = true,
+                        StudentIsActive = student.IsActive
+                    });
+                }
+                catch (Exception messageEx)
+                {
+                    _logger.LogWarning(messageEx, "Message publishing failed for payment {PaymentReference}, but payment was saved", payment.PaymentReference);
+                }
 
                 return new PaymentProcessingResult
                 {

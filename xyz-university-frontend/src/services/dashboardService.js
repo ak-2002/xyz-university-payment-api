@@ -4,7 +4,7 @@ export const dashboardService = {
   // Get admin dashboard statistics
   async getAdminStats() {
     try {
-      const response = await api.get('/api/v3/Dashboard/admin-stats');
+      const response = await api.get('/api/v3/dashboard/admin-stats');
       return response.data;
     } catch (error) {
       console.error('Error fetching admin stats:', error);
@@ -15,7 +15,7 @@ export const dashboardService = {
   // Get manager dashboard statistics
   async getManagerStats() {
     try {
-      const response = await api.get('/api/v3/Dashboard/manager-stats');
+      const response = await api.get('/api/v3/dashboard/manager-stats');
       return response.data;
     } catch (error) {
       console.error('Error fetching manager stats:', error);
@@ -26,7 +26,7 @@ export const dashboardService = {
   // Get staff dashboard statistics
   async getStaffStats() {
     try {
-      const response = await api.get('/api/v3/Dashboard/staff-stats');
+      const response = await api.get('/api/v3/dashboard/staff-stats');
       return response.data;
     } catch (error) {
       console.error('Error fetching staff stats:', error);
@@ -38,7 +38,7 @@ export const dashboardService = {
   async getStudentStats() {
     try {
       console.log('DashboardService: Calling student-stats endpoint...');
-      const response = await api.get('/api/v3/Dashboard/student-stats');
+      const response = await api.get('/api/v3/dashboard/student-stats');
       console.log('DashboardService: Raw response:', response);
       console.log('DashboardService: Response data:', response.data);
       return response.data;
